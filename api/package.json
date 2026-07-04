@@ -1,0 +1,22 @@
+{
+  "name": "3k-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --experimental-strip-types src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "hono": "^4",
+    "@hono/node-server": "^1",
+    "better-sqlite3": "^11"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7",
+    "typescript": "^5",
+    "vitest": "^2",
+    "@types/node": "^22"
+  }
+}
