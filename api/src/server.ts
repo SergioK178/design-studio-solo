@@ -4,6 +4,7 @@ import type { Database } from 'better-sqlite3';
 import { openDb } from './db.ts';
 import { registerDraft } from './routes/draft.ts';
 import { registerLead } from './routes/lead.ts';
+import { registerMetrics } from './routes/metrics.ts';
 import { sendRelay } from './relay.ts';
 
 export function createApp(db: Database): Hono {
@@ -11,6 +12,7 @@ export function createApp(db: Database): Hono {
   app.get('/healthz', (c) => c.text('ok'));
   registerDraft(app, db);
   registerLead(app, db, { relay: sendRelay });
+  registerMetrics(app, db);
   return app;
 }
 
