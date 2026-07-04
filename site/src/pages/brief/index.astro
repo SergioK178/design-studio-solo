@@ -5,7 +5,6 @@ import PageHeader from '../../components/PageHeader.astro';
 import Brief from '../../components/Brief.svelte';
 import SiteFooter from '../../components/SiteFooter.astro';
 import matrix from '../../../../api/src/brief/brief-matrix.json';
-import { site } from '../../data/site';
 ---
 
 <Base title="Умный бриф · 3K Studio">
@@ -16,21 +15,25 @@ import { site } from '../../data/site';
       <section>
         <Brief client:load />
       </section>
-      <aside>
-        <h2>Если JavaScript не загрузился</h2>
-        <p>Ответьте на те же вопросы списком и отправьте их в Telegram. Серверное сохранение формы появится в следующей фазе.</p>
-        <form action={site.telegramUrl} method="get">
-          {matrix.questions.map((question) => (
-            <label>
-              <span class="mono">{question.title}</span>
-              <select name={question.id}>
-                {question.options.map((option) => <option value={option.id}>{option.label}</option>)}
-              </select>
-            </label>
-          ))}
-          <a class="fallback-link" href={site.telegramUrl}>Отправить ответы в Telegram</a>
-        </form>
-      </aside>
+      <noscript>
+        <aside>
+          <h2>Если JavaScript не загрузился</h2>
+          <p>Ответьте на те же вопросы списком — заявка уйдёт напрямую нам, без сторонних сервисов.</p>
+          <form action="/api/lead" method="post">
+            {matrix.questions.map((question) => (
+              <label>
+                <span class="mono">{question.title}</span>
+                <select name={question.id}>
+                  {question.options.map((option) => <option value={option.id}>{option.label}</option>)}
+                </select>
+              </label>
+            ))}
+            <input type="text" name="hp" value="" style="display:none" tabindex="-1" autocomplete="off" />
+            <input type="hidden" name="ts" value={Date.now()} />
+            <button class="fallback-link" type="submit">Отправить заявку</button>
+          </form>
+        </aside>
+      </noscript>
     </div>
   </main>
   <SiteFooter />

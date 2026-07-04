@@ -1,0 +1,5 @@
+name = "3k-relay"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+# Secrets (set via `wrangler secret put`): RELAY_TOKEN, TG_BOT_TOKEN, TG_CHAT_ID

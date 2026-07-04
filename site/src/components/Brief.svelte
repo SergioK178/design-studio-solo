@@ -56,6 +56,18 @@
     copied = true;
   }
 
+  let draftSaved = false;
+
+  function saveDraft() {
+    if (draftSaved) return;
+    draftSaved = true;
+    fetch('/api/draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers }),
+    }).catch(() => {});
+  }
+
   function telegramHref() {
     const result = calculate();
     const rows = questions.map((question) => {
@@ -70,6 +82,7 @@
   $: isDone = step >= questions.length;
   $: canNext = question ? Boolean(answers[question.id]) : false;
   $: result = calculate();
+  $: if (isDone) saveDraft();
 
   onMount(restoreFromUrl);
 </script>

@@ -1,6 +1,6 @@
 import type { Hono } from 'hono';
 import type { Database } from 'better-sqlite3';
-import { estimate, type Answers } from '../brief/estimate.ts';
+import { estimate, matrix, type Answers } from '../brief/estimate.ts';
 import { allow } from '../rate-limit.ts';
 import type { sendRelay } from '../relay.ts';
 
@@ -13,9 +13,28 @@ interface LeadBody {
   utm?: Record<string, string>;
 }
 
+async function parseBody(c: { req: { header: (name: string) => string | undefined; json: <T>() => Promise<T>; formData: () => Promise<FormData> } }): Promise<LeadBody> {
+  const contentType = c.req.header('Content-Type') ?? '';
+  if (contentType.includes('application/json')) {
+    return c.req.json<LeadBody>();
+  }
+
+  const form = await c.req.formData();
+  const answers: Answers = {};
+  for (const question of matrix.questions) {
+    const value = form.get(question.id);
+    if (typeof value === 'string') answers[question.id] = value;
+  }
+  return {
+    answers,
+    hp: String(form.get('hp') ?? ''),
+    ts: Number(form.get('ts') ?? 0),
+  };
+}
+
 export function registerLead(app: Hono, db: Database, deps: { relay: typeof sendRelay }): void {
   app.post('/api/lead', async (c) => {
-    const body = await c.req.json<LeadBody>();
+    const body = await parseBody(c);
     const ip = c.req.header('x-forwarded-for') ?? 'unknown';
 
     if (body.hp || Date.now() - body.ts < MIN_FILL_MS || !allow(ip)) {

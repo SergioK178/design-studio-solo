@@ -1,0 +1,15 @@
+{
+  "name": "3k-relay",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4",
+    "typescript": "^5",
+    "vitest": "^2",
+    "wrangler": "^3"
+  }
+}

@@ -67,3 +67,19 @@ test('server recomputes the estimate instead of trusting client values', async (
   expect(row.price_low).toBe(30000);
   expect(row.price_high).toBe(30000);
 });
+
+test('accepts a plain form-urlencoded submission (no-JS fallback)', async () => {
+  const form = new URLSearchParams({
+    ...answers,
+    hp: '',
+    ts: String(Date.now() - 3000),
+  });
+  const res = await app.request('/api/lead', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: form.toString(),
+  });
+  expect(res.status).toBe(200);
+  const rows = db.prepare('SELECT * FROM leads').all();
+  expect(rows.length).toBe(1);
+});
