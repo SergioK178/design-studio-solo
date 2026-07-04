@@ -1,0 +1,133 @@
+@import 'tailwindcss';
+
+/*
+ * Токены дизайн-системы «Проектная документация» — spec.md §10.
+ * Единственный источник правды: компоненты берут значения отсюда
+ * (утилиты Tailwind или var(--…)), хексы в компонентах запрещены.
+ */
+@theme {
+  /* ── цвет: «ватман, графит и чертёжная синька» (§10.4) ── */
+  --color-paper: #f2f2ee; /* ватман — фон */
+  --color-ink: #1b1d1f; /* графит — текст */
+  --color-aux: #8b9095; /* служебный серый — аппаратура, подписи */
+  --color-sign: #2340c7; /* чертёжная синь — ТОЛЬКО интерактив + живые цифры */
+  --color-alarm: #b23a2e; /* тускло-красный — ТОЛЬКО просевшая метрика */
+  --color-rule: rgb(27 29 31 / 0.35); /* волосяная линейка, основная */
+  --color-rule-soft: rgb(27 29 31 / 0.16); /* волосяная линейка, вторичная */
+
+  /* ── шрифты (§10.3): Onest 800 — только хедлайны ── */
+  --font-display: 'Onest', sans-serif;
+  --font-text: 'Golos Text', sans-serif;
+  --font-mono: 'PT Mono', monospace;
+
+  /* ── типографская шкала ── */
+  --text-h1: clamp(34px, 5.6vw, 92px); /* хедлайн, 1.02 */
+  --text-h2: clamp(30px, 3.4vw, 54px); /* заголовок секции */
+  --text-digit: clamp(24px, 2.6vw, 40px); /* ключевая цифра строки */
+  --text-breakout: clamp(52px, 7vw, 116px); /* цифра, пробивающая рамку */
+  --text-sub: clamp(16px, 1.5vw, 21px); /* подстрока hero */
+  --text-app: 12px; /* аппаратура: моно-подписи */
+  --text-lbl: 10px; /* ярлыки штампа */
+
+  /* ── геометрия страницы ── */
+  --spacing-sheet: 14px; /* поле вокруг рамки страницы */
+  --spacing-gutter: 20px; /* внутренний отступ страницы */
+  --radius-*: initial; /* радиусов в системе нет (§10.4) */
+  --shadow-*: initial; /* теней нет */
+}
+
+/* база */
+html {
+  -webkit-font-smoothing: antialiased;
+}
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-text);
+  overflow-x: hidden; /* выносная цифра пробивает рамку (§10.4) */
+}
+
+/* осевая: штрихпунктирный разделитель крупных секций (§10.4) */
+.axis {
+  height: 1px;
+  border: none;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-rule) 0 22px,
+    transparent 22px 28px,
+    var(--color-rule) 28px 30px,
+    transparent 30px 36px
+  );
+}
+
+/* моно-аппаратура: подписи, ярлыки, служебные строки */
+.app {
+  font-family: var(--font-mono);
+  font-size: var(--text-app);
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+}
+.lbl {
+  font-family: var(--font-mono);
+  font-size: var(--text-lbl);
+  line-height: 1;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-aux);
+}
+
+/* кнопки — поля формуляра (§10.4) */
+.btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  min-height: 64px;
+  padding: 12px 24px 14px;
+  text-decoration: none;
+}
+.btn .k {
+  font: 400 var(--text-lbl) / 1 var(--font-mono);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.btn .act {
+  font: 500 16px / 1.2 var(--font-text);
+}
+.btn-primary {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border: 1px solid var(--color-ink);
+}
+.btn-primary .k {
+  color: rgb(242 242 238 / 0.55);
+}
+.btn-primary:hover {
+  background: var(--color-sign);
+  border-color: var(--color-sign);
+}
+.btn-outline {
+  border: 1px solid var(--color-rule);
+  border-left: none;
+  color: var(--color-ink);
+}
+.btn-outline .k {
+  color: var(--color-aux);
+}
+.btn-outline:hover {
+  border-color: var(--color-sign);
+  color: var(--color-sign);
+}
+@media (max-width: 520px) {
+  .btn-outline {
+    border-left: 1px solid var(--color-rule);
+    border-top: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

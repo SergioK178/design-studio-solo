@@ -1,0 +1,48 @@
+---
+// Компактный разделитель секций: номер помогает сканировать, но не продаёт концепт.
+interface Props {
+  num: string;
+  title: string;
+  id?: string;
+  link?: { label: string; href: string };
+}
+const { num, title, id, link } = Astro.props;
+---
+
+<div class="sheet-bar" id={id}>
+  <span class="left"><span class="dot" aria-hidden="true"></span>{num} / {title}</span>
+  {link && <a href={link.href}>{link.label}</a>}
+</div>
+
+<style>
+  .sheet-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding: 12px var(--spacing-gutter);
+    border-top: 1px solid var(--color-ink);
+    border-bottom: 1px solid var(--color-rule-soft);
+    font: 400 11px / 1 var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-sign);
+  }
+  a {
+    color: var(--color-sign);
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
