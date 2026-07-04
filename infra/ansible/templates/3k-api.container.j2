@@ -1,0 +1,18 @@
+[Unit]
+Description=3K Studio mini API
+After=network-online.target
+
+[Container]
+Image={{ api_image }}
+ContainerName=3k-api
+PublishPort=127.0.0.1:8787:8787
+Volume={{ app_root }}/shared:/data:Z
+EnvironmentFile={{ app_root }}/shared/api.env
+AutoUpdate=registry
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

@@ -1,6 +1,33 @@
-import matrix from './brief-matrix.json' with { type: 'json' };
+import rawMatrix from './brief-matrix.json' with { type: 'json' };
 
 export type Answers = Record<string, string>;
+
+interface MatrixOption {
+  id: string;
+  label: string;
+  priceMin?: number;
+  priceMax?: number;
+  weeksMin?: number;
+  weeksMax?: number;
+  priceDeltaMin?: number;
+  priceDeltaMax?: number;
+  weeksDeltaMin?: number;
+  weeksDeltaMax?: number;
+  priceMultiplier?: number;
+  summary?: string;
+}
+
+interface MatrixQuestion {
+  id: string;
+  title: string;
+  options: MatrixOption[];
+}
+
+interface Matrix {
+  questions: MatrixQuestion[];
+}
+
+const matrix = rawMatrix as Matrix;
 
 export interface Estimate {
   kind: string;

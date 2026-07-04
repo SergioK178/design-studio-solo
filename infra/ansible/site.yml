@@ -1,0 +1,122 @@
+---
+- name: Provision 3K Studio VPS
+  hosts: production
+  become: true
+  vars:
+    packages:
+      - caddy
+      - podman
+      - uidmap
+      - sqlite3
+      - age
+      - rclone
+      - fail2ban
+      - unattended-upgrades
+      - rsync
+  tasks:
+    - name: Install runtime packages
+      ansible.builtin.apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: true
+
+    - name: Ensure deploy user exists
+      ansible.builtin.user:
+        name: "{{ deploy_user }}"
+        shell: /bin/bash
+        create_home: true
+
+    - name: Enable lingering for rootless user services
+      ansible.builtin.command:
+        cmd: "loginctl enable-linger {{ deploy_user }}"
+      changed_when: false
+
+    - name: Enable unattended upgrades
+      ansible.builtin.service:
+        name: unattended-upgrades
+        state: started
+        enabled: true
+
+    - name: Ensure app directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: "0755"
+      loop:
+        - "{{ app_root }}"
+        - "{{ app_root }}/releases"
+        - "{{ app_root }}/shared"
+        - "{{ app_root }}/backups"
+        - "/home/{{ deploy_user }}/.config/containers/systemd"
+
+    - name: Install Caddyfile
+      ansible.builtin.template:
+        src: templates/Caddyfile.j2
+        dest: /etc/caddy/Caddyfile
+        mode: "0644"
+      notify: Reload caddy
+
+    - name: Install Quadlet units
+      ansible.builtin.template:
+        src: "templates/{{ item }}.j2"
+        dest: "/home/{{ deploy_user }}/.config/containers/systemd/{{ item }}"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_user }}"
+        mode: "0644"
+      loop:
+        - 3k-api.container
+        - goatcounter.container
+
+    - name: Install backup scripts
+      ansible.builtin.template:
+        src: "templates/{{ item }}.j2"
+        dest: "{{ app_root }}/{{ item }}"
+        owner: root
+        group: root
+        mode: "0750"
+      loop:
+        - backup-sqlite.sh
+        - restore-sqlite.sh
+
+    - name: Install backup cron
+      ansible.builtin.cron:
+        name: 3k-studio sqlite backup
+        minute: "17"
+        hour: "3"
+        user: root
+        job: "{{ app_root }}/backup-sqlite.sh"
+
+    - name: Enable Caddy
+      ansible.builtin.service:
+        name: caddy
+        state: started
+        enabled: true
+
+    - name: Reload user systemd
+      ansible.builtin.shell: |
+        set -euo pipefail
+        uid="$(id -u {{ deploy_user }})"
+        sudo -iu {{ deploy_user }} env XDG_RUNTIME_DIR="/run/user/$uid" systemctl --user daemon-reload
+      args:
+        executable: /bin/bash
+      changed_when: true
+
+    - name: Enable containers
+      ansible.builtin.shell: |
+        set -euo pipefail
+        uid="$(id -u {{ deploy_user }})"
+        sudo -iu {{ deploy_user }} env XDG_RUNTIME_DIR="/run/user/$uid" systemctl --user enable --now {{ item }}
+      args:
+        executable: /bin/bash
+      changed_when: true
+      loop:
+        - 3k-api.service
+        - goatcounter.service
+
+  handlers:
+    - name: Reload caddy
+      ansible.builtin.service:
+        name: caddy
+        state: reloaded

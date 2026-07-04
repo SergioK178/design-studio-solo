@@ -1,0 +1,18 @@
+[Unit]
+Description=GoatCounter analytics
+After=network-online.target
+
+[Container]
+Image={{ goatcounter_image }}
+ContainerName=goatcounter
+PublishPort=127.0.0.1:8081:8080
+Volume={{ app_root }}/shared/goatcounter:/data:Z
+Exec=serve -listen :8080 -tls none -db sqlite+/data/goatcounter.sqlite
+AutoUpdate=registry
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

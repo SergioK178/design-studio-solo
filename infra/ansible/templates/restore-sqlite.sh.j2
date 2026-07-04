@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$#" -ne 2 ]; then
+  echo "usage: $0 backup.tar.gz.age output-dir" >&2
+  exit 2
+fi
+
+BACKUP="$1"
+OUT="$2"
+mkdir -p "$OUT"
+age -d "$BACKUP" | tar -xz -C "$OUT"
+
+for db in "$OUT"/*.sqlite "$OUT"/*.db; do
+  [ -e "$db" ] || continue
+  sqlite3 "$db" 'pragma integrity_check;'
+done

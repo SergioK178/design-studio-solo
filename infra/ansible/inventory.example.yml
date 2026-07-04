@@ -1,0 +1,14 @@
+all:
+  hosts:
+    production:
+      ansible_host: 203.0.113.10
+      ansible_user: root
+  vars:
+    domain: example.com
+    deploy_user: deploy
+    app_root: /srv/3k-studio
+    api_image: ghcr.io/sergiok178/design-studio-api:latest
+    goatcounter_image: docker.io/arp242/goatcounter:latest
+    admin_basic_auth: "admin $2a$14$replace-with-caddy-hash"
+    age_recipient: "age1replace"
+    rclone_remote: "remote:3k-studio-backups"

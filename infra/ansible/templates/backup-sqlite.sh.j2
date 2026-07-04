@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_ROOT="{{ app_root }}"
+BACKUP_DIR="$APP_ROOT/backups"
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+WORK_DIR="$(mktemp -d)"
+trap 'rm -rf "$WORK_DIR"' EXIT
+
+mkdir -p "$BACKUP_DIR"
+
+for db in "$APP_ROOT"/shared/*.sqlite "$APP_ROOT"/shared/*.db "$APP_ROOT"/shared/goatcounter/*.sqlite; do
+  [ -e "$db" ] || continue
+  name="$(basename "$db")"
+  sqlite3 "$db" ".backup '$WORK_DIR/$name'"
+done
+
+tar -C "$WORK_DIR" -czf "$BACKUP_DIR/sqlite-$STAMP.tar.gz" .
+age -r "{{ age_recipient }}" -o "$BACKUP_DIR/sqlite-$STAMP.tar.gz.age" "$BACKUP_DIR/sqlite-$STAMP.tar.gz"
+rm "$BACKUP_DIR/sqlite-$STAMP.tar.gz"
+rclone copy "$BACKUP_DIR/sqlite-$STAMP.tar.gz.age" "{{ rclone_remote }}"
+find "$BACKUP_DIR" -name '*.age' -mtime +14 -delete
