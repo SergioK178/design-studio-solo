@@ -2,10 +2,12 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import type { Database } from 'better-sqlite3';
 import { openDb } from './db.ts';
+import { registerDraft } from './routes/draft.ts';
 
 export function createApp(db: Database): Hono {
   const app = new Hono();
   app.get('/healthz', (c) => c.text('ok'));
+  registerDraft(app, db);
   return app;
 }
 
