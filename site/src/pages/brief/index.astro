@@ -1,0 +1,109 @@
+---
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Brief from '../../components/Brief.svelte';
+import SiteFooter from '../../components/SiteFooter.astro';
+import matrix from '../../../../api/src/brief/brief-matrix.json';
+import { site } from '../../data/site';
+---
+
+<Base title="Умный бриф · 3K Studio">
+  <Nav />
+  <PageHeader eyebrow="бриф" title="6 вопросов — и вы видите вилку цены и срока" lead="Без созвона на старте. Отвечайте языком задачи, а не технического задания." tone="gold" />
+  <main class="brief-page">
+    <div class="wrap grid">
+      <section>
+        <Brief client:load />
+      </section>
+      <aside>
+        <h2>Если JavaScript не загрузился</h2>
+        <p>Ответьте на те же вопросы списком и отправьте их в Telegram. Серверное сохранение формы появится в следующей фазе.</p>
+        <form action={site.telegramUrl} method="get">
+          {matrix.questions.map((question) => (
+            <label>
+              <span class="mono">{question.title}</span>
+              <select name={question.id}>
+                {question.options.map((option) => <option value={option.id}>{option.label}</option>)}
+              </select>
+            </label>
+          ))}
+          <a class="fallback-link" href={site.telegramUrl}>Отправить ответы в Telegram</a>
+        </form>
+      </aside>
+    </div>
+  </main>
+  <SiteFooter />
+</Base>
+
+<style>
+  .brief-page {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 80px 0 100px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 28px;
+    align-items: start;
+  }
+
+  aside {
+    border: 1.5px solid rgb(244 242 236 / 0.28);
+    padding: 22px;
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  p {
+    color: rgb(244 242 236 / 0.68);
+    line-height: 1.55;
+  }
+
+  form,
+  label {
+    display: grid;
+    gap: 10px;
+  }
+
+  form {
+    gap: 16px;
+  }
+
+  label span {
+    color: var(--color-gold);
+    font-size: 10px;
+  }
+
+  select {
+    width: 100%;
+    border: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding: 12px;
+    font: 500 14px / 1.2 var(--font-text);
+  }
+
+  .fallback-link {
+    display: block;
+    background: var(--color-gold);
+    color: var(--color-ink);
+    padding: 14px 16px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  @media (max-width: 860px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
