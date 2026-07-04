@@ -1,0 +1,32 @@
+# Личные данные — не коммитим
+cv-ref/
+
+# Зависимости и сборка
+node_modules/
+dist/
+.astro/
+.output/
+
+# Секреты и окружение
+.env
+.env.*
+!.env.example
+*.age
+secrets/
+
+# Базы данных (SQLite живёт на сервере, не в репо)
+*.sqlite
+*.sqlite3
+*.db
+
+# Логи и временное
+*.log
+.cache/
+tmp/
+
+# Редакторы и ОС
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
