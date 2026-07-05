@@ -1,0 +1,89 @@
+---
+import { site } from '../data/site';
+
+const links = [
+  { label: 'Проекты', href: '#cases' },
+  { label: 'Цены', href: '#prices' },
+  { label: 'Процесс', href: '#process' },
+  { label: 'Команда', href: '#team' },
+];
+---
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/" aria-label="3K Studio на главную">{site.name}<span>.</span></a>
+    <nav aria-label="Главная навигация">
+      {links.map((link) => (
+        <a class="roll" href={link.href}>
+          <span data-text={link.label}>{link.label}</span>
+        </a>
+      ))}
+      <a class="tg roll" href={site.telegramUrl}>
+        <span data-text="Telegram ↗">Telegram ↗</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: absolute;
+    z-index: 4;
+    inset: 0 0 auto;
+  }
+
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    padding-top: 26px;
+  }
+
+  .brand {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .brand span,
+  .tg {
+    color: var(--color-gold);
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: rgb(244 242 236 / 0.7);
+  }
+
+  nav a {
+    text-decoration: none;
+  }
+
+  nav a:hover {
+    color: var(--color-paper);
+  }
+
+  .tg {
+    font-weight: 600;
+  }
+
+  @media (max-width: 760px) {
+    .nav-inner {
+      align-items: flex-start;
+      gap: 18px;
+    }
+
+    nav {
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      font-size: 12.5px;
+    }
+  }
+</style>

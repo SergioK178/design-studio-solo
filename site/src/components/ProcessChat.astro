@@ -1,0 +1,222 @@
+---
+import { steps } from '../data/home';
+---
+
+<section id="process" class="process" data-bg="paper">
+  <div class="wrap grid">
+    <div class="sticky" data-reveal-group>
+      <h2>Ни одного созвона</h2>
+      <p>Весь проект живёт в&nbsp;одном чате: вопросы, макеты, превью-ссылки, правки. Вы&nbsp;отвечаете, когда удобно, — мы&nbsp;не&nbsp;тратим ваши часы на&nbsp;встречи, поэтому дешевле.</p>
+      <p class="soft">Хочется голосом — окей, один созвон на&nbsp;старте. Но&nbsp;он правда не&nbsp;обязателен.</p>
+    </div>
+    <div class="chat" data-chat>
+      {steps.map((step) => (
+        <article>
+          <span class="mono">{step.time}</span>
+          <div class="bubble">
+            <b>{step.name}</b>
+            <p>{step.desc}</p>
+          </div>
+        </article>
+      ))}
+      <article class="user">
+        <span class="mono">ВЫ · В ЛЮБОЙ МОМЕНТ</span>
+        <div class="bubble">«Посмотрел превью с телефона, правки пришлю списком к вечеру» — и&nbsp;это весь ваш менеджмент проекта.</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .process {
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 70px;
+    align-items: start;
+    padding-top: 90px;
+    padding-bottom: 100px;
+  }
+
+  .sticky {
+    position: sticky;
+    top: 40px;
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(34px, 4vw, 44px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    margin: 22px 0 0;
+    color: rgb(23 21 15 / 0.72);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .soft {
+    margin-top: 16px;
+    color: rgb(23 21 15 / 0.55);
+    font-size: 14px;
+  }
+
+  .chat {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  article {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  article > span {
+    color: rgb(23 21 15 / 0.5);
+    padding-left: 2px;
+    font-size: 11.5px;
+  }
+
+  .bubble {
+    align-self: flex-start;
+    max-width: 560px;
+    box-sizing: border-box;
+    background: white;
+    color: var(--color-ink);
+    border: 1.5px solid rgb(23 21 15 / 0.25);
+    padding: 18px 22px;
+  }
+
+  .bubble b {
+    font-size: 16.5px;
+  }
+
+  .bubble p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    opacity: 0.78;
+  }
+
+  .user .bubble {
+    align-self: flex-end;
+    max-width: 420px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    border: 0;
+    font-size: 14.5px;
+    line-height: 1.55;
+  }
+
+  @media (max-width: 860px) {
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 34px;
+    }
+
+    .sticky {
+      position: static;
+    }
+  }
+
+  /* Живая последовательность чата: классы ставит скрипт ниже,
+     индикатор «печатает» создаётся в JS, поэтому селекторы глобальные. */
+  :global(.chat.chat-armed article) {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+    transition:
+      opacity 0.5s var(--ease-site),
+      transform 0.5s var(--ease-site);
+  }
+
+  :global(.chat.chat-armed article.msg-in) {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(.chat .chat-typing) {
+    display: flex;
+    gap: 5px;
+    align-self: flex-start;
+    background: white;
+    border: 1.5px solid rgb(23 21 15 / 0.25);
+    padding: 14px 18px;
+  }
+
+  :global(.chat .chat-typing i) {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgb(23 21 15 / 0.45);
+    animation: chatDot 0.9s infinite;
+  }
+
+  :global(.chat .chat-typing i:nth-child(2)) {
+    animation-delay: 0.15s;
+  }
+
+  :global(.chat .chat-typing i:nth-child(3)) {
+    animation-delay: 0.3s;
+  }
+
+  @keyframes chatDot {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.5;
+    }
+    30% {
+      transform: translateY(-4px);
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  // Сообщения появляются по одному с индикатором «печатает» — как в реальном
+  // чате. При reduced-motion или без IO чат просто виден целиком.
+  const chat = document.querySelector<HTMLElement>('[data-chat]');
+  const motionOK = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
+
+  if (chat && motionOK && 'IntersectionObserver' in window) {
+    const messages = Array.from(chat.querySelectorAll('article'));
+    chat.classList.add('chat-armed');
+
+    const typing = document.createElement('div');
+    typing.className = 'chat-typing';
+    typing.setAttribute('aria-hidden', 'true');
+    typing.append(...[0, 1, 2].map(() => document.createElement('i')));
+
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const play = async () => {
+      for (const message of messages) {
+        chat.insertBefore(typing, message);
+        await wait(650);
+        typing.remove();
+        message.classList.add('msg-in');
+        await wait(400);
+      }
+    };
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        io.disconnect();
+        void play();
+      },
+      { threshold: 0.25 },
+    );
+    io.observe(chat);
+  }
+</script>

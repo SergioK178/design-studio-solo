@@ -1,9 +1,10 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
+import svelte from '@astrojs/svelte';
 
-// SSG (tech-spec §3); островки Svelte добавятся вместе с брифом.
 export default defineConfig({
+  integrations: [svelte()],
   vite: {
     plugins: [tailwindcss()],
   },

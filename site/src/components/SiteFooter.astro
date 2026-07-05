@@ -1,0 +1,65 @@
+---
+import { site } from '../data/site';
+---
+
+<footer class="footer">
+  <div class="wrap wordmark-row" aria-hidden="true">
+    <span class="wordmark" data-reveal>{site.name}.</span>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--color-ink);
+    color: rgb(244 242 236 / 0.55);
+    overflow: hidden;
+  }
+
+  .wordmark-row {
+    padding-top: 64px;
+  }
+
+  /* Финальная сцена (Exo Ape/Snellenberg): вордмарк во всю ширину,
+     заливается золотом слева направо при наведении. */
+  .wordmark {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(40px, 10.2vw, 148px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    background-image: linear-gradient(90deg, var(--color-gold) 0 50%, var(--color-paper) 50% 100%);
+    background-size: 205% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    transition: background-position 0.9s var(--ease-site);
+  }
+
+  .wordmark:hover {
+    background-position: 0 0;
+  }
+
+  .inner {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding-top: 40px;
+    padding-bottom: 26px;
+    font-size: 12.5px;
+  }
+
+  .brand {
+    color: var(--color-paper);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .brand b {
+    color: var(--color-gold);
+  }
+</style>

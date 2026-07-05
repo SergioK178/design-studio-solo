@@ -1,0 +1,59 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+
+const posts = (await getCollection('lab')).filter((entry) => entry.data.status === 'published');
+const slugFor = (id: string) => id.replace(/\.md$/, '');
+---
+
+<Base title="Лаборатория · 3K Studio">
+  <Nav />
+  <PageHeader eyebrow="лаборатория" title="Разборы решений, которые стоят за сайтом" lead="Пишем о технических и продуктовых решениях на языке пользы для клиента." />
+  <main class="lab-list" data-bg="paper">
+    <div class="wrap" data-reveal-group>
+      {posts.map((entry) => (
+        <a class="post" href={`/lab/${slugFor(entry.id)}/`}>
+          <span class="mono">{entry.data.date}</span>
+          <h2>{entry.data.title}</h2>
+          <p>{entry.data.summary}</p>
+        </a>
+      ))}
+    </div>
+  </main>
+  <SiteFooter />
+</Base>
+
+<style>
+  .lab-list {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding: 80px 0 100px;
+  }
+
+  .post {
+    display: block;
+    border-top: 2px solid rgb(23 21 15 / 0.2);
+    padding: 30px 0;
+    text-decoration: none;
+  }
+
+  .mono {
+    color: var(--color-blue);
+  }
+
+  h2 {
+    margin: 12px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4vw, 48px);
+  }
+
+  p {
+    max-width: 720px;
+    color: rgb(23 21 15 / 0.72);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+</style>

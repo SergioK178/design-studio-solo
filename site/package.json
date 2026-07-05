@@ -5,14 +5,19 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test:e2e": "playwright test",
+    "collect:metrics": "bun ../scripts/collect-metrics.ts"
   },
   "dependencies": {
+    "@astrojs/svelte": "7",
     "@fontsource/golos-text": "^5.2.5",
-    "@fontsource/onest": "^5.2.5",
-    "@fontsource/pt-mono": "^5.2.5",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/unbounded": "^5.2.8",
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/vite": "^4.1.0",
     "astro": "^5.10.0",
+    "svelte": "^5.56.4",
     "tailwindcss": "^4.1.0"
   }
 }

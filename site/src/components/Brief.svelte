@@ -1,10 +1,36 @@
 <script>
   import { onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
+  import { expoOut } from 'svelte/easing';
   import matrix from '../../../api/src/brief/brief-matrix.json';
   import { estimate } from '../../../api/src/brief/estimate.ts';
   import { site } from '../data/site';
 
   const questions = matrix.questions;
+  const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const flyIn = { y: 26, duration: reduced ? 0 : 480, easing: expoOut };
+
+  // Финал брифа — «момент» страницы: числа вилки отсчитываются от нуля,
+  // затем золотой маркер подчёркивает оценку.
+  function reveal(node) {
+    if (!reduced) {
+      const finalText = node.textContent;
+      const parts = finalText.split(/(\d+)/);
+      const started = performance.now();
+      const duration = 900;
+      const frame = (now) => {
+        const p = Math.min((now - started) / duration, 1);
+        const eased = 1 - Math.pow(2, -10 * p);
+        node.textContent = parts
+          .map((part, index) => (index % 2 ? String(Math.round(Number(part) * eased)) : part))
+          .join('');
+        if (p < 1) requestAnimationFrame(frame);
+        else node.textContent = finalText;
+      };
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(() => node.classList.add('on'));
+  }
   let step = 0;
   let answers = {};
   let copied = false;
@@ -93,25 +119,27 @@
       <span class="mono">ШАГ {step + 1} / {questions.length}</span>
       <div><i style={`width:${((step + 1) / questions.length) * 100}%`}></i></div>
     </div>
-    <fieldset>
-      <legend>{question.title}</legend>
-      <div class="options">
-        {#each question.options as option}
-          <label class:active={answers[question.id] === option.id}>
-            <input type="radio" name={question.id} value={option.id} checked={answers[question.id] === option.id} on:change={() => select(question.id, option.id)} />
-            <span>{option.label}</span>
-          </label>
-        {/each}
-      </div>
-    </fieldset>
+    {#key step}
+      <fieldset in:fly={flyIn}>
+        <legend>{question.title}</legend>
+        <div class="options">
+          {#each question.options as option}
+            <label class:active={answers[question.id] === option.id}>
+              <input type="radio" name={question.id} value={option.id} checked={answers[question.id] === option.id} on:change={() => select(question.id, option.id)} />
+              <span>{option.label}</span>
+            </label>
+          {/each}
+        </div>
+      </fieldset>
+    {/key}
     <div class="controls">
       <button type="button" class="secondary" disabled={step === 0} on:click={() => (step -= 1)}>Назад</button>
       <button type="button" disabled={!canNext} on:click={() => (step += 1)}>{step === questions.length - 1 ? 'Показать вилку' : 'Дальше'}</button>
     </div>
   {:else}
-    <section class="result" data-testid="brief-result">
+    <section class="result" data-testid="brief-result" in:fly={{ ...flyIn, y: 34 }}>
       <span class="mono">ПРЕДВАРИТЕЛЬНАЯ ОЦЕНКА</span>
-      <h2>Похоже на проект {result.price}, {result.weeks}</h2>
+      <h2>Похоже на проект <mark use:reveal>{result.price}, {result.weeks}</mark></h2>
       <p>{result.project.summary}. Это ориентир, не оферта: точную цену и срок зафиксируем после проверки задачи.</p>
       <div class="controls">
         <button type="button" class="secondary" on:click={() => (step = questions.length - 1)}>Назад к ответам</button>
@@ -148,6 +176,20 @@
     display: block;
     height: 100%;
     background: var(--color-gold);
+    transition: width 0.6s var(--ease-site);
+  }
+
+  mark {
+    color: inherit;
+    background-image: linear-gradient(var(--color-gold), var(--color-gold));
+    background-repeat: no-repeat;
+    background-position: 0 68%;
+    background-size: 0% 40%;
+    transition: background-size 0.8s var(--ease-site) 0.45s;
+  }
+
+  :global(mark.on) {
+    background-size: 100% 40%;
   }
 
   fieldset {

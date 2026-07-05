@@ -1,0 +1,92 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+
+const entries = await getCollection('cases');
+const cases = entries.sort((a, b) => a.data.order - b.data.order);
+const slugFor = (id: string) => id.replace(/\.md$/, '');
+---
+
+<Base title="Кейсы · 3K Studio">
+  <Nav />
+  <PageHeader eyebrow="кейсы" title="Разборы задач, где сайт был частью бизнес-процесса" lead="Имена клиентов не публикуем. Вместо этого показываем отрасль, задачу, решение и честную сложность." />
+  <main class="cases-list" data-bg="paper">
+    <div class="wrap grid" data-reveal-group>
+      {cases.map((entry) => (
+        <a class="card" href={`/cases/${slugFor(entry.id)}/`} data-cursor="Разбор →">
+          <span class="mono">{entry.data.tag} · {entry.data.term}</span>
+          <h2>{entry.data.title}</h2>
+          <p>{entry.data.summary}</p>
+          <strong>{entry.data.digit}</strong>
+        </a>
+      ))}
+    </div>
+  </main>
+  <SiteFooter />
+</Base>
+
+<style>
+  .cases-list {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding: 80px 0 100px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    display: flex;
+    min-height: 330px;
+    flex-direction: column;
+    border: 1.5px solid rgb(23 21 15 / 0.22);
+    padding: 30px;
+    text-decoration: none;
+    transition:
+      box-shadow 0.35s var(--ease-site),
+      transform 0.35s var(--ease-site);
+  }
+
+  .card:hover {
+    box-shadow: 10px 10px 0 var(--color-gold);
+    transform: translate(-3px, -3px);
+  }
+
+  .mono {
+    color: var(--color-blue);
+  }
+
+  h2 {
+    margin: 24px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(26px, 3vw, 38px);
+    line-height: 1.15;
+  }
+
+  p {
+    margin: 18px 0 0;
+    color: rgb(23 21 15 / 0.72);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  strong {
+    margin-top: auto;
+    padding-top: 32px;
+    color: var(--color-ochre);
+    font-family: var(--font-display);
+    font-size: 34px;
+  }
+
+  @media (max-width: 760px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -23,6 +23,8 @@ secrets/
 *.log
 .cache/
 tmp/
+test-results/
+playwright-report/
 
 # Редакторы и ОС
 .DS_Store

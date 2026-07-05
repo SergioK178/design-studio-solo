@@ -1,133 +1,250 @@
 @import 'tailwindcss';
 
-/*
- * Токены дизайн-системы «Проектная документация» — spec.md §10.
- * Единственный источник правды: компоненты берут значения отсюда
- * (утилиты Tailwind или var(--…)), хексы в компонентах запрещены.
- */
+/* Токены — макет 2026-07-04, spec.md §10. Хексы в компонентах запрещены. */
 @theme {
-  /* ── цвет: «ватман, графит и чертёжная синька» (§10.4) ── */
-  --color-paper: #f2f2ee; /* ватман — фон */
-  --color-ink: #1b1d1f; /* графит — текст */
-  --color-aux: #8b9095; /* служебный серый — аппаратура, подписи */
-  --color-sign: #2340c7; /* чертёжная синь — ТОЛЬКО интерактив + живые цифры */
-  --color-alarm: #b23a2e; /* тускло-красный — ТОЛЬКО просевшая метрика */
-  --color-rule: rgb(27 29 31 / 0.35); /* волосяная линейка, основная */
-  --color-rule-soft: rgb(27 29 31 / 0.16); /* волосяная линейка, вторичная */
+  --color-paper: #f4f2ec;
+  --color-ink: #17150f;
+  --color-gold: #e5a43b;
+  --color-blue: #2743e0;
+  --color-blue-dk: #1f35b8;
+  --color-ochre: #c24a12;
+  --color-ochre-dk: #a83d0c;
+  --color-ink-soft: #26231a;
 
-  /* ── шрифты (§10.3): Onest 800 — только хедлайны ── */
-  --font-display: 'Onest', sans-serif;
+  --font-display: 'Unbounded', sans-serif;
   --font-text: 'Golos Text', sans-serif;
-  --font-mono: 'PT Mono', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  /* ── типографская шкала ── */
-  --text-h1: clamp(34px, 5.6vw, 92px); /* хедлайн, 1.02 */
-  --text-h2: clamp(30px, 3.4vw, 54px); /* заголовок секции */
-  --text-digit: clamp(24px, 2.6vw, 40px); /* ключевая цифра строки */
-  --text-breakout: clamp(52px, 7vw, 116px); /* цифра, пробивающая рамку */
-  --text-sub: clamp(16px, 1.5vw, 21px); /* подстрока hero */
-  --text-app: 12px; /* аппаратура: моно-подписи */
-  --text-lbl: 10px; /* ярлыки штампа */
-
-  /* ── геометрия страницы ── */
-  --spacing-sheet: 14px; /* поле вокруг рамки страницы */
-  --spacing-gutter: 20px; /* внутренний отступ страницы */
-  --radius-*: initial; /* радиусов в системе нет (§10.4) */
-  --shadow-*: initial; /* теней нет */
+  --radius-*: initial;
+  --shadow-*: initial;
 }
 
-/* база */
+/* Система движения: одна кривая на весь сайт (Exo Ape-подход). */
+:root {
+  --ease-site: cubic-bezier(0.16, 1, 0.3, 1);
+  --reveal-dur: 0.9s;
+  --page-bg: var(--color-ink);
+}
+
 html {
   -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
 }
+
 body {
-  background: var(--color-paper);
-  color: var(--color-ink);
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--color-paper);
   font-family: var(--font-text);
-  overflow-x: hidden; /* выносная цифра пробивает рамку (§10.4) */
+  overflow-x: hidden;
 }
 
-/* осевая: штрихпунктирный разделитель крупных секций (§10.4) */
-.axis {
-  height: 1px;
-  border: none;
-  background: repeating-linear-gradient(
-    90deg,
-    var(--color-rule) 0 22px,
-    transparent 22px 28px,
-    var(--color-rule) 28px 30px,
-    transparent 30px 36px
-  );
+body.theme-scroll {
+  transition: background-color 0.7s var(--ease-site);
 }
 
-/* моно-аппаратура: подписи, ярлыки, служебные строки */
-.app {
-  font-family: var(--font-mono);
-  font-size: var(--text-app);
-  line-height: 1.5;
-  letter-spacing: 0.04em;
+/* Морфинг фона между секциями (Locomotive): секции с data-bg становятся
+   прозрачными, цвет ведёт body через --page-bg (ставит motion.ts). */
+body.theme-scroll [data-bg] {
+  background: transparent !important;
 }
-.lbl {
+
+/* Печатное зерно поверх всего (basement.studio). */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+}
+
+a {
+  color: inherit;
+}
+
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 0 48px;
+}
+
+.mono {
   font-family: var(--font-mono);
-  font-size: var(--text-lbl);
-  line-height: 1;
-  letter-spacing: 0.09em;
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-aux);
 }
 
-/* кнопки — поля формуляра (§10.4) */
-.btn {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 7px;
-  min-height: 64px;
-  padding: 12px 24px 14px;
+.btn-gold {
+  display: inline-block;
+  background: var(--color-gold);
+  color: var(--color-ink);
+  padding: 19px 28px;
+  font-weight: 600;
+  font-size: 15.5px;
   text-decoration: none;
 }
-.btn .k {
-  font: 400 var(--text-lbl) / 1 var(--font-mono);
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+
+.btn-gold:hover {
+  background: var(--color-paper);
 }
-.btn .act {
-  font: 500 16px / 1.2 var(--font-text);
-}
-.btn-primary {
-  background: var(--color-ink);
-  color: var(--color-paper);
-  border: 1px solid var(--color-ink);
-}
-.btn-primary .k {
-  color: rgb(242 242 238 / 0.55);
-}
-.btn-primary:hover {
-  background: var(--color-sign);
-  border-color: var(--color-sign);
-}
+
 .btn-outline {
-  border: 1px solid var(--color-rule);
-  border-left: none;
+  display: inline-block;
+  border: 1.5px solid rgb(244 242 236 / 0.4);
+  padding: 17.5px 26px;
+  font-weight: 600;
+  font-size: 15.5px;
+  color: rgb(244 242 236 / 0.9);
+  text-decoration: none;
+}
+
+.btn-outline:hover {
+  border-color: var(--color-paper);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 4px;
+}
+
+::selection {
+  background: var(--color-gold);
   color: var(--color-ink);
 }
-.btn-outline .k {
-  color: var(--color-aux);
+
+/* Reveal при скролле: скрытое состояние живёт только при включённом JS
+   (html.js) и разрешённой анимации; motion.ts ставит .is-in, а после
+   завершения — .reveal-done, возвращая элементам их родные transition. */
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-reveal]:not(.reveal-done),
+  html.js [data-reveal-group]:not(.reveal-done) > * {
+    transition:
+      opacity var(--reveal-dur) var(--ease-site),
+      transform var(--reveal-dur) var(--ease-site);
+    transition-delay: calc(var(--ri, 0) * 90ms);
+  }
+
+  html.js [data-reveal]:not(.is-in):not([data-reveal='mask']),
+  html.js [data-reveal-group]:not(.is-in) > * {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+
+  /* Вариант для заголовков: строка выходит из-под маски. */
+  html.js [data-reveal='mask']:not(.reveal-done) {
+    transition:
+      clip-path var(--reveal-dur) var(--ease-site),
+      transform var(--reveal-dur) var(--ease-site);
+    transition-delay: calc(var(--ri, 0) * 90ms);
+    clip-path: inset(-8% -8% -8% -8%);
+  }
+
+  html.js [data-reveal='mask']:not(.is-in) {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(0.45em);
+  }
 }
-.btn-outline:hover {
-  border-color: var(--color-sign);
-  color: var(--color-sign);
+
+/* Rolling-ссылка (Dennis Snellenberg): текст прокатывается вверх,
+   снизу выезжает копия из data-text. */
+.roll {
+  display: inline-flex;
+  overflow: hidden;
 }
-@media (max-width: 520px) {
-  .btn-outline {
-    border-left: 1px solid var(--color-rule);
-    border-top: none;
+
+.roll > span {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  transition: transform 0.5s var(--ease-site);
+}
+
+.roll > span::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 100%;
+}
+
+.roll:hover > span,
+.roll:focus-visible > span {
+  transform: translateY(-100%);
+}
+
+/* Магнитные CTA: смещение считает motion.ts, кривая — общая. */
+[data-magnetic] {
+  transition:
+    transform 0.4s var(--ease-site),
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+  will-change: transform;
+}
+
+/* Курсор-ярлык над кейсами (Obys/Locomotive): создаёт motion.ts. */
+.cursor-label {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 90;
+  pointer-events: none;
+}
+
+.cursor-label b {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  margin: -48px 0 0 -48px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  color: var(--color-ink);
+  font-size: 13.5px;
+  font-weight: 700;
+  transform: scale(0);
+  transition: transform 0.4s var(--ease-site);
+}
+
+.cursor-label.on b {
+  transform: scale(1);
+}
+
+@keyframes wallScroll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes tickerMove {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    padding: 0 20px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation: none !important;
     transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

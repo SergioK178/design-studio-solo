@@ -1,0 +1,86 @@
+---
+interface Props {
+  person: {
+    name: string;
+    role: string;
+    fact: string;
+  };
+  last?: boolean;
+}
+
+const { person, last = false } = Astro.props;
+---
+
+<article class:list={['team-col', last && 'last']}>
+  <div class="photo">ФОТО</div>
+  <div>
+    <h3>{person.name}</h3>
+    <span class="mono">{person.role}</span>
+  </div>
+  <p>{person.fact}</p>
+</article>
+
+<style>
+  .team-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-right: 34px;
+    padding: 34px 34px 34px 0;
+    border-right: 1.5px solid rgb(244 242 236 / 0.25);
+  }
+
+  .team-col.last {
+    border-right: 0;
+    margin-right: 0;
+  }
+
+  .photo {
+    display: flex;
+    width: 120px;
+    height: 120px;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid rgb(244 242 236 / 0.4);
+    border-radius: 50%;
+    background: repeating-linear-gradient(-45deg, rgb(244 242 236 / 0.16), rgb(244 242 236 / 0.16) 5px, transparent 5px, transparent 10px);
+    color: rgb(244 242 236 / 0.5);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+
+  h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  span {
+    display: block;
+    margin-top: 8px;
+    color: var(--color-gold);
+  }
+
+  p {
+    margin: 0;
+    color: rgb(244 242 236 / 0.68);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 820px) {
+    .team-col {
+      margin-right: 0;
+      padding-right: 0;
+      border-right: 0;
+      border-bottom: 1.5px solid rgb(244 242 236 / 0.25);
+    }
+
+    .team-col.last {
+      border-bottom: 0;
+    }
+  }
+</style>

@@ -48,10 +48,10 @@ v1 — это 6 подсистем. Фазы 0–2 (дизайн-система 
 
 - [ ] **Step 1: Заменить зависимости шрифтов**
 
-Run:
+Run (Bun is the package manager for `site/`; keep `bun.lock` authoritative):
 ```bash
-cd site && npm rm @fontsource/onest @fontsource/pt-mono \
-  && npm i @fontsource/unbounded @fontsource/jetbrains-mono
+cd site && bun remove @fontsource/onest @fontsource/pt-mono \
+  && bun add @fontsource/unbounded @fontsource/jetbrains-mono
 ```
 Expected: `package.json` содержит `@fontsource/unbounded`, `@fontsource/jetbrains-mono`, `@fontsource/golos-text`; onest и pt-mono отсутствуют.
 
@@ -140,14 +140,12 @@ Expected: файлы удалены. (`index.astro` временно слома�
 
 - [ ] **Step 5: Проверить сборку токенов**
 
-Run: `cd site && npm run build 2>&1 | tail -20`
+Run: `cd site && bun run build 2>&1 | tail -20`
 Expected: сборка падает только на отсутствующих компонентах в `index.astro` (Stamp/SheetBar) — это ожидаемо и чинится в Phase 1. Если падает на CSS/шрифтах — исправить здесь.
 
 - [ ] **Step 6: Commit**
 
-```bash
-cd .. && git add site/ && git commit -m "design: сброс токенов и шрифтов под макет 2026-07-04"
-```
+Skipped for this execution: changes remain uncommitted for manual review.
 
 ---
 
@@ -193,7 +191,7 @@ cd .. && git add site/ && git commit -m "design: сброс токенов и ш
 
 - [ ] **Step 5: Сборка и визуальная сверка**
 
-Run: `cd site && npm run build && npm run preview &` затем открыть и сравнить с макетом на 1240px и 360px.
+Run: `cd site && bun run build && bun run preview` затем открыть и сравнить с макетом на 1240px и 360px.
 Expected: сборка зелёная; секции визуально совпадают с макетом; горизонтального скролла на 360px нет.
 
 - [ ] **Step 6: Прогнать /verify и /code-review**
@@ -202,9 +200,7 @@ Expected: сборка зелёная; секции визуально совп�
 
 - [ ] **Step 7: Commit**
 
-```bash
-git add site/ && git commit -m "feat: главная в макете 2026-07-04 (hero, кейсы, цены, процесс, команда, CTA)"
-```
+Skipped for this execution: changes remain uncommitted for manual review.
 
 **Acceptance:** главная собирается, соответствует макету, адаптив до 360px, `prefers-reduced-motion` глушит марки. Lighthouse-гейт — в Фазе 7 (после subset шрифтов).
 

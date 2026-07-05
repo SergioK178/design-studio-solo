@@ -1,653 +1,302 @@
 ---
 import Base from '../layouts/Base.astro';
-import Topbar from '../components/Topbar.astro';
-import { site } from '../data/site';
+import Nav from '../components/Nav.astro';
+import HeroWall from '../components/HeroWall.astro';
+import CaseBlock from '../components/CaseBlock.astro';
+import PriceRow from '../components/PriceRow.astro';
+import ProcessChat from '../components/ProcessChat.astro';
+import TeamCol from '../components/TeamCol.astro';
+import Marquee from '../components/Marquee.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 import { cases } from '../data/cases';
-import { artifacts, briefOptions, deployFlow, processSteps, products, team } from '../data/home';
-
-const [featuredCase, ...otherCases] = cases;
+import { products, team } from '../data/home';
+import { site } from '../data/site';
 ---
 
-<Base title="Сайты, каталоги и формы заявок для малого бизнеса — 3K Studio">
-  <Topbar />
+<Base title="Сайт под вашу задачу — за неделю · 3K Studio">
+  <Nav />
+  <HeroWall />
 
-  <div class="page">
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">{site.name}</p>
-        <h1>
-          Сайты, каталоги<br />и&nbsp;формы заявок<br />для малого бизнеса
-        </h1>
-        <p class="sub">
-          Запускаем быстро, подключаем заявки к&nbsp;CRM, переносим данные
-          и&nbsp;не&nbsp;тащим тяжёлые системы туда, где хватит аккуратного сайта.
-        </p>
-        <p class="hint">Не нужно готовое ТЗ. Достаточно идеи, старого сайта или списка товаров.</p>
-      </div>
-      <form class="brief-card" action="/brief/">
-        <span class="lbl">Что нужно собрать?</span>
-        <div class="brief-options">
-          {briefOptions.map((option, index) => (
-            <label>
-              <input type="radio" name="project" value={option} checked={index === 0} />
-              <span>{option}</span>
-            </label>
-          ))}
+  <main>
+    <section id="cases" class="cases-section" data-bg="paper">
+      <div class="wrap">
+        <div class="section-head" data-reveal>
+          <h2>Проекты, где задача была не только в дизайне</h2>
+          <p class="mono">данные, CRM, запуск, управление контентом</p>
         </div>
-        <button class="btn btn-primary" type="submit">
-          <span class="k">6 вопросов</span>
-          <span class="act">Получить вилку цены и срока</span>
-        </button>
-        <a class="telegram-link app" href={site.telegramUrl}>или написать в Telegram без созвона</a>
-      </form>
-    </section>
-    <hr class="axis mx" />
-    <div class="after-axis app">
-      <span>от <b>30 000 ₽</b></span>
-      <span>от <b>5 рабочих дней</b></span>
-      <span><b data-live="ttfb-headline">94 мс</b> TTFB этой страницы</span>
-      <span class="right"><b>900+</b> позиций перенесли в B2B-каталог</span>
-    </div>
-
-    <section class="cases">
-      <div class="head-row">
-        <h2>Проекты, где задача была не только в дизайне</h2>
-        <span class="app aux">данные, CRM, запуск, управление контентом</span>
+        <div class="case-grid" data-reveal-group>
+          {cases.map((item) => <CaseBlock item={item} />)}
+        </div>
+        <p class="note mono">имена клиентов не публикуем — кейсы подаём по отрасли</p>
       </div>
-      {featuredCase && (
-        <article class="featured-case">
+    </section>
+
+    <section id="prices" class="prices-section" data-bg="ink">
+      <div class="wrap">
+        <div class="prices-head" data-reveal>
           <div>
-            <span class="lbl">крупный пример</span>
-            <h3>{featuredCase.title}</h3>
-            <p>{featuredCase.fact}</p>
-            <a href={featuredCase.href}>Открыть проект</a>
+            <h2>Цены — сразу</h2>
+            <p>В каждой цене — один круг правок. Пишем и&nbsp;что не&nbsp;входит: так у&nbsp;нас не&nbsp;бывает споров на&nbsp;сдаче.</p>
           </div>
-          <div class="artifact-stack">
-            {artifacts.map((artifact) => (
-              <div class="artifact">
-                <span>{artifact.label}</span>
-                <strong>{artifact.title}</strong>
-                <p>{artifact.text}</p>
-              </div>
-            ))}
-          </div>
-          <div class="case-digit">
-            <strong>{featuredCase.digit}</strong>
-            <span>{featuredCase.unit}</span>
-          </div>
-        </article>
-      )}
-      <div class="case-list">
-        {otherCases.map((c) => (
-          <a class="case-compact" href={c.href}>
-            <span>{c.title}</span>
-            <strong>{c.digit}</strong>
-            <small>{c.unit}</small>
-          </a>
-        ))}
-      </div>
-      <p class="app aux foot-note">имена клиентов не публикуем — кейсы подаём по отрасли</p>
-    </section>
-
-    <section class="products">
-      <div class="head-row">
-        <h2>Форматы работы и цены</h2>
-        <span class="app aux">смета честнее карточек: формат, когда подходит, цена, срок, ограничения</span>
-      </div>
-      <div class="estimate-table">
-        <div class="estimate-head app">
-          <span>формат</span>
-          <span>когда подходит</span>
-          <span>цена</span>
-          <span>срок</span>
-          <span>что не входит</span>
+          <span class="mono">БЕЗ «ОСТАВЬТЕ ЗАЯВКУ, МЫ ПЕРЕЗВОНИМ»</span>
         </div>
-        {products.map((item) => (
-          <article class="estimate-row">
-            <div class="spec-main">
-              <h3>{item.name}</h3>
-              <p class="scope">{item.scope}</p>
-            </div>
-            <p>{item.fit}</p>
-            <strong class="price">{item.price}</strong>
-            <span class="app aux">{item.term}</span>
-            <p class="limit app aux">{item.limit}</p>
-          </article>
-        ))}
-      </div>
-      <div class="note-strip app">
-        <span>до 50 тыс. → стартовый лендинг</span>
-        <span>50–150 → лендинг + CRM</span>
-        <span>150–400 → каталог B2B</span>
-        <span>400+ → сначала режем задачу на понятные этапы</span>
+        <div class="price-list" data-reveal-group>
+          {products.map((item) => <PriceRow item={item} />)}
+          <div class="line"></div>
+        </div>
+        <div class="price-cta" data-reveal>
+          <a class="btn-gold" href="#brief" data-magnetic>Получить цену за 6 ответов →</a>
+          <span>Магазины, записи и нестандартное — оцениваем по задаче, вилку скажем в тот же день.</span>
+        </div>
       </div>
     </section>
 
-    <section class="process" id="process">
-      <div class="head-row">
-        <h2>Что происходит после того, как вы описали задачу</h2>
-        <span class="app aux">снимаем страхи: деньги, сроки, правки, запуск</span>
+    <ProcessChat />
+
+    <section id="team" class="team-section" data-bg="ink">
+      <div class="wrap">
+        <h2 data-reveal="mask">Трое. Лично.</h2>
+        <p class="team-lead" data-reveal>Стратегия, дизайн и&nbsp;инженерия — без менеджеров-посредников. В&nbsp;чате отвечает тот, кто делает.</p>
+        <div class="team-grid" data-reveal-group>
+          {team.map((person, index) => <TeamCol person={person} last={index === team.length - 1} />)}
+        </div>
       </div>
-      <div class="steps">
-        {processSteps.map((step) => (
-          <article class="step">
-            <h3>{step.title}</h3>
-            <p>{step.text}</p>
-            <span class="app aux">{step.time}</span>
-          </article>
-        ))}
-      </div>
-      <div class="deploy">
+    </section>
+
+    <section id="brief" class="brief-section" data-bg="gold">
+      <div class="wrap brief-grid" data-reveal-group>
         <div>
-          <span class="lbl">техническая сторона</span>
-          <h3>После релиза сайт проходит один и тот же маршрут</h3>
+          <h2>6 вопросов — и&nbsp;вы видите цену и&nbsp;срок. Без звонка.</h2>
+          <p>Бриф занимает три минуты. Вилка — ориентир, не&nbsp;оферта: точную цену зафиксируем в&nbsp;договоре.</p>
         </div>
-        <ol class="deploy-flow app">
-          {deployFlow.map((item) => <li>{item}</li>)}
-        </ol>
+        <div class="brief-actions">
+          <a class="brief-primary" href="/brief/" data-magnetic>Заполнить бриф →</a>
+          <a class="brief-secondary" href={site.telegramUrl} data-magnetic>Без формы: {site.telegram}</a>
+        </div>
       </div>
+      <Marquee />
+      <SiteFooter />
     </section>
-
-    <section class="team-contact" id="team">
-      <div class="head-row">
-        <h2>За проект отвечают три функции</h2>
-        <span class="app aux">без фото-плейсхолдеров: пока показываем ответственность, не декор</span>
-      </div>
-      <div class="roles-strip">
-        {team.map((person) => (
-          <article class="role-row">
-            <span>{person.name}</span>
-            <div class="spec-meta">
-              <h3>{person.role}</h3>
-              <p>{person.fact}</p>
-            </div>
-          </article>
-        ))}
-      </div>
-      <div class="final-cta" id="contact">
-        <div>
-          <span class="lbl">вход в проект</span>
-          <h2>Опишите задачу в 6 ответах — получите вилку цены и срока.</h2>
-        </div>
-        <div class="cta-row">
-          <a class="btn btn-primary" href="/brief/">
-            <span class="k">6 вопросов</span>
-            <span class="act">Начать оценку</span>
-          </a>
-          <a class="btn btn-outline" href={site.telegramUrl}>
-            <span class="k">{site.telegram}</span>
-            <span class="act">Написать в Telegram</span>
-          </a>
-        </div>
-      </div>
-    </section>
-  </div>
+  </main>
 </Base>
 
 <style>
-  .page {
-    margin: var(--spacing-sheet);
-    border: 1px solid var(--color-ink);
+  .cases-section {
     background: var(--color-paper);
+    color: var(--color-ink);
   }
-  .mx {
-    margin-inline: var(--spacing-gutter);
+
+  .cases-section .wrap {
+    padding-top: 90px;
+    padding-bottom: 100px;
   }
-  .aux {
-    color: var(--color-aux);
-  }
-  .eyebrow {
-    font: 400 12px / 1 var(--font-mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-sign);
-    margin-bottom: 18px;
-  }
-  .hero {
-    padding: clamp(30px, 6vh, 70px) var(--spacing-gutter) clamp(24px, 5vh, 54px);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.42fr);
-    gap: clamp(28px, 5vw, 72px);
-    align-items: end;
-  }
-  h1 {
-    font: 800 var(--text-h1) / 1.02 var(--font-display);
-    letter-spacing: -0.025em;
-    text-wrap: balance;
-  }
-  .sub {
-    font: 400 var(--text-sub) / 1.5 var(--font-text);
-    margin-top: clamp(18px, 3vh, 30px);
-    max-width: 58ch;
-    text-wrap: pretty;
-  }
-  .hint {
-    margin-top: 16px;
-    max-width: 58ch;
-    font: 400 14px / 1.55 var(--font-text);
-    color: var(--color-aux);
-  }
-  .brief-card {
-    border: 1px solid var(--color-ink);
-    padding: 18px;
-    display: grid;
-    gap: 16px;
-    background:
-      linear-gradient(90deg, var(--color-rule-soft) 1px, transparent 1px) 0 0 / 28px 28px,
-      var(--color-paper);
-  }
-  .brief-options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    border: 1px solid var(--color-rule);
-  }
-  .brief-options label {
-    min-height: 54px;
-    border-right: 1px solid var(--color-rule-soft);
-    border-bottom: 1px solid var(--color-rule-soft);
-    cursor: pointer;
-  }
-  .brief-options label:nth-child(2n) {
-    border-right: none;
-  }
-  .brief-options label:nth-last-child(-n + 2) {
-    border-bottom: none;
-  }
-  .brief-options input {
-    position: absolute;
-    opacity: 0;
-  }
-  .brief-options span {
-    min-height: 54px;
+
+  .section-head,
+  .prices-head {
     display: flex;
-    align-items: center;
-    padding: 12px;
-    font: 500 14px / 1.25 var(--font-text);
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 30px;
+    margin-bottom: 50px;
   }
-  .brief-options input:checked + span {
+
+  h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(34px, 4vw, 44px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  .section-head p,
+  .prices-head span {
+    margin: 0;
+    color: var(--color-gold);
+  }
+
+  .case-grid {
+    display: grid;
+    grid-template-columns: 7fr 5fr;
+    gap: 20px;
+  }
+
+  .case-grid :global(.case:nth-child(3)) {
+    grid-column: span 1;
+  }
+
+  .note {
+    margin: 28px 0 0;
+    color: rgb(23 21 15 / 0.55);
+  }
+
+  .prices-section {
     background: var(--color-ink);
     color: var(--color-paper);
   }
-  .telegram-link {
-    color: var(--color-sign);
-    text-decoration: none;
-  }
-  .telegram-link:hover {
-    text-decoration: underline;
-  }
-  .cta-row {
-    display: flex;
-    flex-wrap: wrap;
-  }
-  .after-axis {
-    display: flex;
-    gap: 26px 36px;
-    flex-wrap: wrap;
-    padding: 14px var(--spacing-gutter) 18px;
-  }
-  .after-axis b {
-    font-weight: 400;
-    color: var(--color-sign);
-  }
-  .after-axis .right {
-    margin-left: auto;
-    color: var(--color-aux);
+
+  .prices-section .wrap {
+    padding-top: 90px;
+    padding-bottom: 100px;
   }
 
-  .head-row {
+  .prices-head {
+    margin-bottom: 14px;
+  }
+
+  .prices-head > div {
+    max-width: 560px;
+  }
+
+  .prices-head p {
+    margin: 22px 0 0;
+    max-width: 520px;
+    color: rgb(244 242 236 / 0.65);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .price-list {
+    margin-top: 50px;
+  }
+
+  .line {
+    border-top: 2px solid rgb(244 242 236 / 0.25);
+  }
+
+  .price-cta {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     gap: 24px;
+    margin-top: 44px;
     flex-wrap: wrap;
-    padding: clamp(26px, 5vh, 54px) var(--spacing-gutter) clamp(18px, 3vh, 30px);
-    border-top: 1px solid var(--color-ink);
-  }
-  h2 {
-    font: 800 var(--text-h2) / 1 var(--font-display);
-    letter-spacing: -0.02em;
-    max-width: 16ch;
-  }
-  h3 {
-    font: 500 clamp(18px, 1.6vw, 24px) / 1.2 var(--font-text);
   }
 
-  .featured-case {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(260px, 0.75fr) minmax(180px, 0.35fr);
-    gap: 24px;
-    align-items: stretch;
-    padding: 0 var(--spacing-gutter) 24px;
-  }
-  .featured-case > div:first-child {
-    border-top: 1px solid var(--color-rule);
-    padding-top: 18px;
-  }
-  .featured-case p,
-  .estimate-row p,
-  .step p,
-  .role-row p {
-    margin-top: 8px;
-    font: 400 14px / 1.55 var(--font-text);
-    color: var(--color-aux);
-  }
-  .featured-case a {
-    display: inline-block;
-    margin-top: 18px;
-    color: var(--color-sign);
-    text-decoration: none;
-    font: 500 15px / 1.2 var(--font-text);
-  }
-  .artifact-stack {
-    display: grid;
-    gap: 10px;
-  }
-  .artifact {
-    border: 1px solid var(--color-rule-soft);
-    padding: 12px;
-    background: rgb(27 29 31 / 0.025);
-  }
-  .artifact span {
-    display: block;
-    font: 400 10px / 1 var(--font-mono);
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--color-sign);
-    margin-bottom: 10px;
-  }
-  .artifact strong {
-    display: block;
-    font: 400 13px / 1.35 var(--font-mono);
-    color: var(--color-ink);
-  }
-  .artifact p {
-    font-family: var(--font-mono);
-    font-size: 11px;
-  }
-  .case-digit {
-    border-left: 1px solid var(--color-rule);
-    padding-left: 18px;
-    display: flex;
-    flex-direction: column;
-    justify-content: end;
-  }
-  .case-digit strong {
-    font: 800 clamp(42px, 6vw, 92px) / 0.9 var(--font-display);
-    letter-spacing: -0.03em;
-  }
-  .case-digit span {
-    margin-top: 10px;
-    font: 400 11px / 1.5 var(--font-mono);
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--color-aux);
-  }
-  .case-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-top: 1px solid var(--color-rule-soft);
-    border-bottom: 1px solid var(--color-rule-soft);
-  }
-  .case-compact {
-    min-height: 180px;
-    padding: 18px var(--spacing-gutter);
-    border-right: 1px solid var(--color-rule-soft);
-    color: inherit;
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-  }
-  .case-compact:last-child {
-    border-right: none;
-  }
-  .case-compact span {
-    font: 500 18px / 1.25 var(--font-text);
-  }
-  .case-compact strong {
-    margin-top: auto;
-    font: 800 var(--text-digit) / 1 var(--font-display);
-    letter-spacing: -0.02em;
-  }
-  .case-compact small {
-    margin-top: 6px;
-    font: 400 11px / 1.45 var(--font-mono);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--color-aux);
-  }
-  .case-compact:hover span,
-  .case-compact:hover strong {
-    color: var(--color-sign);
-  }
-  .foot-note {
-    padding: 14px var(--spacing-gutter) 18px;
+  .price-cta span {
+    max-width: 560px;
+    color: rgb(244 242 236 / 0.55);
+    font-size: 13.5px;
+    line-height: 1.5;
   }
 
-  .estimate-table {
-    border-top: 1px solid var(--color-rule);
-  }
-  .estimate-head,
-  .estimate-row {
-    display: grid;
-    grid-template-columns: minmax(190px, 0.75fr) minmax(220px, 1fr) minmax(130px, 0.4fr) minmax(120px, 0.35fr) minmax(200px, 0.7fr);
-    gap: 18px;
-    align-items: start;
-    padding: 16px var(--spacing-gutter);
-    border-bottom: 1px solid var(--color-rule-soft);
-  }
-  .estimate-head {
-    color: var(--color-aux);
-    text-transform: uppercase;
-  }
-  .spec-main .scope {
-    color: var(--color-ink);
-  }
-  .price {
-    display: block;
-    font: 800 clamp(22px, 2vw, 34px) / 1 var(--font-display);
-    letter-spacing: -0.02em;
-    white-space: nowrap;
-  }
-  .limit {
-    border-left: 1px solid var(--color-rule-soft);
-    padding-left: 16px;
-  }
-  .note-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px 30px;
-    padding: 14px var(--spacing-gutter) 18px;
-    color: var(--color-aux);
-  }
-  .note-strip span:first-child {
-    color: var(--color-sign);
+  .team-section {
+    background: var(--color-ink);
+    color: var(--color-paper);
   }
 
-  /* ── процесс ── */
-  .steps {
+  .team-section .wrap {
+    padding-top: 90px;
+    padding-bottom: 100px;
+  }
+
+  .team-lead {
+    margin: 14px 0 50px;
+    max-width: 520px;
+    color: rgb(244 242 236 / 0.65);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .team-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-top: 1px solid var(--color-rule-soft);
-    border-bottom: 1px solid var(--color-rule-soft);
-  }
-  .step {
-    min-height: 220px;
-    padding: 18px var(--spacing-gutter) 20px;
-    border-right: 1px solid var(--color-rule-soft);
-    display: flex;
-    flex-direction: column;
-  }
-  .step:last-child {
-    border-right: none;
-  }
-  .step .app {
-    margin-top: auto;
-  }
-  .deploy {
-    display: grid;
-    grid-template-columns: minmax(0, 0.55fr) minmax(0, 1fr);
-    gap: 28px;
-    padding: 22px var(--spacing-gutter) 26px;
-    align-items: end;
-  }
-  .deploy h3 {
-    margin-top: 10px;
-    max-width: 32ch;
-  }
-  .deploy-flow {
-    counter-reset: deploy;
-    list-style: none;
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 0;
+    border-top: 2px solid rgb(244 242 236 / 0.25);
+  }
+
+  .brief-section {
+    background: var(--color-gold);
     color: var(--color-ink);
   }
-  .deploy-flow li {
-    position: relative;
-    padding: 28px 14px 0 0;
-    border-top: 1px solid var(--color-ink);
-  }
-  .deploy-flow li::before {
-    counter-increment: deploy;
-    content: '0' counter(deploy);
-    position: absolute;
-    top: -22px;
-    left: 0;
-    color: var(--color-aux);
-  }
-  .deploy-flow li::after {
-    content: '→';
-    position: absolute;
-    right: 12px;
-    top: -8px;
-    color: var(--color-aux);
-  }
-  .deploy-flow li:last-child::after {
-    content: '';
+
+  .brief-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 50px;
+    align-items: center;
+    padding-top: 90px;
+    padding-bottom: 80px;
   }
 
-  .roles-strip {
-    border-top: 1px solid var(--color-rule-soft);
-    border-bottom: 1px solid var(--color-rule-soft);
-  }
-  .role-row {
-    display: grid;
-    grid-template-columns: 160px minmax(0, 1fr);
-    gap: 22px;
-    padding: 18px var(--spacing-gutter);
-    border-bottom: 1px solid var(--color-rule-soft);
-  }
-  .role-row:last-child {
-    border-bottom: none;
-  }
-  .role-row > span {
-    font: 800 clamp(22px, 2vw, 34px) / 1 var(--font-display);
-  }
-  .role-row .spec-meta {
-    text-align: left;
-  }
-  .final-cta {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 28px;
-    align-items: end;
-    padding: clamp(24px, 4vh, 44px) var(--spacing-gutter);
-  }
-  .final-cta h2 {
-    margin-top: 10px;
-    max-width: 18ch;
+  .brief-grid h2 {
+    max-width: 640px;
+    font-size: clamp(36px, 4.8vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
   }
 
-  @media (max-width: 1100px) {
-    .estimate-head,
-    .estimate-row {
-      grid-template-columns: minmax(180px, 0.9fr) minmax(220px, 1fr) minmax(130px, 0.4fr);
+  .brief-grid p {
+    max-width: 460px;
+    margin: 20px 0 0;
+    color: rgb(23 21 15 / 0.75);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .brief-actions {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .brief-actions a {
+    padding: 20px 34px;
+    font-size: 17px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .brief-primary {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .brief-primary:hover {
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  .brief-secondary {
+    border: 2px solid var(--color-ink);
+    color: var(--color-ink);
+  }
+
+  .brief-secondary:hover {
+    background: var(--color-ink);
+    color: var(--color-gold);
+  }
+
+  @media (max-width: 900px) {
+    .section-head,
+    .prices-head,
+    .brief-grid {
+      align-items: flex-start;
+      grid-template-columns: 1fr;
+      flex-direction: column;
     }
-    .estimate-head span:nth-child(n + 4),
-    .estimate-row > :nth-child(n + 4) {
-      grid-column: 2 / -1;
-    }
-    .featured-case {
-      grid-template-columns: minmax(0, 1fr) minmax(220px, 0.7fr);
-    }
-    .case-digit {
-      grid-column: 1 / -1;
-      border-left: none;
-      border-top: 1px solid var(--color-rule);
-      padding: 16px 0 0;
+
+    .case-grid,
+    .team-grid {
+      grid-template-columns: 1fr;
     }
   }
-  @media (max-width: 820px) {
-    .hero,
-    .featured-case,
-    .estimate-head,
-    .estimate-row,
-    .steps,
-    .deploy,
-    .final-cta {
-      grid-template-columns: 1fr;
-    }
-    .estimate-head {
-      display: none;
-    }
-    .estimate-row > :nth-child(n) {
-      grid-column: auto;
-    }
-    .case-list {
-      grid-template-columns: 1fr;
-    }
-    .case-compact,
-    .step {
-      border-right: none;
-      border-top: 1px solid var(--color-rule-soft);
-    }
-    .case-compact:first-child,
-    .step:first-child {
-      border-top: none;
-    }
-    .deploy-flow {
-      grid-template-columns: 1fr;
-      gap: 24px;
-      padding-top: 8px;
-    }
-    .deploy-flow li::after {
-      content: '';
-    }
-    .final-cta .cta-row {
-      width: 100%;
-    }
-    .limit {
-      border-left: none;
-      padding-left: 0;
-    }
-  }
+
   @media (max-width: 520px) {
-    .page {
-      margin: 8px;
+    .cases-section .wrap,
+    .prices-section .wrap,
+    .team-section .wrap,
+    .brief-grid {
+      padding-top: 64px;
+      padding-bottom: 72px;
     }
-    .cta-row {
-      align-items: stretch;
-    }
-    .cta-row,
-    .btn {
+
+    .brief-actions,
+    .brief-actions a {
       width: 100%;
-    }
-    .after-axis .right {
-      margin-left: 0;
-    }
-    .brief-options {
-      grid-template-columns: 1fr;
-    }
-    .brief-options label {
-      border-right: none;
-      border-bottom: 1px solid var(--color-rule-soft);
-    }
-    .brief-options label:last-child {
-      border-bottom: none;
-    }
-    .role-row {
-      grid-template-columns: 1fr;
+      box-sizing: border-box;
     }
   }
 </style>

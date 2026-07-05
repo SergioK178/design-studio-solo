@@ -1,0 +1,136 @@
+---
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import SiteFooter from '../../components/SiteFooter.astro';
+import { products } from '../../data/home';
+import { site } from '../../data/site';
+
+const details = {
+  start: {
+    audience: 'Когда нужен первый нормальный сайт без кастомного дизайна и долгих согласований.',
+    includes: ['1 страница по типовой структуре', 'форма заявки', 'Telegram-уведомление после Phase 4', 'один круг правок сводным списком'],
+    excludes: ['кастомный дизайн', 'CRM-интеграции', 'вторая страница', 'второй круг правок без доплаты'],
+    note: '100% предоплата. Срок стартует от сдачи контента клиентом, не от оплаты.',
+  },
+  landing: {
+    audience: 'Для рекламы, продаж и заявок, которые должны сразу попадать в работу.',
+    includes: ['лендинг', 'формы', 'amoCRM или другая CRM', 'базовая аналитика', 'обучение менеджера'],
+    excludes: ['каталог товаров', 'личные кабинеты', 'сложная ERP-логика'],
+    note: 'Цена зависит от интеграций и готовности контента.',
+  },
+  catalog: {
+    audience: 'Для поставщиков и дистрибьюторов, где важны позиции, фильтры и управление каталогом.',
+    includes: ['структура каталога', 'перенос данных', 'админка', 'заявки', 'базовые фильтры'],
+    excludes: ['онлайн-оплата', 'складской учёт', 'личный кабинет B2B-клиента'],
+    note: 'Если данных много и они грязные, сначала оцениваем перенос.',
+  },
+  automation: {
+    audience: 'Когда руками копируют цены, карточки, остатки или заявки.',
+    includes: ['сбор данных', 'очистка', 'выгрузка CSV/API', 'регламент запуска'],
+    excludes: ['юридически сомнительный сбор', 'поддержка по подписке без отдельного договора'],
+    note: 'Сначала проверяем источник и ограничения.',
+  },
+};
+
+export function getStaticPaths() {
+  return products.map((product) => ({ params: { slug: product.slug }, props: { product } }));
+}
+
+const { product } = Astro.props;
+const detail = details[product.slug as keyof typeof details];
+---
+
+<Base title={`${product.name} · 3K Studio`}>
+  <Nav />
+  <PageHeader eyebrow={`${product.term} · ${product.price}`} title={product.name} lead={product.desc} tone="gold" />
+  <main class="product" data-bg="paper">
+    <div class="wrap grid" data-reveal-group>
+      <section>
+        <span class="mono">кому подходит</span>
+        <p>{detail.audience}</p>
+      </section>
+      <section>
+        <span class="mono">что входит</span>
+        <ul>{detail.includes.map((item) => <li>{item}</li>)}</ul>
+      </section>
+      <section>
+        <span class="mono">что не входит</span>
+        <ul>{detail.excludes.map((item) => <li>{item}</li>)}</ul>
+      </section>
+      <section class="note">
+        <span class="mono">граница</span>
+        <p>{detail.note}</p>
+      </section>
+    </div>
+    <div class="wrap cta" data-reveal>
+      <h2>Проверим, попадает ли задача в этот формат?</h2>
+      <a class="btn-gold" href="/brief/" data-magnetic>Получить вилку за 6 ответов</a>
+      <a class="outline" href={site.telegramUrl} data-magnetic>Написать {site.telegram}</a>
+    </div>
+  </main>
+  <SiteFooter />
+</Base>
+
+<style>
+  .product {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding: 80px 0 100px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  section {
+    border-top: 2px solid rgb(23 21 15 / 0.2);
+    padding-top: 24px;
+  }
+
+  .mono {
+    color: var(--color-blue);
+  }
+
+  p,
+  li {
+    color: rgb(23 21 15 / 0.72);
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  ul {
+    margin: 18px 0 0;
+    padding-left: 22px;
+  }
+
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 70px;
+  }
+
+  h2 {
+    flex-basis: 100%;
+    margin: 0 0 10px;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4vw, 44px);
+  }
+
+  .outline {
+    border: 1.5px solid rgb(23 21 15 / 0.3);
+    padding: 17.5px 26px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  @media (max-width: 760px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
