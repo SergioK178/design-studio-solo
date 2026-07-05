@@ -3,6 +3,17 @@ import { site } from '../data/site';
 ---
 
 <footer class="footer">
+  <div class="wrap inner">
+    <a class="brand" href="/">{site.name}<b>.</b></a>
+    <nav aria-label="Нижняя навигация">
+      <a href="/products/">Все продукты</a>
+      <a href="/price/">Прайс расширений</a>
+      <a href="/cases/">Работы</a>
+      <a href="/lab/">Лаборатория</a>
+      <a href="/legal/">Legal</a>
+      <a href={site.telegramUrl}>Telegram ↗</a>
+    </nav>
+  </div>
   <div class="wrap wordmark-row" aria-hidden="true">
     <span class="wordmark" data-reveal>{site.name}.</span>
   </div>
@@ -47,7 +58,7 @@ import { site } from '../data/site';
     justify-content: space-between;
     gap: 24px;
     flex-wrap: wrap;
-    padding-top: 40px;
+    padding-top: 44px;
     padding-bottom: 26px;
     font-size: 12.5px;
   }
@@ -60,6 +71,20 @@ import { site } from '../data/site';
   }
 
   .brand b {
+    color: var(--color-gold);
+  }
+
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 22px;
+  }
+
+  nav a {
+    text-decoration: none;
+  }
+
+  nav a:hover {
     color: var(--color-gold);
   }
 </style>

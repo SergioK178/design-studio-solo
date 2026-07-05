@@ -3,71 +3,82 @@ import Base from '../../layouts/Base.astro';
 import Nav from '../../components/Nav.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import { products } from '../../data/home';
+import AssetSlot from '../../components/AssetSlot.astro';
+import { briefHref, detailedProducts, extensionPrices } from '../../data/products';
 import { site } from '../../data/site';
 
-const details = {
-  start: {
-    audience: 'Когда нужен первый нормальный сайт без кастомного дизайна и долгих согласований.',
-    includes: ['1 страница по типовой структуре', 'форма заявки', 'Telegram-уведомление после Phase 4', 'один круг правок сводным списком'],
-    excludes: ['кастомный дизайн', 'CRM-интеграции', 'вторая страница', 'второй круг правок без доплаты'],
-    note: '100% предоплата. Срок стартует от сдачи контента клиентом, не от оплаты.',
-  },
-  landing: {
-    audience: 'Для рекламы, продаж и заявок, которые должны сразу попадать в работу.',
-    includes: ['лендинг', 'формы', 'amoCRM или другая CRM', 'базовая аналитика', 'обучение менеджера'],
-    excludes: ['каталог товаров', 'личные кабинеты', 'сложная ERP-логика'],
-    note: 'Цена зависит от интеграций и готовности контента.',
-  },
-  catalog: {
-    audience: 'Для поставщиков и дистрибьюторов, где важны позиции, фильтры и управление каталогом.',
-    includes: ['структура каталога', 'перенос данных', 'админка', 'заявки', 'базовые фильтры'],
-    excludes: ['онлайн-оплата', 'складской учёт', 'личный кабинет B2B-клиента'],
-    note: 'Если данных много и они грязные, сначала оцениваем перенос.',
-  },
-  automation: {
-    audience: 'Когда руками копируют цены, карточки, остатки или заявки.',
-    includes: ['сбор данных', 'очистка', 'выгрузка CSV/API', 'регламент запуска'],
-    excludes: ['юридически сомнительный сбор', 'поддержка по подписке без отдельного договора'],
-    note: 'Сначала проверяем источник и ограничения.',
-  },
-};
-
 export function getStaticPaths() {
-  return products.map((product) => ({ params: { slug: product.slug }, props: { product } }));
+  return detailedProducts.map((product) => ({ params: { slug: product.slug }, props: { product } }));
 }
 
 const { product } = Astro.props;
-const detail = details[product.slug as keyof typeof details];
+const detail = product.detail;
+const example = product.example;
+const recommended = extensionPrices.filter((extension) => product.recommendedExtensions?.includes(extension.id)).slice(0, 6);
 ---
 
 <Base title={`${product.name} · 3K Studio`}>
   <Nav />
-  <PageHeader eyebrow={`${product.term} · ${product.price}`} title={product.name} lead={product.desc} tone="gold" />
+  <PageHeader eyebrow={`${product.term} · ${product.price}`} title={product.name} lead={product.summary} tone="gold" />
   <main class="product" data-bg="paper">
-    <div class="wrap grid" data-reveal-group>
-      <section>
+    {example && (
+      <section class="wrap example" data-reveal>
+        <div>
+          <span class="mono">пример</span>
+          <h2>{example.title}</h2>
+          <p>{example.status === 'published' ? 'Показываем близкую работу и её устройство.' : 'Место под будущий визуальный референс продукта.'}</p>
+          <a href={example.href}>{example.status === 'published' ? 'Смотреть работу →' : 'Обсудить похожую задачу →'}</a>
+        </div>
+        <AssetSlot label={example.assetKey} ratio="16 / 10" />
+      </section>
+    )}
+
+    <section class="wrap grid" data-reveal-group>
+      <article>
         <span class="mono">кому подходит</span>
         <p>{detail.audience}</p>
-      </section>
-      <section>
+      </article>
+      <article>
         <span class="mono">что входит</span>
         <ul>{detail.includes.map((item) => <li>{item}</li>)}</ul>
-      </section>
-      <section>
+      </article>
+      <article>
         <span class="mono">что не входит</span>
         <ul>{detail.excludes.map((item) => <li>{item}</li>)}</ul>
-      </section>
-      <section class="note">
+      </article>
+      <article class="note">
         <span class="mono">граница</span>
         <p>{detail.note}</p>
-      </section>
-    </div>
-    <div class="wrap cta" data-reveal>
+      </article>
+    </section>
+
+    <section class="wrap options" data-reveal>
+      <div class="options-head">
+        <div>
+          <span class="mono">опции</span>
+          <h2>Расширения к этому формату</h2>
+        </div>
+        <a href="/price/">Весь прайс →</a>
+      </div>
+      <div class="options-grid">
+        {recommended.map((item) => (
+          <article>
+            <h3>{item.name}</h3>
+            <p>{item.description}</p>
+            <div>
+              <strong>{item.price}</strong>
+              <span>{item.term}</span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="wrap cta" data-reveal>
       <h2>Проверим, попадает ли задача в этот формат?</h2>
-      <a class="btn-gold" href="/brief/" data-magnetic>Получить вилку за 6 ответов</a>
+      <a class="btn-gold" href={briefHref(product)} data-magnetic>Собрать этот проект в конструкторе</a>
       <a class="outline" href={site.telegramUrl} data-magnetic>Написать {site.telegram}</a>
-    </div>
+    </section>
   </main>
   <SiteFooter />
 </Base>
@@ -79,13 +90,44 @@ const detail = details[product.slug as keyof typeof details];
     padding: 80px 0 100px;
   }
 
+  .example {
+    display: grid;
+    grid-template-columns: 0.75fr 1.25fr;
+    gap: 32px;
+    align-items: center;
+    margin-bottom: 70px;
+  }
+
+  .example h2,
+  .options h2,
+  .cta h2 {
+    margin: 12px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1.12;
+  }
+
+  .example p {
+    max-width: 420px;
+    margin: 18px 0 0;
+  }
+
+  .example a,
+  .options-head a {
+    display: inline-block;
+    margin-top: 22px;
+    color: var(--color-ochre);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
   }
 
-  section {
+  article {
     border-top: 2px solid rgb(23 21 15 / 0.2);
     padding-top: 24px;
   }
@@ -106,6 +148,63 @@ const detail = details[product.slug as keyof typeof details];
     padding-left: 22px;
   }
 
+  .options {
+    margin-top: 74px;
+  }
+
+  .options-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .options-grid article {
+    display: grid;
+    min-height: 230px;
+    border: 1.5px solid rgb(23 21 15 / 0.18);
+    background: white;
+    padding: 22px;
+  }
+
+  .options-grid h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 20px;
+    line-height: 1.2;
+  }
+
+  .options-grid p {
+    margin: 14px 0 0;
+    font-size: 15px;
+  }
+
+  .options-grid div {
+    display: grid;
+    gap: 6px;
+    align-self: end;
+    margin-top: 22px;
+  }
+
+  .options-grid strong {
+    color: var(--color-blue);
+    font-size: 18px;
+  }
+
+  .options-grid span {
+    color: rgb(23 21 15 / 0.52);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
   .cta {
     display: flex;
     align-items: center;
@@ -114,11 +213,9 @@ const detail = details[product.slug as keyof typeof details];
     margin-top: 70px;
   }
 
-  h2 {
+  .cta h2 {
     flex-basis: 100%;
-    margin: 0 0 10px;
-    font-family: var(--font-display);
-    font-size: clamp(30px, 4vw, 44px);
+    margin-bottom: 10px;
   }
 
   .outline {
@@ -128,9 +225,18 @@ const detail = details[product.slug as keyof typeof details];
     text-decoration: none;
   }
 
-  @media (max-width: 760px) {
-    .grid {
+  @media (max-width: 900px) {
+    .example,
+    .grid,
+    .options-grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .options-head {
+      align-items: start;
+      flex-direction: column;
     }
   }
 </style>

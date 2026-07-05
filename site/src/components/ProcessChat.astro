@@ -5,9 +5,10 @@ import { steps } from '../data/home';
 <section id="process" class="process" data-bg="paper">
   <div class="wrap grid">
     <div class="sticky" data-reveal-group>
-      <h2>Ни одного созвона</h2>
-      <p>Весь проект живёт в&nbsp;одном чате: вопросы, макеты, превью-ссылки, правки. Вы&nbsp;отвечаете, когда удобно, — мы&nbsp;не&nbsp;тратим ваши часы на&nbsp;встречи, поэтому дешевле.</p>
-      <p class="soft">Хочется голосом — окей, один созвон на&nbsp;старте. Но&nbsp;он правда не&nbsp;обязателен.</p>
+      <span class="mono">процесс</span>
+      <h2>От заявки до запуска</h2>
+      <p>Проект живёт в&nbsp;одном чате: вопросы, макеты, ссылки на превью и&nbsp;статусы. Отвечаете, когда удобно.</p>
+      <p class="soft">Хочется голосом — проведём созвон на старте.</p>
     </div>
     <div class="chat" data-chat>
       {steps.map((step) => (
@@ -21,7 +22,7 @@ import { steps } from '../data/home';
       ))}
       <article class="user">
         <span class="mono">ВЫ · В ЛЮБОЙ МОМЕНТ</span>
-        <div class="bubble">«Посмотрел превью с телефона, правки пришлю списком к вечеру» — и&nbsp;это весь ваш менеджмент проекта.</div>
+        <div class="bubble">«Посмотрел превью с телефона, правки пришлю списком к вечеру» — такой формат нам подходит.</div>
       </article>
     </div>
   </div>
@@ -48,12 +49,16 @@ import { steps } from '../data/home';
   }
 
   h2 {
-    margin: 0;
+    margin: 12px 0 0;
     font-family: var(--font-display);
     font-size: clamp(34px, 4vw, 44px);
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.01em;
+  }
+
+  .sticky > .mono {
+    color: var(--color-blue);
   }
 
   p {

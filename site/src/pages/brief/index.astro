@@ -4,30 +4,27 @@ import Nav from '../../components/Nav.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import Brief from '../../components/Brief.svelte';
 import SiteFooter from '../../components/SiteFooter.astro';
-import matrix from '../../../../api/src/brief/brief-matrix.json';
 ---
 
 <Base title="Умный бриф · 3K Studio">
   <Nav />
-  <PageHeader eyebrow="бриф" title="6 вопросов — и вы видите вилку цены и срока" lead="Без созвона на старте. Отвечайте языком задачи, а не технического задания." tone="gold" />
+  <PageHeader eyebrow="бриф" title="Соберите проект и получите смету" lead="3–5 минут. Смета — ориентир, точную цену и срок фиксируем в договоре." tone="gold" />
   <main class="brief-page" data-bg="ink">
-    <div class="wrap grid">
-      <section>
+    <div class="wrap brief-wrap">
+      <section class="brief-panel" aria-label="Конструктор проекта">
         <Brief client:load />
       </section>
       <noscript>
         <aside>
           <h2>Если JavaScript не загрузился</h2>
-          <p>Ответьте на те же вопросы списком — заявка уйдёт напрямую нам, без сторонних сервисов.</p>
+          <p>Напишите задачу свободным текстом — заявка уйдёт напрямую нам, без сторонних сервисов.</p>
           <form action="/api/lead" method="post">
-            {matrix.questions.map((question) => (
-              <label>
-                <span class="mono">{question.title}</span>
-                <select name={question.id}>
-                  {question.options.map((option) => <option value={option.id}>{option.label}</option>)}
-                </select>
-              </label>
-            ))}
+            <label>
+              <span class="mono">Что нужно сделать?</span>
+              <textarea name="answers[freeform]" rows="6" placeholder="Сайт, каталог, Telegram, автоматизация — опишите задачу как удобно"></textarea>
+            </label>
+            <input type="hidden" name="version" value="v2" />
+            <input type="hidden" name="project" value="unknown" />
             <input type="text" name="hp" value="" style="display:none" tabindex="-1" autocomplete="off" />
             <input type="hidden" name="ts" value={Date.now()} />
             <button class="fallback-link" type="submit">Отправить заявку</button>
@@ -43,14 +40,17 @@ import matrix from '../../../../api/src/brief/brief-matrix.json';
   .brief-page {
     background: var(--color-ink);
     color: var(--color-paper);
+    min-height: 680px;
     padding: 80px 0 100px;
   }
 
-  .grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 28px;
-    align-items: start;
+  .brief-wrap {
+    display: block;
+  }
+
+  .brief-panel {
+    max-width: 980px;
+    min-height: 520px;
   }
 
   aside {
@@ -85,13 +85,19 @@ import matrix from '../../../../api/src/brief/brief-matrix.json';
     font-size: 10px;
   }
 
-  select {
+  select,
+  textarea {
     width: 100%;
     border: 0;
     background: var(--color-paper);
     color: var(--color-ink);
     padding: 12px;
     font: 500 14px / 1.2 var(--font-text);
+  }
+
+  textarea {
+    resize: vertical;
+    line-height: 1.45;
   }
 
   .fallback-link {
@@ -105,8 +111,13 @@ import matrix from '../../../../api/src/brief/brief-matrix.json';
   }
 
   @media (max-width: 860px) {
-    .grid {
-      grid-template-columns: 1fr;
+    .brief-page {
+      min-height: 620px;
+      padding: 54px 0 72px;
+    }
+
+    .brief-panel {
+      min-height: 480px;
     }
   }
 </style>

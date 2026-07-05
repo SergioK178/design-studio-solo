@@ -43,12 +43,6 @@ body.theme-scroll {
   transition: background-color 0.7s var(--ease-site);
 }
 
-/* Морфинг фона между секциями (Locomotive): секции с data-bg становятся
-   прозрачными, цвет ведёт body через --page-bg (ставит motion.ts). */
-body.theme-scroll [data-bg] {
-  background: transparent !important;
-}
-
 /* Печатное зерно поверх всего (basement.studio). */
 body::after {
   content: '';

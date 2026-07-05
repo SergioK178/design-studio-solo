@@ -15,7 +15,10 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
               <b>{card.logo}</b>
               <span>{card.nav}</span>
             </div>
-            <div class="stripe"></div>
+            <div class="slot" aria-label={`${card.assetKey}: asset pending`}>
+              <span class="mono">asset pending</span>
+              <em>{card.assetKey}</em>
+            </div>
             <strong>{card.title}</strong>
             <span class="wall-cta">{card.cta}</span>
           </div>
@@ -26,17 +29,17 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
   <div class="fade" aria-hidden="true"></div>
 
   <div class="wrap hero-inner">
-    <div class="copy" data-reveal-group>
+    <div class="copy">
       <h1>Сайт под вашу задачу — <span>за неделю.</span></h1>
-      <p class="lead">Каталоги, магазины, записи, парсеры. Цены открыты, от&nbsp;30&nbsp;000&nbsp;₽.</p>
+      <p class="lead">Лендинги, каталоги, магазины, запись, Telegram-приложения. Цена и срок фиксируются до старта. От&nbsp;30&nbsp;000&nbsp;₽.</p>
       <div class="actions">
-        <a class="btn-gold" href="#brief" data-magnetic>Рассказать о задаче →</a>
+        <a class="btn-gold" href="#brief" data-magnetic>Рассчитать проект →</a>
         <a class="btn-outline" href={site.telegramUrl} data-magnetic>Telegram</a>
       </div>
       <div class="proof">
-        <span><b>900+ позиций</b> перенесли</span>
-        <span><b>95 млн ₽</b> объект продаём</span>
-        <span><b>трое</b> отвечают лично</span>
+        <span><b>5 форматов сайтов</b></span>
+        <span><b>фиксированная смета</b></span>
+        <span><b>весь код и данные — ваши</b></span>
       </div>
     </div>
   </div>
@@ -157,22 +160,30 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
     font-size: 9.5px;
   }
 
-  .stripe {
+  .slot {
+    display: grid;
+    place-content: center;
+    gap: 6px;
     height: 76px;
     margin-bottom: 10px;
-    background: repeating-linear-gradient(-45deg, rgb(229 164 59 / 0.2), rgb(229 164 59 / 0.2) 6px, rgb(229 164 59 / 0.06) 6px, rgb(229 164 59 / 0.06) 12px);
+    border: 1px solid rgb(23 21 15 / 0.16);
+    background:
+      linear-gradient(135deg, rgb(229 164 59 / 0.12) 25%, transparent 25%) 0 0 / 14px 14px,
+      color-mix(in srgb, var(--color-paper) 82%, white);
+    text-align: center;
   }
 
-  .accent-blue .stripe {
-    background: repeating-linear-gradient(-45deg, rgb(39 67 224 / 0.2), rgb(39 67 224 / 0.2) 6px, rgb(39 67 224 / 0.06) 6px, rgb(39 67 224 / 0.06) 12px);
+  .slot .mono {
+    color: var(--color-blue);
+    font-size: 8px;
   }
 
-  .accent-ochre .stripe {
-    background: repeating-linear-gradient(-45deg, rgb(194 74 18 / 0.2), rgb(194 74 18 / 0.2) 6px, rgb(194 74 18 / 0.06) 6px, rgb(194 74 18 / 0.06) 12px);
-  }
-
-  .accent-ink .stripe {
-    background: repeating-linear-gradient(-45deg, rgb(23 21 15 / 0.18), rgb(23 21 15 / 0.18) 6px, rgb(23 21 15 / 0.05) 6px, rgb(23 21 15 / 0.05) 12px);
+  .slot em {
+    max-width: 20ch;
+    color: rgb(23 21 15 / 0.48);
+    font-size: 9px;
+    font-style: normal;
+    line-height: 1.25;
   }
 
   .wall-card strong {

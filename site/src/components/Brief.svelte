@@ -1,149 +1,298 @@
 <script>
   import { onMount } from 'svelte';
-  import { fly } from 'svelte/transition';
-  import { expoOut } from 'svelte/easing';
-  import matrix from '../../../api/src/brief/brief-matrix.json';
-  import { estimate } from '../../../api/src/brief/estimate.ts';
+  import { estimateV2 } from '../data/brief-estimate';
+  import {
+    branchForProduct,
+    branchQuestions,
+    optionsForBranch,
+    productGroups,
+    products,
+    recommendationQuestions,
+    recommendProduct,
+  } from '../data/brief-v2';
   import { site } from '../data/site';
 
-  const questions = matrix.questions;
-  const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const flyIn = { y: 26, duration: reduced ? 0 : 480, easing: expoOut };
+  const productMap = {
+    start: 'start',
+    landing: 'landing',
+    quiz: 'quiz',
+    company: 'company',
+    catalog: 'catalog',
+    shop: 'shop',
+    tma: 'tma',
+    bot: 'bot',
+    migration: 'migration',
+    automation: 'automation',
+    crm: 'crm',
+    analytics: 'analytics',
+    support: 'support',
+  };
 
-  // Финал брифа — «момент» страницы: числа вилки отсчитываются от нуля,
-  // затем золотой маркер подчёркивает оценку.
-  function reveal(node) {
-    if (!reduced) {
-      const finalText = node.textContent;
-      const parts = finalText.split(/(\d+)/);
-      const started = performance.now();
-      const duration = 900;
-      const frame = (now) => {
-        const p = Math.min((now - started) / duration, 1);
-        const eased = 1 - Math.pow(2, -10 * p);
-        node.textContent = parts
-          .map((part, index) => (index % 2 ? String(Math.round(Number(part) * eased)) : part))
-          .join('');
-        if (p < 1) requestAnimationFrame(frame);
-        else node.textContent = finalText;
-      };
-      requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(() => node.classList.add('on'));
-  }
-  let step = 0;
-  let answers = {};
+  let stage = 'mode';
+  let mode = '';
+  let product = '';
+  let recommendAnswers = {};
+  let branchAnswers = {};
+  let selectedOptions = [];
   let copied = false;
 
-  function select(questionId, optionId) {
-    answers = { ...answers, [questionId]: optionId };
+  const productBySlug = Object.fromEntries(products.map((item) => [item.slug, item]));
+
+  function chooseMode(nextMode) {
+    mode = nextMode;
+    stage = nextMode === 'known' ? 'product' : 'recommend';
     copied = false;
   }
 
-  function currentOption(question) {
-    return question.options.find((option) => option.id === answers[question.id]);
+  function selectProduct(slug) {
+    product = slug;
+    branchAnswers = {};
+    selectedOptions = [];
+    stage = 'branch';
+    copied = false;
   }
 
-  function calculate() {
-    const project = currentOption(questions[0]) ?? questions[0].options[0];
-    const result = estimate(answers);
+  function answerRecommendation(questionId, value) {
+    recommendAnswers = { ...recommendAnswers, [questionId]: value };
+    copied = false;
+  }
 
-    return {
-      project,
-      price: result.priceLabel,
-      weeks: result.weeksLabel,
-    };
+  function answerBranch(questionId, value) {
+    branchAnswers = { ...branchAnswers, [questionId]: value };
+    copied = false;
+  }
+
+  function applyRecommendation() {
+    const recommendation = recommendProduct(recommendAnswers);
+    product = recommendation.product;
+    stage = 'branch';
+    copied = false;
+  }
+
+  function toggleOption(id) {
+    selectedOptions = selectedOptions.includes(id)
+      ? selectedOptions.filter((item) => item !== id)
+      : [...selectedOptions, id];
+    copied = false;
   }
 
   function draftUrl() {
     if (typeof window === 'undefined') return '';
-    const params = new URLSearchParams(answers);
+    const params = new URLSearchParams(payload);
     return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
   }
 
-  function restoreFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const restored = {};
-    for (const question of questions) {
-      const value = params.get(question.id);
-      if (value && question.options.some((option) => option.id === value)) {
-        restored[question.id] = value;
-      }
-    }
-    if (Object.keys(restored).length > 0) {
-      answers = restored;
-      const firstEmpty = questions.findIndex((question) => !restored[question.id]);
-      step = firstEmpty === -1 ? questions.length : firstEmpty;
-    }
+  function estimateText() {
+    const itemRows = (result.items ?? []).map((item) => `- ${item.label}: ${item.priceLabel}, ${item.weeksLabel}`);
+    return [
+      'Смета 3K Studio',
+      `Формат: ${currentProduct?.name ?? result.kind}`,
+      ...itemRows,
+      `Итого: ${result.priceLabel}, ${result.weeksLabel}`,
+      'Смета — ориентир. Точную цену и срок фиксируем в договоре.',
+      `Черновик: ${draftUrl()}`,
+    ].join('\n');
   }
 
-  async function copyDraft() {
-    await navigator.clipboard.writeText(draftUrl());
+  async function copyEstimate() {
+    await navigator.clipboard.writeText(estimateText());
     copied = true;
   }
 
-  let draftSaved = false;
+  function telegramHref() {
+    return `${site.telegramUrl}?text=${encodeURIComponent(`Привет. Собрал проект в конструкторе.\n\n${estimateText()}`)}`;
+  }
 
+  let draftSaved = false;
   function saveDraft() {
     if (draftSaved) return;
     draftSaved = true;
     fetch('/api/draft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers }),
+      body: JSON.stringify({ answers: payload }),
     }).catch(() => {});
   }
 
-  function telegramHref() {
-    const result = calculate();
-    const rows = questions.map((question) => {
-      const option = currentOption(question);
-      return `${question.title} ${option?.label ?? 'не отвечено'}`;
-    });
-    const text = `Привет. Заполнил бриф 3K Studio.\nОценка: ${result.price}, ${result.weeks}.\n${rows.join('\n')}\nЧерновик: ${draftUrl()}`;
-    return `${site.telegramUrl}?text=${encodeURIComponent(text)}`;
+  function restoreFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const version = params.get('version');
+    const legacyProject = params.get('product') || params.get('project');
+    const restoredProduct = legacyProject ? productMap[legacyProject] : '';
+
+    if (version === 'v2') {
+      mode = params.get('mode') || (restoredProduct ? 'known' : '');
+      product = restoredProduct || params.get('product') || '';
+      const options = params.get('options');
+      selectedOptions = options ? options.split(',').filter(Boolean) : [];
+      const nextRecommend = {};
+      const nextBranch = {};
+      for (const [key, value] of params.entries()) {
+        if (key.startsWith('recommend_')) nextRecommend[key.replace('recommend_', '')] = value;
+        if (key.startsWith('branch_')) nextBranch[key.replace('branch_', '')] = value;
+      }
+      recommendAnswers = nextRecommend;
+      branchAnswers = nextBranch;
+      stage = product ? 'result' : mode === 'help' ? 'recommend' : 'product';
+      return;
+    }
+
+    if (restoredProduct) {
+      mode = 'known';
+      product = restoredProduct;
+      stage = 'branch';
+    }
   }
 
-  $: question = questions[step];
-  $: isDone = step >= questions.length;
-  $: canNext = question ? Boolean(answers[question.id]) : false;
-  $: result = calculate();
-  $: if (isDone) saveDraft();
+  $: currentProduct = productBySlug[product];
+  $: currentBranch = branchForProduct(product || 'unknown');
+  $: currentBranchQuestions = branchQuestions[currentBranch] ?? branchQuestions.custom;
+  $: currentOptions = optionsForBranch(currentBranch);
+  $: recommendation = recommendProduct(recommendAnswers);
+  $: recommendationComplete = recommendationQuestions.every((question) => Boolean(recommendAnswers[question.id]));
+  $: branchComplete = currentBranchQuestions.every((question) => Boolean(branchAnswers[question.id]));
+  $: payload = {
+    version: 'v2',
+    mode,
+    product: product || 'unknown',
+    branch: currentBranch,
+    options: selectedOptions.join(','),
+    ...Object.fromEntries(Object.entries(recommendAnswers).map(([key, value]) => [`recommend_${key}`, value])),
+    ...Object.fromEntries(Object.entries(branchAnswers).map(([key, value]) => [`branch_${key}`, value])),
+  };
+  $: result = estimateV2(payload);
+  $: if (stage === 'result') saveDraft();
 
   onMount(restoreFromUrl);
 </script>
 
 <div class="brief" data-testid="brief">
-  {#if !isDone}
-    <div class="progress">
-      <span class="mono">ШАГ {step + 1} / {questions.length}</span>
-      <div><i style={`width:${((step + 1) / questions.length) * 100}%`}></i></div>
-    </div>
-    {#key step}
-      <fieldset in:fly={flyIn}>
-        <legend>{question.title}</legend>
-        <div class="options">
-          {#each question.options as option}
-            <label class:active={answers[question.id] === option.id}>
-              <input type="radio" name={question.id} value={option.id} checked={answers[question.id] === option.id} on:change={() => select(question.id, option.id)} />
-              <span>{option.label}</span>
-            </label>
-          {/each}
+  {#if stage === 'mode'}
+    <section class="step">
+      <span class="mono">конструктор</span>
+      <h2>Как начнём?</h2>
+      <div class="mode-grid">
+        <button type="button" on:click={() => chooseMode('known')}>
+          <b>Знаю, что нужно</b>
+          <span>Выберите продукт из полной линейки.</span>
+        </button>
+        <button type="button" on:click={() => chooseMode('help')}>
+          <b>Помогите выбрать</b>
+          <span>Ответьте на 3 вопроса — предложим формат.</span>
+        </button>
+      </div>
+    </section>
+  {:else if stage === 'product'}
+    <section class="step">
+      <span class="mono">выбор продукта</span>
+      <h2>Что собираем?</h2>
+      {#each productGroups as group}
+        <div class="product-group">
+          <h3>{group.title}</h3>
+          <div class="product-list">
+            {#each products.filter((item) => item.group === group.id) as item}
+              <button type="button" class:active={product === item.slug} on:click={() => selectProduct(item.slug)}>
+                <b>{item.name}</b>
+                <span>{item.price} · {item.term}</span>
+              </button>
+            {/each}
+          </div>
         </div>
-      </fieldset>
-    {/key}
-    <div class="controls">
-      <button type="button" class="secondary" disabled={step === 0} on:click={() => (step -= 1)}>Назад</button>
-      <button type="button" disabled={!canNext} on:click={() => (step += 1)}>{step === questions.length - 1 ? 'Показать вилку' : 'Дальше'}</button>
-    </div>
-  {:else}
-    <section class="result" data-testid="brief-result" in:fly={{ ...flyIn, y: 34 }}>
-      <span class="mono">ПРЕДВАРИТЕЛЬНАЯ ОЦЕНКА</span>
-      <h2>Похоже на проект <mark use:reveal>{result.price}, {result.weeks}</mark></h2>
-      <p>{result.project.summary}. Это ориентир, не оферта: точную цену и срок зафиксируем после проверки задачи.</p>
+      {/each}
       <div class="controls">
-        <button type="button" class="secondary" on:click={() => (step = questions.length - 1)}>Назад к ответам</button>
-        <button type="button" class="secondary" on:click={copyDraft}>{copied ? 'Ссылка скопирована' : 'Скопировать черновик'}</button>
+        <button type="button" class="secondary" on:click={() => (stage = 'mode')}>Назад</button>
+      </div>
+    </section>
+  {:else if stage === 'recommend'}
+    <section class="step">
+      <span class="mono">поможем выбрать</span>
+      <h2>Ответьте на 3 вопроса</h2>
+      <div class="question-stack">
+        {#each recommendationQuestions as question}
+          <fieldset>
+            <legend>{question.title}</legend>
+            <div class="options">
+              {#each question.choices as choice}
+                <label class:active={recommendAnswers[question.id] === choice.id}>
+                  <input type="radio" name={question.id} value={choice.id} checked={recommendAnswers[question.id] === choice.id} on:change={() => answerRecommendation(question.id, choice.id)} />
+                  <span>{choice.label}</span>
+                </label>
+              {/each}
+            </div>
+          </fieldset>
+        {/each}
+      </div>
+      {#if recommendationComplete}
+        <div class="recommendation">
+          <span class="mono">рекомендуем</span>
+          <b>{productBySlug[recommendation.product]?.name ?? recommendation.product}</b>
+          <p>{recommendation.reason}</p>
+        </div>
+      {/if}
+      <div class="controls">
+        <button type="button" class="secondary" on:click={() => (stage = 'mode')}>Назад</button>
+        <button type="button" disabled={!recommendationComplete} on:click={applyRecommendation}>Продолжить</button>
+      </div>
+    </section>
+  {:else if stage === 'branch'}
+    <section class="step">
+      <span class="mono">{currentProduct?.name ?? 'проект'}</span>
+      <h2>Уточним рамки</h2>
+      <div class="question-stack">
+        {#each currentBranchQuestions as question}
+          <fieldset>
+            <legend>{question.title}</legend>
+            <div class="options">
+              {#each question.choices as choice}
+                <label class:active={branchAnswers[question.id] === choice.id}>
+                  <input type="radio" name={question.id} value={choice.id} checked={branchAnswers[question.id] === choice.id} on:change={() => answerBranch(question.id, choice.id)} />
+                  <span>{choice.label}</span>
+                </label>
+              {/each}
+            </div>
+          </fieldset>
+        {/each}
+      </div>
+      <div class="controls">
+        <button type="button" class="secondary" on:click={() => (stage = mode === 'help' ? 'recommend' : 'product')}>Назад</button>
+        <button type="button" disabled={!branchComplete} on:click={() => (stage = 'options')}>К опциям</button>
+      </div>
+    </section>
+  {:else if stage === 'options'}
+    <section class="step">
+      <span class="mono">опции</span>
+      <h2>Что добавить?</h2>
+      <div class="check-grid">
+        {#each currentOptions as option}
+          <label class:active={selectedOptions.includes(option.id)}>
+            <input type="checkbox" checked={selectedOptions.includes(option.id)} on:change={() => toggleOption(option.id)} />
+            <b>{option.name}</b>
+            <span>{option.price} · {option.term}</span>
+          </label>
+        {/each}
+      </div>
+      <div class="controls">
+        <button type="button" class="secondary" on:click={() => (stage = 'branch')}>Назад</button>
+        <button type="button" on:click={() => (stage = 'result')}>Показать смету</button>
+      </div>
+    </section>
+  {:else}
+    <section class="result" data-testid="brief-result" data-product={product} data-branch={currentBranch} data-options={selectedOptions.join(',')}>
+      <span class="mono">предварительная смета</span>
+      <h2>{result.priceLabel}, {result.weeksLabel}</h2>
+      <div class="estimate-list">
+        {#each result.items ?? [] as item}
+          <article>
+            <b>{item.label}</b>
+            <span>{item.priceLabel}</span>
+            <small>{item.weeksLabel}</small>
+          </article>
+        {/each}
+      </div>
+      <p>Смета — ориентир. Точную цену и срок фиксируем в договоре.</p>
+      <div class="controls">
+        <button type="button" class="secondary" on:click={() => (stage = 'options')}>Назад к ответам</button>
+        <button type="button" class="secondary" on:click={copyEstimate}>{copied ? 'Смета скопирована' : 'Скопировать смету'}</button>
         <a class="primary-link" href={telegramHref()}>Обсудить в Telegram</a>
       </div>
     </section>
@@ -153,93 +302,41 @@
 <style>
   .brief {
     background: var(--color-paper);
+    box-sizing: border-box;
     color: var(--color-ink);
+    min-height: 520px;
     padding: 30px;
   }
 
-  .progress {
-    display: grid;
-    gap: 12px;
-    margin-bottom: 30px;
-  }
-
-  .progress span {
+  .mono {
     color: var(--color-blue);
   }
 
-  .progress div {
-    height: 8px;
-    background: rgb(23 21 15 / 0.12);
-  }
-
-  .progress i {
-    display: block;
-    height: 100%;
-    background: var(--color-gold);
-    transition: width 0.6s var(--ease-site);
-  }
-
-  mark {
-    color: inherit;
-    background-image: linear-gradient(var(--color-gold), var(--color-gold));
-    background-repeat: no-repeat;
-    background-position: 0 68%;
-    background-size: 0% 40%;
-    transition: background-size 0.8s var(--ease-site) 0.45s;
-  }
-
-  :global(mark.on) {
-    background-size: 100% 40%;
-  }
-
-  fieldset {
-    border: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  legend,
   h2 {
-    margin: 0;
+    margin: 10px 0 0;
     font-family: var(--font-display);
     font-size: clamp(30px, 4vw, 48px);
     font-weight: 800;
     line-height: 1.12;
   }
 
-  .options {
+  .mode-grid,
+  .product-list,
+  .options,
+  .check-grid,
+  .estimate-list {
     display: grid;
     gap: 12px;
+  }
+
+  .mode-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-top: 28px;
-  }
-
-  label {
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    border: 1.5px solid rgb(23 21 15 / 0.22);
-    padding: 16px;
-    cursor: pointer;
-  }
-
-  label.active {
-    border-color: var(--color-blue);
-    box-shadow: 6px 6px 0 var(--color-gold);
-  }
-
-  input {
-    accent-color: var(--color-blue);
-  }
-
-  .controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 30px;
   }
 
   button,
   .primary-link {
+    box-sizing: border-box;
     border: 0;
     background: var(--color-ink);
     color: var(--color-paper);
@@ -254,22 +351,173 @@
     opacity: 0.45;
   }
 
+  .mode-grid button,
+  .product-list button {
+    display: grid;
+    gap: 8px;
+    border: 1.5px solid rgb(23 21 15 / 0.22);
+    background: white;
+    color: var(--color-ink);
+    text-align: left;
+  }
+
+  .mode-grid b,
+  .product-list b,
+  .check-grid b {
+    font-size: 16px;
+  }
+
+  .mode-grid span,
+  .product-list span,
+  .check-grid span {
+    color: rgb(23 21 15 / 0.62);
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  .product-group {
+    margin-top: 30px;
+  }
+
+  h3,
+  legend {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .product-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 14px;
+  }
+
+  fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .question-stack {
+    display: grid;
+    gap: 28px;
+    margin-top: 30px;
+  }
+
+  .options {
+    margin-top: 12px;
+  }
+
+  label {
+    box-sizing: border-box;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    border: 1.5px solid rgb(23 21 15 / 0.22);
+    background: white;
+    padding: 16px;
+    cursor: pointer;
+  }
+
+  label.active,
+  .product-list button.active {
+    border-color: var(--color-blue);
+    box-shadow: 6px 6px 0 var(--color-gold);
+  }
+
+  input {
+    accent-color: var(--color-blue);
+  }
+
+  .recommendation {
+    margin-top: 26px;
+    border: 1.5px solid rgb(23 21 15 / 0.22);
+    background: white;
+    padding: 20px;
+  }
+
+  .recommendation b {
+    display: block;
+    margin-top: 8px;
+    font-family: var(--font-display);
+    font-size: 24px;
+  }
+
+  .recommendation p,
+  .result p {
+    color: rgb(23 21 15 / 0.72);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .check-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 28px;
+  }
+
+  .check-grid label {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+  }
+
+  .check-grid span {
+    grid-column: 2;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 30px;
+  }
+
   .secondary {
     border: 1.5px solid rgb(23 21 15 / 0.28);
     background: transparent;
     color: var(--color-ink);
   }
 
-  .result p {
-    max-width: 620px;
-    color: rgb(23 21 15 / 0.72);
-    font-size: 17px;
-    line-height: 1.6;
+  .result h2 {
+    color: var(--color-blue);
   }
 
-  @media (max-width: 520px) {
+  .estimate-list {
+    margin-top: 28px;
+  }
+
+  .estimate-list article {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 18px;
+    align-items: baseline;
+    border-top: 1.5px solid rgb(23 21 15 / 0.16);
+    padding: 16px 0;
+  }
+
+  .estimate-list span {
+    color: var(--color-blue);
+    font-weight: 700;
+  }
+
+  .estimate-list small {
+    color: rgb(23 21 15 / 0.52);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 720px) {
     .brief {
-      padding: 20px;
+      min-height: 480px;
+      padding: 22px;
+    }
+
+    .mode-grid,
+    .product-list,
+    .check-grid,
+    .estimate-list article {
+      grid-template-columns: 1fr;
     }
 
     button,
@@ -277,6 +525,11 @@
       width: 100%;
       box-sizing: border-box;
       text-align: center;
+    }
+
+    .mode-grid button,
+    .product-list button {
+      text-align: left;
     }
   }
 </style>

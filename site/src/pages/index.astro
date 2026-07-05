@@ -2,15 +2,13 @@
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import HeroWall from '../components/HeroWall.astro';
-import CaseBlock from '../components/CaseBlock.astro';
-import PriceRow from '../components/PriceRow.astro';
 import ProcessChat from '../components/ProcessChat.astro';
-import TeamCol from '../components/TeamCol.astro';
-import Marquee from '../components/Marquee.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import { cases } from '../data/cases';
-import { products, team } from '../data/home';
+import AssetSlot from '../components/AssetSlot.astro';
+import { approach, automationExamples, faqs } from '../data/home';
+import { briefHref, featuredProducts } from '../data/products';
 import { site } from '../data/site';
+import { works } from '../data/works';
 ---
 
 <Base title="Сайт под вашу задачу — за неделю · 3K Studio">
@@ -18,47 +16,103 @@ import { site } from '../data/site';
   <HeroWall />
 
   <main>
-    <section id="cases" class="cases-section" data-bg="paper">
+    <section id="products" class="products-section" data-bg="paper">
       <div class="wrap">
         <div class="section-head" data-reveal>
-          <h2>Проекты, где задача была не только в дизайне</h2>
-          <p class="mono">данные, CRM, запуск, управление контентом</p>
+          <div>
+            <span class="mono">форматы и цены</span>
+            <h2>Выберите задачу, а не технологию</h2>
+          </div>
+          <p>Цена и срок фиксируются до старта. Расширения считаем отдельно и заранее.</p>
         </div>
-        <div class="case-grid" data-reveal-group>
-          {cases.map((item) => <CaseBlock item={item} />)}
+        <div class="product-grid" data-reveal-group>
+          {featuredProducts.map((item) => (
+            <article class="product-card">
+              <div class="icon-slot" aria-label={`ui/products/${item.icon}: asset pending`}>
+                <span class="mono">asset pending</span>
+              </div>
+              <div>
+                <h3>{item.name}</h3>
+                <p>{item.summary}</p>
+              </div>
+              <div class="product-meta">
+                <strong>{item.price}</strong>
+                <span>{item.term}</span>
+              </div>
+              <a href={`/products/${item.slug}/`}>Подробнее →</a>
+            </article>
+          ))}
         </div>
-        <p class="note mono">имена клиентов не публикуем — кейсы подаём по отрасли</p>
+        <div class="products-links" data-reveal>
+          <a href="/products/">Все продукты →</a>
+          <a href="/price/">Прайс расширений →</a>
+        </div>
       </div>
     </section>
 
-    <section id="prices" class="prices-section" data-bg="ink">
+    <section id="approach" class="approach-section" data-bg="ink">
       <div class="wrap">
-        <div class="prices-head" data-reveal>
+        <div class="section-head light" data-reveal>
           <div>
-            <h2>Цены — сразу</h2>
-            <p>В каждой цене — один круг правок. Пишем и&nbsp;что не&nbsp;входит: так у&nbsp;нас не&nbsp;бывает споров на&nbsp;сдаче.</p>
+            <span class="mono">подход</span>
+            <h2>Как мы считаем и работаем</h2>
           </div>
-          <span class="mono">БЕЗ «ОСТАВЬТЕ ЗАЯВКУ, МЫ ПЕРЕЗВОНИМ»</span>
+          <p>Без манифестов: устройство работы видно в смете, доступах и процессе.</p>
         </div>
-        <div class="price-list" data-reveal-group>
-          {products.map((item) => <PriceRow item={item} />)}
-          <div class="line"></div>
+        <div class="approach-grid" data-reveal-group>
+          {approach.map((item, index) => (
+            <article>
+              <AssetSlot label={['ui/estimate-fragment', 'ui/ownership-schema', 'ui/extensions-price-widget', 'ui/telegram-progress'][index]} tone="dark" ratio="16 / 9" />
+              <h3>{item.title}</h3>
+              <p>{item.body}</p>
+            </article>
+          ))}
         </div>
-        <div class="price-cta" data-reveal>
-          <a class="btn-gold" href="#brief" data-magnetic>Получить цену за 6 ответов →</a>
-          <span>Магазины, записи и нестандартное — оцениваем по задаче, вилку скажем в тот же день.</span>
+      </div>
+    </section>
+
+    <section id="works" class="works-section" data-bg="paper">
+      <div class="wrap">
+        <div class="section-head" data-reveal>
+          <div>
+            <span class="mono">работы</span>
+            <h2>Работы</h2>
+          </div>
+          <p>Разные форматы, разные ниши, один подход к смете и срокам.</p>
+        </div>
+        <div class="works-grid" data-reveal-group>
+          {works.map((item) => (
+            <a class:list={['work-card', item.status === 'planned' && 'planned']} href={item.href} data-cursor={item.status === 'planned' ? 'Скоро' : 'Смотреть →'}>
+              <AssetSlot label={item.assetKey} src={item.assetSrc} ratio="16 / 10" />
+              <div class="work-copy">
+                <span class="mono">{item.category}</span>
+                <h3>{item.title}</h3>
+                <p>{item.inside}</p>
+                <b>{item.status === 'planned' ? 'Место под будущий кейс' : 'Смотреть →'}</b>
+              </div>
+            </a>
+          ))}
         </div>
       </div>
     </section>
 
     <ProcessChat />
 
-    <section id="team" class="team-section" data-bg="ink">
-      <div class="wrap">
-        <h2 data-reveal="mask">Трое. Лично.</h2>
-        <p class="team-lead" data-reveal>Стратегия, дизайн и&nbsp;инженерия — без менеджеров-посредников. В&nbsp;чате отвечает тот, кто делает.</p>
-        <div class="team-grid" data-reveal-group>
-          {team.map((person, index) => <TeamCol person={person} last={index === team.length - 1} />)}
+    <section id="automation" class="automation-section" data-bg="ink">
+      <div class="wrap automation-grid">
+        <div data-reveal>
+          <span class="mono">интеграции</span>
+          <h2>Автоматизация под процесс</h2>
+          <p>Убираем ручную рутину: то, что сейчас копируется руками, начинает происходить само.</p>
+          <a class="btn-gold" href={briefHref('automation')} data-magnetic>Описать процесс →</a>
+        </div>
+        <div class="automation-list" data-reveal-group>
+          {automationExamples.map((item, index) => (
+            <article>
+              <span class="mono">пример 0{index + 1}</span>
+              <p>{item}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
@@ -66,142 +120,288 @@ import { site } from '../data/site';
     <section id="brief" class="brief-section" data-bg="gold">
       <div class="wrap brief-grid" data-reveal-group>
         <div>
-          <h2>6 вопросов — и&nbsp;вы видите цену и&nbsp;срок. Без звонка.</h2>
-          <p>Бриф занимает три минуты. Вилка — ориентир, не&nbsp;оферта: точную цену зафиксируем в&nbsp;договоре.</p>
+          <span class="mono">конструктор</span>
+          <h2>Соберите проект и получите смету</h2>
+          <p>3–5 минут. Смета — ориентир, точную цену и срок фиксируем в договоре.</p>
         </div>
         <div class="brief-actions">
-          <a class="brief-primary" href="/brief/" data-magnetic>Заполнить бриф →</a>
-          <a class="brief-secondary" href={site.telegramUrl} data-magnetic>Без формы: {site.telegram}</a>
+          <a class="brief-primary" href="/brief/" data-magnetic>Собрать проект →</a>
+          <a class="brief-secondary" href={site.telegramUrl} data-magnetic>Написать в Telegram</a>
         </div>
       </div>
-      <Marquee />
-      <SiteFooter />
+    </section>
+
+    <section id="faq" class="faq-section" data-bg="paper">
+      <div class="wrap">
+        <div class="section-head" data-reveal>
+          <div>
+            <span class="mono">FAQ</span>
+            <h2>Коротко о важном</h2>
+          </div>
+        </div>
+        <div class="faq-list" data-reveal-group>
+          {faqs.map((item) => (
+            <details>
+              <summary>{item.question}</summary>
+              <p>{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
     </section>
   </main>
+
+  <SiteFooter />
 </Base>
 
 <style>
-  .cases-section {
+  .products-section,
+  .works-section,
+  .faq-section {
     background: var(--color-paper);
     color: var(--color-ink);
   }
 
-  .cases-section .wrap {
+  .approach-section,
+  .automation-section {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .wrap {
     padding-top: 90px;
     padding-bottom: 100px;
   }
 
-  .section-head,
-  .prices-head {
+  .section-head {
     display: flex;
-    align-items: baseline;
+    align-items: end;
     justify-content: space-between;
     gap: 30px;
-    margin-bottom: 50px;
+    margin-bottom: 46px;
   }
 
-  h2 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(34px, 4vw, 44px);
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.01em;
+  .section-head > div {
+    max-width: 720px;
   }
 
-  .section-head p,
-  .prices-head span {
-    margin: 0;
+  .mono {
+    color: var(--color-blue);
+  }
+
+  .light .mono,
+  .automation-section .mono {
     color: var(--color-gold);
   }
 
-  .case-grid {
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h2 {
+    margin-top: 12px;
+    font-family: var(--font-display);
+    font-size: clamp(34px, 4vw, 48px);
+    font-weight: 800;
+    line-height: 1.12;
+  }
+
+  .section-head p {
+    max-width: 420px;
+    color: rgb(23 21 15 / 0.65);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .light p {
+    color: rgb(244 242 236 / 0.62);
+  }
+
+  .product-grid,
+  .approach-grid,
+  .works-grid {
     display: grid;
-    grid-template-columns: 7fr 5fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .product-card,
+  .approach-grid article,
+  .work-card,
+  .automation-list article,
+  details {
+    box-sizing: border-box;
+    border: 1.5px solid rgb(23 21 15 / 0.18);
+    background: white;
+  }
+
+  .product-card {
+    display: grid;
+    min-height: 330px;
+    grid-template-rows: auto 1fr auto auto;
     gap: 20px;
+    padding: 22px;
   }
 
-  .case-grid :global(.case:nth-child(3)) {
-    grid-column: span 1;
-  }
-
-  .note {
-    margin: 28px 0 0;
-    color: rgb(23 21 15 / 0.55);
-  }
-
-  .prices-section {
-    background: var(--color-ink);
-    color: var(--color-paper);
-  }
-
-  .prices-section .wrap {
-    padding-top: 90px;
-    padding-bottom: 100px;
-  }
-
-  .prices-head {
-    margin-bottom: 14px;
-  }
-
-  .prices-head > div {
-    max-width: 560px;
-  }
-
-  .prices-head p {
-    margin: 22px 0 0;
-    max-width: 520px;
-    color: rgb(244 242 236 / 0.65);
-    font-size: 16px;
-    line-height: 1.5;
-  }
-
-  .price-list {
-    margin-top: 50px;
-  }
-
-  .line {
-    border-top: 2px solid rgb(244 242 236 / 0.25);
-  }
-
-  .price-cta {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    margin-top: 44px;
-    flex-wrap: wrap;
-  }
-
-  .price-cta span {
-    max-width: 560px;
-    color: rgb(244 242 236 / 0.55);
-    font-size: 13.5px;
-    line-height: 1.5;
-  }
-
-  .team-section {
-    background: var(--color-ink);
-    color: var(--color-paper);
-  }
-
-  .team-section .wrap {
-    padding-top: 90px;
-    padding-bottom: 100px;
-  }
-
-  .team-lead {
-    margin: 14px 0 50px;
-    max-width: 520px;
-    color: rgb(244 242 236 / 0.65);
-    font-size: 16px;
-    line-height: 1.5;
-  }
-
-  .team-grid {
+  .icon-slot {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-    border-top: 2px solid rgb(244 242 236 / 0.25);
+    width: 58px;
+    height: 58px;
+    place-items: center;
+    border: 1.5px solid rgb(229 164 59 / 0.55);
+    color: var(--color-gold);
+  }
+
+  .icon-slot .mono {
+    max-width: 7ch;
+    color: var(--color-gold);
+    font-size: 8px;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .product-card h3,
+  .work-card h3,
+  .approach-grid h3 {
+    font-family: var(--font-display);
+    font-size: clamp(19px, 2vw, 25px);
+    line-height: 1.15;
+  }
+
+  .product-card p,
+  .work-card p,
+  .approach-grid p,
+  .automation-section p,
+  details p {
+    color: rgb(23 21 15 / 0.7);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .product-card h3 + p,
+  .work-card h3 + p,
+  .approach-grid h3 + p {
+    margin-top: 12px;
+  }
+
+  .product-meta {
+    display: grid;
+    gap: 6px;
+  }
+
+  .product-meta strong {
+    color: var(--color-blue);
+    font-size: 18px;
+  }
+
+  .product-meta span {
+    color: rgb(23 21 15 / 0.5);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .product-card a,
+  .products-links a,
+  .work-card b {
+    color: var(--color-ochre);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .products-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px 26px;
+    margin-top: 34px;
+  }
+
+  .approach-grid article {
+    display: grid;
+    gap: 20px;
+    border-color: rgb(244 242 236 / 0.18);
+    background: var(--color-ink-soft);
+    padding: 18px;
+  }
+
+  .approach-grid p {
+    color: rgb(244 242 236 / 0.68);
+  }
+
+  .works-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .work-card {
+    display: grid;
+    grid-column: span 3;
+    min-height: 100%;
+    color: var(--color-ink);
+    text-decoration: none;
+    transition:
+      box-shadow 0.25s var(--ease-site),
+      transform 0.25s var(--ease-site);
+  }
+
+  .work-card:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+
+  .work-card:hover {
+    box-shadow: 10px 10px 0 var(--color-gold);
+    transform: translate(-3px, -3px);
+  }
+
+  .work-card.planned {
+    opacity: 0.82;
+  }
+
+  .work-copy {
+    padding: 22px;
+  }
+
+  .work-copy .mono {
+    color: var(--color-blue);
+  }
+
+  .work-copy h3 {
+    margin-top: 10px;
+  }
+
+  .work-copy b {
+    display: inline-block;
+    margin-top: 18px;
+  }
+
+  .automation-grid {
+    display: grid;
+    grid-template-columns: 390px minmax(0, 1fr);
+    gap: 52px;
+  }
+
+  .automation-section h2 {
+    margin-top: 12px;
+  }
+
+  .automation-section p {
+    margin-top: 20px;
+    color: rgb(244 242 236 / 0.66);
+  }
+
+  .automation-section .btn-gold {
+    margin-top: 30px;
+  }
+
+  .automation-list {
+    display: grid;
+    gap: 16px;
+  }
+
+  .automation-list article {
+    border-color: rgb(244 242 236 / 0.18);
+    background: var(--color-ink-soft);
+    padding: 24px;
   }
 
   .brief-section {
@@ -211,32 +411,30 @@ import { site } from '../data/site';
 
   .brief-grid {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 50px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 48px;
     align-items: center;
-    padding-top: 90px;
-    padding-bottom: 80px;
+  }
+
+  .brief-grid .mono {
+    color: rgb(23 21 15 / 0.58);
   }
 
   .brief-grid h2 {
-    max-width: 640px;
-    font-size: clamp(36px, 4.8vw, 52px);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.015em;
+    max-width: 720px;
+    font-size: clamp(36px, 4.8vw, 56px);
   }
 
   .brief-grid p {
-    max-width: 460px;
-    margin: 20px 0 0;
-    color: rgb(23 21 15 / 0.75);
+    max-width: 520px;
+    margin-top: 18px;
+    color: rgb(23 21 15 / 0.72);
     font-size: 16px;
-    line-height: 1.5;
+    line-height: 1.55;
   }
 
   .brief-actions {
     display: flex;
-    flex: none;
     flex-direction: column;
     gap: 14px;
   }
@@ -254,43 +452,69 @@ import { site } from '../data/site';
     color: var(--color-paper);
   }
 
-  .brief-primary:hover {
-    background: var(--color-paper);
-    color: var(--color-ink);
-  }
-
   .brief-secondary {
-    border: 2px solid var(--color-ink);
-    color: var(--color-ink);
+    border: 1.5px solid rgb(23 21 15 / 0.3);
   }
 
-  .brief-secondary:hover {
-    background: var(--color-ink);
-    color: var(--color-gold);
+  .faq-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
   }
 
-  @media (max-width: 900px) {
-    .section-head,
-    .prices-head,
-    .brief-grid {
-      align-items: flex-start;
+  details {
+    padding: 24px;
+  }
+
+  summary {
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  details p {
+    margin-top: 16px;
+  }
+
+  @media (max-width: 1020px) {
+    .product-grid,
+    .approach-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .automation-grid {
       grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .wrap {
+      padding-top: 70px;
+      padding-bottom: 78px;
+    }
+
+    .section-head,
+    .brief-grid {
+      align-items: start;
+      grid-template-columns: 1fr;
+    }
+
+    .section-head {
       flex-direction: column;
     }
 
-    .case-grid,
-    .team-grid {
+    .product-grid,
+    .approach-grid,
+    .works-grid,
+    .faq-list {
       grid-template-columns: 1fr;
     }
-  }
 
-  @media (max-width: 520px) {
-    .cases-section .wrap,
-    .prices-section .wrap,
-    .team-section .wrap,
-    .brief-grid {
-      padding-top: 64px;
-      padding-bottom: 72px;
+    .work-card,
+    .work-card:nth-child(n + 4) {
+      grid-column: auto;
     }
 
     .brief-actions,

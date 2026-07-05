@@ -1,0 +1,105 @@
+---
+interface Props {
+  label: string;
+  src?: string;
+  tone?: 'light' | 'dark';
+  ratio?: string;
+}
+
+const { label, src = '', tone = 'light', ratio = '16 / 10' } = Astro.props;
+---
+
+<figure class:list={['asset-slot', `tone-${tone}`, src && 'has-src']} style={`--asset-ratio: ${ratio}`}>
+  {src ? <img src={src} alt={label} loading="lazy" /> : (
+    <div class="pending" aria-label={`${label}: asset pending`}>
+      <span class="mono">asset pending</span>
+      <strong>{label}</strong>
+    </div>
+  )}
+</figure>
+
+<style>
+  .asset-slot {
+    position: relative;
+    margin: 0;
+    aspect-ratio: var(--asset-ratio);
+    overflow: hidden;
+    border: 1.5px solid rgb(23 21 15 / 0.22);
+    background: white;
+  }
+
+  .asset-slot::before {
+    content: '';
+    display: block;
+    height: 30px;
+    border-bottom: 1.5px solid rgb(23 21 15 / 0.18);
+    background:
+      radial-gradient(circle at 14px 50%, rgb(23 21 15 / 0.35) 0 4px, transparent 4.5px),
+      radial-gradient(circle at 28px 50%, rgb(23 21 15 / 0.25) 0 4px, transparent 4.5px),
+      radial-gradient(circle at 42px 50%, rgb(23 21 15 / 0.18) 0 4px, transparent 4.5px),
+      var(--color-paper);
+  }
+
+  .tone-dark {
+    border-color: rgb(244 242 236 / 0.24);
+    background: var(--color-ink-soft);
+    color: var(--color-paper);
+  }
+
+  .tone-dark::before {
+    border-bottom-color: rgb(244 242 236 / 0.18);
+    background:
+      radial-gradient(circle at 14px 50%, rgb(244 242 236 / 0.45) 0 4px, transparent 4.5px),
+      radial-gradient(circle at 28px 50%, rgb(244 242 236 / 0.32) 0 4px, transparent 4.5px),
+      radial-gradient(circle at 42px 50%, rgb(244 242 236 / 0.2) 0 4px, transparent 4.5px),
+      var(--color-ink);
+  }
+
+  img,
+  .pending {
+    width: 100%;
+    height: calc(100% - 30px);
+  }
+
+  img {
+    display: block;
+    object-fit: cover;
+  }
+
+  .pending {
+    display: grid;
+    place-content: center;
+    gap: 10px;
+    padding: 24px;
+    box-sizing: border-box;
+    text-align: center;
+    background:
+      linear-gradient(135deg, rgb(229 164 59 / 0.16) 25%, transparent 25%) 0 0 / 18px 18px,
+      linear-gradient(135deg, transparent 75%, rgb(39 67 224 / 0.1) 75%) 0 0 / 18px 18px,
+      color-mix(in srgb, var(--color-paper) 86%, white);
+  }
+
+  .tone-dark .pending {
+    background:
+      linear-gradient(135deg, rgb(229 164 59 / 0.18) 25%, transparent 25%) 0 0 / 18px 18px,
+      linear-gradient(135deg, transparent 75%, rgb(244 242 236 / 0.07) 75%) 0 0 / 18px 18px,
+      var(--color-ink-soft);
+  }
+
+  .pending .mono {
+    color: var(--color-blue);
+    font-size: 10px;
+  }
+
+  .tone-dark .pending .mono {
+    color: var(--color-gold);
+  }
+
+  .pending strong {
+    max-width: 24ch;
+    color: currentColor;
+    font-family: var(--font-display);
+    font-size: clamp(16px, 2vw, 22px);
+    line-height: 1.2;
+  }
+</style>

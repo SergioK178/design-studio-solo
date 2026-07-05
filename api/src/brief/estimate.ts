@@ -1,4 +1,5 @@
 import rawMatrix from './brief-matrix.json' with { type: 'json' };
+import { baseEstimates, optionEstimates, type V2Range } from './v2-config.ts';
 
 export type Answers = Record<string, string>;
 
@@ -37,13 +38,122 @@ export interface Estimate {
   termHigh: number;
   priceLabel: string;
   weeksLabel: string;
+  items?: EstimateItem[];
+  version?: 'v1' | 'v2';
+}
+
+export interface EstimateItem {
+  id: string;
+  label: string;
+  priceLow: number;
+  priceHigh: number;
+  weeksLow: number;
+  weeksHigh: number;
+  priceLabel: string;
+  weeksLabel: string;
 }
 
 function money(value: number): string {
   return new Intl.NumberFormat('ru-RU').format(Math.max(0, Math.round(value / 1000) * 1000));
 }
 
+function priceLabel(range: V2Range): string {
+  return range.min === range.max ? `${money(range.min)} ₽` : `${money(range.min)}–${money(range.max)} ₽`;
+}
+
+function weeksLabel(min: number, max: number): string {
+  const safeMin = Math.max(1, min);
+  const safeMax = Math.max(safeMin, max);
+  return safeMin === safeMax ? `${safeMin} нед.` : `${safeMin}–${safeMax} нед.`;
+}
+
+function parseIds(value?: string): string[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export function estimateV2(answers: Answers): Estimate {
+  const product = answers.product || answers.project || 'unknown';
+  const base = baseEstimates.find((item) => item.product === product) ?? baseEstimates.find((item) => item.product === 'unknown')!;
+  const selectedOptions = parseIds(answers.options);
+  const optionRows = selectedOptions
+    .map((id) => optionEstimates.find((item) => item.id === id))
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  let priceMin = base.price.min;
+  let priceMax = base.price.max;
+  let weeksMin = base.weeks.min;
+  let weeksMax = base.weeks.max;
+  let multiplier = 1;
+
+  const items: EstimateItem[] = [
+    {
+      id: `base:${base.product}`,
+      label: base.label,
+      priceLow: base.price.min,
+      priceHigh: base.price.max,
+      weeksLow: base.weeks.min,
+      weeksHigh: base.weeks.max,
+      priceLabel: priceLabel(base.price),
+      weeksLabel: weeksLabel(base.weeks.min, base.weeks.max),
+    },
+  ];
+
+  for (const option of optionRows) {
+    if (option.percent) {
+      multiplier += option.percent;
+      items.push({
+        id: option.id,
+        label: option.label,
+        priceLow: 0,
+        priceHigh: 0,
+        weeksLow: option.weeks.min,
+        weeksHigh: option.weeks.max,
+        priceLabel: `+${Math.round(option.percent * 100)}%`,
+        weeksLabel: 'срок фиксируем отдельно',
+      });
+      continue;
+    }
+    priceMin += option.price.min;
+    priceMax += option.price.max;
+    weeksMin += option.weeks.min;
+    weeksMax += option.weeks.max;
+    items.push({
+      id: option.id,
+      label: option.label,
+      priceLow: option.price.min,
+      priceHigh: option.price.max,
+      weeksLow: option.weeks.min,
+      weeksHigh: option.weeks.max,
+      priceLabel: priceLabel(option.price),
+      weeksLabel: option.weeks.min <= 0 && option.weeks.max <= 0 ? 'без увеличения срока' : weeksLabel(option.weeks.min, option.weeks.max),
+    });
+  }
+
+  priceMin = Math.round(priceMin * multiplier);
+  priceMax = Math.round(priceMax * multiplier);
+  weeksMin = Math.max(1, weeksMin);
+  weeksMax = Math.max(weeksMin, weeksMax);
+
+  return {
+    kind: base.product,
+    priceLow: priceMin,
+    priceHigh: priceMax,
+    termLow: weeksMin,
+    termHigh: weeksMax,
+    priceLabel: priceMin === priceMax ? `${money(priceMin)} ₽` : `${money(priceMin)}–${money(priceMax)} ₽`,
+    weeksLabel: weeksLabel(weeksMin, weeksMax),
+    items,
+    version: 'v2',
+  };
+}
+
 export function estimate(answers: Answers): Estimate {
+  if (answers.version === 'v2') return estimateV2(answers);
+
   const questions = matrix.questions;
   const projectQuestion = questions[0];
   const projectOption =
@@ -78,6 +188,7 @@ export function estimate(answers: Answers): Estimate {
     termHigh: weeksMax,
     priceLabel: priceMin === priceMax ? `${money(priceMin)} ₽` : `${money(priceMin)}–${money(priceMax)} ₽`,
     weeksLabel: weeksMin === weeksMax ? `${weeksMin} нед.` : `${weeksMin}–${weeksMax} нед.`,
+    version: 'v1',
   };
 }
 

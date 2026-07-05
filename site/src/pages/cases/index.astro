@@ -1,26 +1,26 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Nav from '../../components/Nav.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-
-const entries = await getCollection('cases');
-const cases = entries.sort((a, b) => a.data.order - b.data.order);
-const slugFor = (id: string) => id.replace(/\.md$/, '');
+import AssetSlot from '../../components/AssetSlot.astro';
+import { works } from '../../data/works';
 ---
 
-<Base title="Кейсы · 3K Studio">
+<Base title="Работы · 3K Studio">
   <Nav />
-  <PageHeader eyebrow="кейсы" title="Разборы задач, где сайт был частью бизнес-процесса" lead="Имена клиентов не публикуем. Вместо этого показываем отрасль, задачу, решение и честную сложность." />
-  <main class="cases-list" data-bg="paper">
+  <PageHeader eyebrow="работы" title="Работы" lead="Разные форматы, разные ниши, один подход к смете и срокам." />
+  <main class="works-list" data-bg="paper">
     <div class="wrap grid" data-reveal-group>
-      {cases.map((entry) => (
-        <a class="card" href={`/cases/${slugFor(entry.id)}/`} data-cursor="Разбор →">
-          <span class="mono">{entry.data.tag} · {entry.data.term}</span>
-          <h2>{entry.data.title}</h2>
-          <p>{entry.data.summary}</p>
-          <strong>{entry.data.digit}</strong>
+      {works.map((item) => (
+        <a class:list={['card', item.status === 'planned' && 'planned']} href={item.href} data-cursor={item.status === 'planned' ? 'Скоро' : 'Смотреть →'}>
+          <AssetSlot label={item.assetKey} src={item.assetSrc} ratio="16 / 10" />
+          <div>
+            <span class="mono">{item.category}</span>
+            <h2>{item.title}</h2>
+            <p>{item.inside}</p>
+            <strong>{item.status === 'planned' ? 'Место под будущий кейс' : 'Смотреть →'}</strong>
+          </div>
         </a>
       ))}
     </div>
@@ -29,7 +29,7 @@ const slugFor = (id: string) => id.replace(/\.md$/, '');
 </Base>
 
 <style>
-  .cases-list {
+  .works-list {
     background: var(--color-paper);
     color: var(--color-ink);
     padding: 80px 0 100px;
@@ -42,11 +42,10 @@ const slugFor = (id: string) => id.replace(/\.md$/, '');
   }
 
   .card {
-    display: flex;
-    min-height: 330px;
-    flex-direction: column;
+    display: grid;
     border: 1.5px solid rgb(23 21 15 / 0.22);
-    padding: 30px;
+    background: white;
+    color: var(--color-ink);
     text-decoration: none;
     transition:
       box-shadow 0.35s var(--ease-site),
@@ -58,30 +57,36 @@ const slugFor = (id: string) => id.replace(/\.md$/, '');
     transform: translate(-3px, -3px);
   }
 
+  .card.planned {
+    opacity: 0.82;
+  }
+
+  .card > div {
+    padding: 26px;
+  }
+
   .mono {
     color: var(--color-blue);
   }
 
   h2 {
-    margin: 24px 0 0;
+    margin: 12px 0 0;
     font-family: var(--font-display);
     font-size: clamp(26px, 3vw, 38px);
     line-height: 1.15;
   }
 
   p {
-    margin: 18px 0 0;
+    margin: 16px 0 0;
     color: rgb(23 21 15 / 0.72);
     font-size: 15px;
     line-height: 1.6;
   }
 
   strong {
-    margin-top: auto;
-    padding-top: 32px;
+    display: inline-block;
+    margin-top: 22px;
     color: var(--color-ochre);
-    font-family: var(--font-display);
-    font-size: 34px;
   }
 
   @media (max-width: 760px) {
