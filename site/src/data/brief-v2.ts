@@ -119,11 +119,11 @@ export const branchQuestions: Record<BranchId, Question[]> = {
 };
 
 export const optionIdsByBranch: Record<BranchId, string[]> = {
-  landing: ['crm', 'analytics', 'quiz', 'content', 'animations', 'rush'],
+  landing: ['crm', 'analytics', 'quiz', 'content', 'rush'],
   company: ['crm', 'analytics', 'extra-page', 'second-language', 'blog', 'content', 'rush'],
   catalog: ['crm', 'analytics', 'integration-1c', 'extra-page', 'content', 'rush'],
   shop: ['online-payment', 'integration-1c', 'analytics', 'content', 'rush'],
-  telegram: ['online-payment', 'online-booking', 'chat-bot', 'analytics', 'content', 'rush'],
+  telegram: ['online-payment', 'online-booking', 'analytics', 'content', 'rush'],
   migration: ['extra-page', 'analytics', 'content', 'rush'],
   automation: ['crm', 'analytics', 'integration-1c', 'content', 'rush'],
   custom: ['crm', 'analytics', 'content', 'rush'],

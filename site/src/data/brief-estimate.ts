@@ -68,8 +68,8 @@ const productBaseOverrides: Record<string, Partial<BaseEstimate>> = {
 
 const optionOverrides: Record<string, Partial<OptionEstimate>> = {
   rush: { percent: 0.3, weeks: { min: -1, max: -1 } },
-  'integration-1c': { price: { min: 70000, max: 180000 }, weeks: { min: 1, max: 3 } },
-  content: { price: { min: 30000, max: 120000 }, weeks: { min: 1, max: 2 } },
+  'integration-1c': { weeks: { min: 1, max: 3 } },
+  content: { weeks: { min: 1, max: 2 } },
 };
 
 const baseEstimates: BaseEstimate[] = [
@@ -83,7 +83,7 @@ const baseEstimates: BaseEstimate[] = [
   fallbackBase,
 ];
 
-const optionEstimates: OptionEstimate[] = extensionPrices.map((extension) => ({
+export const optionEstimates: OptionEstimate[] = extensionPrices.map((extension) => ({
   id: extension.id,
   label: extension.name,
   price: priceRangeFromLabel(extension.price),
@@ -91,11 +91,13 @@ const optionEstimates: OptionEstimate[] = extensionPrices.map((extension) => ({
   ...optionOverrides[extension.id],
 }));
 
+const numberFormatter = new Intl.NumberFormat('ru-RU');
+
 function money(value: number): string {
-  return new Intl.NumberFormat('ru-RU').format(Math.max(0, Math.round(value / 1000) * 1000));
+  return numberFormatter.format(Math.max(0, Math.round(value / 1000) * 1000));
 }
 
-function priceRangeFromLabel(label: string): Range {
+export function priceRangeFromLabel(label: string): Range {
   const numbers = label.match(/\d[\d\s]*/g)?.map((item) => Number(item.replace(/\s/g, ''))) ?? [];
   if (label.includes('+30')) return { min: 0, max: 0 };
   if (numbers.length >= 2) return { min: numbers[0] * 1000, max: numbers[1] * 1000 };

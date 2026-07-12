@@ -5,6 +5,8 @@ import HeroWall from '../components/HeroWall.astro';
 import ProcessChat from '../components/ProcessChat.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import AssetSlot from '../components/AssetSlot.astro';
+import ProductCard from '../components/ProductCard.astro';
+import CasePreview from '../components/CasePreview.astro';
 import { approach, automationExamples, faqs } from '../data/home';
 import { briefHref, featuredProducts } from '../data/products';
 import { site } from '../data/site';
@@ -16,6 +18,21 @@ import { works } from '../data/works';
   <HeroWall />
 
   <main>
+    <section id="works" class="works-section" data-bg="paper">
+      <div class="wrap">
+        <div class="section-head" data-reveal>
+          <div>
+            <span class="mono">работы</span>
+            <h2>Работы</h2>
+          </div>
+          <p>Разные форматы, разные ниши, один подход к смете и срокам.</p>
+        </div>
+        <div class="works-grid" data-reveal-group>
+          {works.filter((item) => item.status === 'planned' || item.homeFeatured).map((item) => <CasePreview work={item} />)}
+        </div>
+      </div>
+    </section>
+
     <section id="products" class="products-section" data-bg="paper">
       <div class="wrap">
         <div class="section-head" data-reveal>
@@ -26,22 +43,7 @@ import { works } from '../data/works';
           <p>Цена и срок фиксируются до старта. Расширения считаем отдельно и заранее.</p>
         </div>
         <div class="product-grid" data-reveal-group>
-          {featuredProducts.map((item) => (
-            <article class="product-card">
-              <div class="icon-slot" aria-label={`ui/products/${item.icon}: asset pending`}>
-                <span class="mono">asset pending</span>
-              </div>
-              <div>
-                <h3>{item.name}</h3>
-                <p>{item.summary}</p>
-              </div>
-              <div class="product-meta">
-                <strong>{item.price}</strong>
-                <span>{item.term}</span>
-              </div>
-              <a href={`/products/${item.slug}/`}>Подробнее →</a>
-            </article>
-          ))}
+          {featuredProducts.map((item) => <ProductCard product={item} showIcon />)}
         </div>
         <div class="products-links" data-reveal>
           <a href="/products/">Все продукты →</a>
@@ -62,35 +64,10 @@ import { works } from '../data/works';
         <div class="approach-grid" data-reveal-group>
           {approach.map((item, index) => (
             <article>
-              <AssetSlot label={['ui/estimate-fragment', 'ui/ownership-schema', 'ui/extensions-price-widget', 'ui/telegram-progress'][index]} tone="dark" ratio="16 / 9" />
+              <AssetSlot label={['ui/estimate-fragment', 'ui/ownership-schema', 'ui/extensions-widget'][index]} tone="dark" />
               <h3>{item.title}</h3>
               <p>{item.body}</p>
             </article>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <section id="works" class="works-section" data-bg="paper">
-      <div class="wrap">
-        <div class="section-head" data-reveal>
-          <div>
-            <span class="mono">работы</span>
-            <h2>Работы</h2>
-          </div>
-          <p>Разные форматы, разные ниши, один подход к смете и срокам.</p>
-        </div>
-        <div class="works-grid" data-reveal-group>
-          {works.map((item) => (
-            <a class:list={['work-card', item.status === 'planned' && 'planned']} href={item.href} data-cursor={item.status === 'planned' ? 'Скоро' : 'Смотреть →'}>
-              <AssetSlot label={item.assetKey} src={item.assetSrc} ratio="16 / 10" />
-              <div class="work-copy">
-                <span class="mono">{item.category}</span>
-                <h3>{item.title}</h3>
-                <p>{item.inside}</p>
-                <b>{item.status === 'planned' ? 'Место под будущий кейс' : 'Смотреть →'}</b>
-              </div>
-            </a>
           ))}
         </div>
       </div>
@@ -149,6 +126,16 @@ import { works } from '../data/works';
         </div>
       </div>
     </section>
+
+    <section id="final-cta" class="final-cta-section" data-bg="ink">
+      <div class="wrap final-cta-inner" data-reveal>
+        <h2>Готовы обсудить задачу?</h2>
+        <div class="final-cta-actions">
+          <a class="btn-gold" href="/brief/" data-magnetic>Собрать проект →</a>
+          <a class="btn-outline" href={site.telegramUrl} data-magnetic>Написать в Telegram</a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <SiteFooter />
@@ -202,6 +189,7 @@ import { works } from '../data/works';
 
   h2 {
     margin-top: 12px;
+    overflow-wrap: break-word;
     font-family: var(--font-display);
     font-size: clamp(34px, 4vw, 48px);
     font-weight: 800;
@@ -220,16 +208,19 @@ import { works } from '../data/works';
   }
 
   .product-grid,
-  .approach-grid,
   .works-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 18px;
   }
 
-  .product-card,
+  .approach-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
   .approach-grid article,
-  .work-card,
   .automation-list article,
   details {
     box-sizing: border-box;
@@ -237,41 +228,12 @@ import { works } from '../data/works';
     background: white;
   }
 
-  .product-card {
-    display: grid;
-    min-height: 330px;
-    grid-template-rows: auto 1fr auto auto;
-    gap: 20px;
-    padding: 22px;
-  }
-
-  .icon-slot {
-    display: grid;
-    width: 58px;
-    height: 58px;
-    place-items: center;
-    border: 1.5px solid rgb(229 164 59 / 0.55);
-    color: var(--color-gold);
-  }
-
-  .icon-slot .mono {
-    max-width: 7ch;
-    color: var(--color-gold);
-    font-size: 8px;
-    line-height: 1.25;
-    text-align: center;
-  }
-
-  .product-card h3,
-  .work-card h3,
   .approach-grid h3 {
     font-family: var(--font-display);
     font-size: clamp(19px, 2vw, 25px);
     line-height: 1.15;
   }
 
-  .product-card p,
-  .work-card p,
   .approach-grid p,
   .automation-section p,
   details p {
@@ -280,31 +242,11 @@ import { works } from '../data/works';
     line-height: 1.55;
   }
 
-  .product-card h3 + p,
-  .work-card h3 + p,
   .approach-grid h3 + p {
     margin-top: 12px;
   }
 
-  .product-meta {
-    display: grid;
-    gap: 6px;
-  }
-
-  .product-meta strong {
-    color: var(--color-blue);
-    font-size: 18px;
-  }
-
-  .product-meta span {
-    color: rgb(23 21 15 / 0.5);
-    font-family: var(--font-mono);
-    font-size: 11px;
-  }
-
-  .product-card a,
-  .products-links a,
-  .work-card b {
+  .products-links a {
     color: var(--color-ochre);
     font-weight: 700;
     text-decoration: none;
@@ -333,45 +275,8 @@ import { works } from '../data/works';
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
-  .work-card {
-    display: grid;
+  .works-grid :global(.case-preview) {
     grid-column: span 3;
-    min-height: 100%;
-    color: var(--color-ink);
-    text-decoration: none;
-    transition:
-      box-shadow 0.25s var(--ease-site),
-      transform 0.25s var(--ease-site);
-  }
-
-  .work-card:nth-child(n + 4) {
-    grid-column: span 3;
-  }
-
-  .work-card:hover {
-    box-shadow: 10px 10px 0 var(--color-gold);
-    transform: translate(-3px, -3px);
-  }
-
-  .work-card.planned {
-    opacity: 0.82;
-  }
-
-  .work-copy {
-    padding: 22px;
-  }
-
-  .work-copy .mono {
-    color: var(--color-blue);
-  }
-
-  .work-copy h3 {
-    margin-top: 10px;
-  }
-
-  .work-copy b {
-    display: inline-block;
-    margin-top: 18px;
   }
 
   .automation-grid {
@@ -476,6 +381,38 @@ import { works } from '../data/works';
 
   details p {
     margin-top: 16px;
+  }
+
+  .final-cta-section {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .final-cta-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    text-align: center;
+    padding-top: 90px;
+    padding-bottom: 90px;
+  }
+
+  .final-cta-inner h2 {
+    margin-top: 0;
+    max-width: 620px;
+  }
+
+  .final-cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .final-cta-actions .btn-outline {
+    border-color: rgb(244 242 236 / 0.4);
+    color: var(--color-paper);
   }
 
   @media (max-width: 1020px) {

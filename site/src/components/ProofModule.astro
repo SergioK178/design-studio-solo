@@ -1,0 +1,197 @@
+---
+import AssetSlot from './AssetSlot.astro';
+import type { ProductProof } from '../data/products';
+
+interface Props {
+  proof: ProductProof;
+}
+
+const { proof } = Astro.props;
+const isConcept = proof.status !== 'published';
+const frame = proof.frame ?? 'browser';
+
+const variantLabel: Record<ProductProof['variant'], string> = {
+  'real-interface': 'реальный интерфейс',
+  scenario: 'сценарий',
+  'integration-diagram': 'интеграционная схема',
+  'before-after': 'до / после',
+  management: 'публичный экран + управление',
+};
+
+const [main, ...details] = proof.assets;
+---
+
+<section class="wrap proof-module" data-reveal>
+  <div class="proof-head">
+    <div class="proof-head-labels">
+      <span class="mono">{variantLabel[proof.variant]}</span>
+      {isConcept && <span class="concept-badge">Концепт студии</span>}
+    </div>
+    <h2>{proof.title}</h2>
+    <a href={proof.href}>{isConcept ? 'Обсудить похожую задачу →' : 'Смотреть работу →'}</a>
+  </div>
+
+  {(proof.variant === 'real-interface' || proof.variant === 'integration-diagram') && (
+    <div class="proof-real">
+      <AssetSlot label={main.assetKey} caption={main.caption} frame={frame} />
+      {details.length > 0 && (
+        <div class="proof-details">
+          {details.map((asset) => (
+            <AssetSlot label={asset.assetKey} caption={asset.caption} frame={frame} ratio="4 / 3" />
+          ))}
+        </div>
+      )}
+    </div>
+  )}
+
+  {proof.variant === 'management' && (
+    <div class="proof-pair">
+      {proof.assets.map((asset) => (
+        <figure class="proof-pair-item">
+          {asset.label && <span class="mono proof-pair-label">{asset.label}</span>}
+          <AssetSlot label={asset.assetKey} caption={asset.caption} frame={frame} />
+        </figure>
+      ))}
+    </div>
+  )}
+
+  {proof.variant === 'before-after' && (
+    <div class="proof-pair proof-before-after">
+      {proof.assets.map((asset) => (
+        <figure class="proof-pair-item">
+          {asset.label && <span class="mono proof-pair-label">{asset.label}</span>}
+          <AssetSlot label={asset.assetKey} caption={asset.caption} frame={frame} ratio="4 / 3" />
+        </figure>
+      ))}
+    </div>
+  )}
+
+  {proof.variant === 'scenario' && (
+    <div class="proof-flow">
+      {proof.assets.map((asset, index) => (
+        <>
+          <figure class="proof-flow-item">
+            {asset.label && <span class="mono proof-flow-label">{asset.label}</span>}
+            <AssetSlot label={asset.assetKey} caption={asset.caption} frame={frame} ratio="9 / 16" />
+          </figure>
+          {index < proof.assets.length - 1 && (
+            <span class="proof-flow-arrow" aria-hidden="true">→</span>
+          )}
+        </>
+      ))}
+    </div>
+  )}
+</section>
+
+<style>
+  .proof-module {
+    margin-bottom: 70px;
+  }
+
+  .proof-head {
+    margin-bottom: 28px;
+  }
+
+  .proof-head-labels {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mono {
+    color: var(--color-blue);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .concept-badge {
+    border: 1.5px solid var(--color-ochre);
+    color: var(--color-ochre);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+  }
+
+  .proof-head h2 {
+    margin: 12px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1.12;
+  }
+
+  .proof-head a {
+    display: inline-block;
+    margin-top: 18px;
+    color: var(--color-ochre);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .proof-real {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .proof-details {
+    display: grid;
+    gap: 20px;
+  }
+
+  .proof-pair,
+  .proof-flow {
+    display: grid;
+    gap: 24px;
+  }
+
+  .proof-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .proof-pair-label,
+  .proof-flow-label {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  .proof-flow {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(160px, 1fr);
+    align-items: start;
+  }
+
+  .proof-flow-item {
+    min-width: 0;
+  }
+
+  .proof-flow-arrow {
+    align-self: center;
+    color: rgb(23 21 15 / 0.4);
+    font-size: 22px;
+  }
+
+  @media (max-width: 900px) {
+    .proof-real {
+      grid-template-columns: 1fr;
+    }
+
+    .proof-pair {
+      grid-template-columns: 1fr;
+    }
+
+    .proof-flow {
+      grid-auto-flow: row;
+      grid-auto-columns: unset;
+      grid-template-columns: 1fr;
+    }
+
+    .proof-flow-arrow {
+      transform: rotate(90deg);
+    }
+  }
+</style>

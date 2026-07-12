@@ -6,6 +6,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "capture:screens": "bun scripts/capture-screens.ts",
+    "capture:screens:all": "SCREEN_MODE=all bun scripts/capture-screens.ts",
     "test:e2e": "playwright test",
     "collect:metrics": "bun ../scripts/collect-metrics.ts"
   },

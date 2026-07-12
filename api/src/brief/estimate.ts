@@ -53,8 +53,29 @@ export interface EstimateItem {
   weeksLabel: string;
 }
 
+const numberFormatter = new Intl.NumberFormat('ru-RU');
+
 function money(value: number): string {
-  return new Intl.NumberFormat('ru-RU').format(Math.max(0, Math.round(value / 1000) * 1000));
+  return numberFormatter.format(Math.max(0, Math.round(value / 1000) * 1000));
+}
+
+function finalize(priceMin: number, priceMax: number, weeksMin: number, weeksMax: number, multiplier: number) {
+  const price = {
+    min: Math.round(priceMin * multiplier),
+    max: Math.round(priceMax * multiplier),
+  };
+  const weeks = {
+    min: Math.max(1, weeksMin),
+    max: Math.max(Math.max(1, weeksMin), weeksMax),
+  };
+  return {
+    priceLow: price.min,
+    priceHigh: price.max,
+    termLow: weeks.min,
+    termHigh: weeks.max,
+    priceLabel: priceLabel(price),
+    weeksLabel: weeksLabel(weeks.min, weeks.max),
+  };
 }
 
 function priceLabel(range: V2Range): string {
@@ -133,19 +154,9 @@ export function estimateV2(answers: Answers): Estimate {
     });
   }
 
-  priceMin = Math.round(priceMin * multiplier);
-  priceMax = Math.round(priceMax * multiplier);
-  weeksMin = Math.max(1, weeksMin);
-  weeksMax = Math.max(weeksMin, weeksMax);
-
   return {
     kind: base.product,
-    priceLow: priceMin,
-    priceHigh: priceMax,
-    termLow: weeksMin,
-    termHigh: weeksMax,
-    priceLabel: priceMin === priceMax ? `${money(priceMin)} ₽` : `${money(priceMin)}–${money(priceMax)} ₽`,
-    weeksLabel: weeksLabel(weeksMin, weeksMax),
+    ...finalize(priceMin, priceMax, weeksMin, weeksMax, multiplier),
     items,
     version: 'v2',
   };
@@ -175,19 +186,9 @@ export function estimate(answers: Answers): Estimate {
     multiplier *= option.priceMultiplier ?? 1;
   }
 
-  priceMin = Math.round(priceMin * multiplier);
-  priceMax = Math.round(priceMax * multiplier);
-  weeksMin = Math.max(1, weeksMin);
-  weeksMax = Math.max(weeksMin, weeksMax);
-
   return {
     kind: projectOption.id,
-    priceLow: priceMin,
-    priceHigh: priceMax,
-    termLow: weeksMin,
-    termHigh: weeksMax,
-    priceLabel: priceMin === priceMax ? `${money(priceMin)} ₽` : `${money(priceMin)}–${money(priceMax)} ₽`,
-    weeksLabel: weeksMin === weeksMax ? `${weeksMin} нед.` : `${weeksMin}–${weeksMax} нед.`,
+    ...finalize(priceMin, priceMax, weeksMin, weeksMax, multiplier),
     version: 'v1',
   };
 }

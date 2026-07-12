@@ -1,0 +1,10 @@
+{
+  "name": "design-studio",
+  "private": true,
+  "scripts": {
+    "capture:screens": "cd site && bun run capture:screens",
+    "capture:screens:all": "cd site && bun run capture:screens:all",
+    "verify:pricing-parity": "bun scripts/verify-estimate-parity.ts",
+    "verify:assets": "bun scripts/validate-assets.ts"
+  }
+}

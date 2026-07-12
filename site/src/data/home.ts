@@ -13,10 +13,6 @@ export const approach = [
     title: 'Расширения — по прайсу.',
     body: 'Цена фиксируется до старта в конкретных рамках. Всё, что за рамками — реальное расширение, считаем по открытому прайсу.',
   },
-  {
-    title: 'Асинхронно, с видимым прогрессом.',
-    body: 'Проект живёт в одном чате: вопросы, макеты, ссылки на превью. Отвечаете, когда удобно. Созвон — по вашему желанию, не по регламенту.',
-  },
 ];
 
 export const steps = [
@@ -94,13 +90,13 @@ export const team = [
 ];
 
 export const wallColA = [
-  { logo: 'Ольгинка', assetKey: 'works/olginka/hero', accent: 'ink', nav: 'Владелец · Инвестор', title: 'Премиальный лендинг — два режима показа', cta: 'Смотреть' },
-  { logo: 'Loft Rent', assetKey: 'works/loft-rent/hero', accent: 'ochre', nav: 'Парк · Заявка', title: 'Сайт услуг с каталогом авто', cta: 'Смотреть' },
-  { logo: 'ИМЭКС', assetKey: 'works/imex-light/hero', accent: 'blue', nav: 'Каталог · КП', title: 'Сайт-каталог для оптовика', cta: 'Смотреть' },
+  { logo: 'Ольгинка', assetKey: 'works/guest-house/hero', accent: 'ink', nav: 'Владелец · Инвестор', title: 'Премиальный лендинг — два режима показа', cta: 'Смотреть' },
+  { logo: 'Loft Rent', assetKey: 'works/car-rental/hero', accent: 'ochre', nav: 'Парк · Заявка', title: 'Сайт услуг с каталогом авто', cta: 'Смотреть' },
+  { logo: 'ИМЭКС', assetKey: 'works/catalog-med/hero', accent: 'blue', nav: 'Каталог · КП', title: 'Сайт-каталог для оптовика', cta: 'Смотреть' },
 ];
 
 export const wallColB = [
-  { logo: 'ИМЭКС', assetKey: 'works/imex-dark-usp/hero', accent: 'ink', nav: 'USP · Ряд преимуществ', title: 'Тёмная версия: акцент на надёжности', cta: 'Материал позже' },
-  { logo: 'Квиз', assetKey: 'works/quiz/hero', accent: 'ochre', nav: 'Опросник · CRM', title: 'Квиз-лендинг — заявка после 5 шагов', cta: 'Скоро' },
-  { logo: 'TMA', assetKey: 'works/tma/hero', accent: 'blue', nav: 'Telegram · Каталог', title: 'Mini App — каталог внутри Telegram', cta: 'Скоро' },
+  { logo: 'ИМЭКС', assetKey: 'works/catalog-med/hero-dark-usp', accent: 'ink', nav: 'USP · Ряд преимуществ', title: 'Тёмная версия: акцент на надёжности', cta: 'Материал позже' },
+  { logo: 'Квиз', assetKey: 'works/quiz-landing/hero', accent: 'ochre', nav: 'Опросник · CRM', title: 'Квиз-лендинг — заявка после 5 шагов', cta: 'Скоро' },
+  { logo: 'TMA', assetKey: 'works/telegram-mini-app/hero', accent: 'blue', nav: 'Telegram · Каталог', title: 'Mini App — каталог внутри Telegram', cta: 'Скоро' },
 ];

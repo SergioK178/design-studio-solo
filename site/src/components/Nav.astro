@@ -2,33 +2,62 @@
 import { site } from '../data/site';
 
 const links = [
-  { label: 'Форматы', href: '#products' },
-  { label: 'Работы', href: '#works' },
-  { label: 'Процесс', href: '#process' },
-  { label: 'FAQ', href: '#faq' },
+  { label: 'Продукты', href: '/products/' },
+  { label: 'Работы', href: '/cases/' },
+  { label: 'Прайс', href: '/price/' },
+  { label: 'Лаборатория', href: '/lab/' },
 ];
+
+const currentPath = Astro.url.pathname;
+const isCurrent = (href: string) => currentPath === href || currentPath.startsWith(href);
 ---
 
 <header class="nav">
   <div class="wrap nav-inner">
     <a class="brand" href="/" aria-label="3K Studio на главную">{site.name}<span>.</span></a>
-    <nav aria-label="Главная навигация">
+
+    <nav class="nav-links" aria-label="Главная навигация">
       {links.map((link) => (
-        <a class="roll" href={link.href}>
+        <a class="roll" href={link.href} aria-current={isCurrent(link.href) ? 'page' : undefined}>
           <span data-text={link.label}>{link.label}</span>
         </a>
       ))}
+    </nav>
+
+    <div class="nav-actions">
       <a class="tg roll" href={site.telegramUrl}>
         <span data-text="Telegram ↗">Telegram ↗</span>
       </a>
-    </nav>
+      <a class="btn-gold nav-cta" href="/brief/" data-magnetic>Собрать проект →</a>
+    </div>
+
+    <button id="nav-toggle" class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-panel">
+      <span>Меню</span>
+    </button>
+  </div>
+
+  <div id="nav-panel" class="nav-panel" hidden>
+    <div class="nav-panel-backdrop" data-nav-close></div>
+    <div class="nav-panel-sheet" role="dialog" aria-modal="true" aria-label="Мобильное меню">
+      <div class="nav-panel-head">
+        <span class="brand">{site.name}.</span>
+        <button type="button" class="nav-panel-close" data-nav-close aria-label="Закрыть меню">✕</button>
+      </div>
+      <nav aria-label="Мобильная навигация">
+        {links.map((link) => (
+          <a href={link.href} aria-current={isCurrent(link.href) ? 'page' : undefined}>{link.label}</a>
+        ))}
+        <a href={site.telegramUrl}>Telegram ↗</a>
+      </nav>
+      <a class="btn-gold nav-panel-cta" href="/brief/">Собрать проект →</a>
+    </div>
   </div>
 </header>
 
 <style>
   .nav {
     position: absolute;
-    z-index: 4;
+    z-index: 40;
     inset: 0 0 auto;
   }
 
@@ -45,6 +74,7 @@ const links = [
     font-size: 17px;
     font-weight: 800;
     text-decoration: none;
+    color: currentColor;
   }
 
   .brand span,
@@ -52,38 +82,214 @@ const links = [
     color: var(--color-gold);
   }
 
-  nav {
+  .nav-links {
     display: flex;
     align-items: center;
     gap: 28px;
+    margin-right: auto;
+    margin-left: 44px;
     font-size: 13.5px;
     font-weight: 500;
     color: rgb(244 242 236 / 0.7);
   }
 
-  nav a {
+  .nav-links a {
     text-decoration: none;
   }
 
-  nav a:hover {
+  .nav-links a:hover,
+  .nav-links a[aria-current='page'] {
     color: var(--color-paper);
   }
 
-  .tg {
-    font-weight: 600;
+  .nav-links a[aria-current='page'] {
+    position: relative;
   }
 
-  @media (max-width: 760px) {
-    .nav-inner {
-      align-items: flex-start;
-      gap: 18px;
+  .nav-links a[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 2px;
+    background: var(--color-gold);
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .tg {
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .nav-cta {
+    box-sizing: border-box;
+    min-height: 52px;
+    padding: 12px 22px;
+    font-size: 14px;
+  }
+
+  .menu-toggle {
+    display: none;
+    min-height: 44px;
+    border: 1.5px solid rgb(244 242 236 / 0.4);
+    background: transparent;
+    padding: 9px 18px;
+    color: var(--color-paper);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .nav-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+  }
+
+  .nav-panel[hidden] {
+    display: none;
+  }
+
+  .nav-panel-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(23 21 15 / 0.6);
+  }
+
+  .nav-panel-sheet {
+    position: relative;
+    display: flex;
+    height: 100%;
+    max-width: 360px;
+    margin-left: auto;
+    flex-direction: column;
+    gap: 28px;
+    box-sizing: border-box;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 22px 28px 32px;
+    overflow-y: auto;
+  }
+
+  .nav-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-panel-close {
+    display: grid;
+    place-items: center;
+    border: 1.5px solid rgb(244 242 236 / 0.35);
+    background: transparent;
+    width: 44px;
+    height: 44px;
+    color: var(--color-paper);
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .nav-panel nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .nav-panel nav a {
+    padding: 14px 4px;
+    border-bottom: 1px solid rgb(244 242 236 / 0.14);
+    color: var(--color-paper);
+    font-family: var(--font-display);
+    font-size: 20px;
+    text-decoration: none;
+  }
+
+  .nav-panel nav a[aria-current='page'] {
+    color: var(--color-gold);
+  }
+
+  .nav-panel-cta {
+    margin-top: auto;
+    text-align: center;
+  }
+
+  @media (max-width: 900px) {
+    .nav-links,
+    .nav-actions {
+      display: none;
     }
 
-    nav {
-      justify-content: flex-end;
-      flex-wrap: wrap;
-      gap: 12px 18px;
-      font-size: 12.5px;
+    .menu-toggle {
+      display: block;
     }
   }
 </style>
+
+<script>
+  const toggle = document.getElementById('nav-toggle');
+  const panel = document.getElementById('nav-panel');
+
+  if (toggle && panel) {
+    let lastFocused: HTMLElement | null = null;
+
+    const focusableEls = () => Array.from(panel.querySelectorAll<HTMLElement>('a, button'));
+
+    const onKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closePanel();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = focusableEls();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    function openPanel() {
+      lastFocused = document.activeElement as HTMLElement | null;
+      panel!.hidden = false;
+      toggle!.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      focusableEls()[0]?.focus();
+      document.addEventListener('keydown', onKeydown);
+    }
+
+    function closePanel() {
+      panel!.hidden = true;
+      toggle!.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeydown);
+      (lastFocused ?? toggle)?.focus();
+    }
+
+    toggle.addEventListener('click', () => {
+      if (panel.hidden) openPanel();
+      else closePanel();
+    });
+
+    for (const closer of panel.querySelectorAll('[data-nav-close]')) {
+      closer.addEventListener('click', closePanel);
+    }
+
+    for (const link of panel.querySelectorAll('nav a')) {
+      link.addEventListener('click', closePanel);
+    }
+  }
+</script>

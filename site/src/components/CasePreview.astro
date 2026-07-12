@@ -1,0 +1,80 @@
+---
+import AssetSlot from './AssetSlot.astro';
+import type { WorkItem } from '../data/works';
+
+interface Props {
+  work: WorkItem;
+  /** Уровень заголовка карточки — зависит от места в иерархии страницы (h2 на /cases/, h3 в секции главной). */
+  titleTag?: 'h2' | 'h3';
+}
+
+const { work, titleTag = 'h3' } = Astro.props;
+const Title = titleTag;
+---
+
+<a
+  class:list={['case-preview', work.status === 'planned' && 'planned']}
+  href={work.href}
+  data-cursor={work.status === 'planned' ? 'Скоро' : 'Смотреть →'}
+>
+  <AssetSlot label={work.assetKey} src={work.assetSrc} />
+  <div class="copy">
+    <span class="mono">{work.category}</span>
+    <Title>{work.title}</Title>
+    <p>{work.inside}</p>
+    <b>{work.status === 'planned' ? 'Место под будущий кейс' : 'Смотреть →'}</b>
+  </div>
+</a>
+
+<style>
+  .case-preview {
+    display: grid;
+    min-height: 100%;
+    border: 1.5px solid rgb(23 21 15 / 0.2);
+    background: white;
+    color: var(--color-ink);
+    text-decoration: none;
+    transition:
+      box-shadow 0.25s var(--ease-site),
+      transform 0.25s var(--ease-site);
+  }
+
+  .case-preview:hover {
+    box-shadow: 10px 10px 0 var(--color-gold);
+    transform: translate(-3px, -3px);
+  }
+
+  .case-preview.planned {
+    opacity: 0.82;
+  }
+
+  .copy {
+    padding: 22px;
+  }
+
+  .copy .mono {
+    color: var(--color-blue);
+  }
+
+  .copy h2,
+  .copy h3 {
+    margin: 10px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(19px, 2vw, 25px);
+    line-height: 1.15;
+  }
+
+  .copy p {
+    margin: 12px 0 0;
+    color: rgb(23 21 15 / 0.7);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .copy b {
+    display: inline-block;
+    margin-top: 18px;
+    color: var(--color-ochre);
+    font-weight: 700;
+  }
+</style>

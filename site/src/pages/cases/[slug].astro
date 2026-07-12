@@ -1,51 +1,83 @@
 ---
+import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Nav from '../../components/Nav.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import AssetSlot from '../../components/AssetSlot.astro';
+import EditorialCase from '../../components/EditorialCase.astro';
 import { site } from '../../data/site';
-import { publishedWorks } from '../../data/works';
+import { briefHref, products } from '../../data/products';
 
-const featuresBySlug: Record<string, string[]> = {
-  'guest-house': ['Переключатель «владелец/инвестор»', 'Галерея объекта', 'График сезонности', 'Подача цены', 'WhatsApp-заявка'],
-  'car-rental': ['Фильтры по классам', 'Карточки авто', '5 шагов выбора', 'Форма заявки', 'Передача заявки менеджеру'],
-  'catalog-med': ['Направления каталога', 'Карточки позиций', 'Корзина-заявка «Получить КП»', 'Прайс на скачивание', 'Предметные фото'],
-};
-
-export function getStaticPaths() {
-  return publishedWorks.map((work) => ({ params: { slug: work.slug }, props: { work } }));
+export async function getStaticPaths() {
+  const entries = await getCollection('cases', ({ data }) => data.status === 'published');
+  return entries.map((entry) => ({ params: { slug: entry.id.replace(/\.md$/, '') }, props: { entry } }));
 }
 
-const { work } = Astro.props;
-const features = featuresBySlug[work.slug] ?? [];
-const screens = ['desktop-01', 'desktop-02', 'mobile-01', 'mobile-02'];
+const { entry } = Astro.props;
+const data = entry.data;
+const slug = entry.id.replace(/\.md$/, '');
+const { Content } = await render(entry);
+const product = products.find((item) => item.slug === data.productSlug);
 ---
 
-<Base title={`${work.title} · 3K Studio`}>
+<Base title={`${data.title} · 3K Studio`}>
   <Nav />
-  <PageHeader eyebrow={work.category} title={work.title} lead={work.inside} />
+  {data.presentation?.variant === 'editorial' ? (
+    <EditorialCase title={data.title} category={data.category} solution={data.solution} task={data.task} role={data.role} result={data.result} stack={data.stack} presentation={data.presentation} />
+  ) : <>
+  <PageHeader eyebrow={data.category} title={data.title} lead={data.solution} />
 
   <main class="work-body" data-bg="paper">
     <div class="wrap">
+      <section class="context" data-reveal-group>
+        <article>
+          <span class="mono">клиент и аудитория</span>
+          <p>{data.client}</p>
+          <p>{data.audience}</p>
+        </article>
+        <article>
+          <span class="mono">задача</span>
+          <p>{data.task}</p>
+        </article>
+        <article class="constraints">
+          <span class="mono">ограничения</span>
+          <ul>{data.constraints.map((item) => <li>{item}</li>)}</ul>
+        </article>
+      </section>
+
       <section class="hero-shot" data-reveal>
-        <AssetSlot label={`${work.assetKey}/hero`} src={work.assetSrc} ratio="16 / 9" />
+        <div class="hero-pair">
+          <AssetSlot label={`works/${slug}/cover-desktop`} frame="browser" />
+          <AssetSlot label={`works/${slug}/cover-mobile`} frame="mobile" ratio="9 / 16" />
+        </div>
       </section>
 
       <section class="screen-grid" aria-label="Экраны проекта" data-reveal-group>
-        {screens.map((screen, index) => (
-          <AssetSlot label={`works/${work.slug}/${screen}`} ratio={index > 1 ? '9 / 14' : '16 / 10'} />
+        {data.screens.map((screen) => (
+          <AssetSlot label={`works/${slug}/screens/${screen.id}`} caption={screen.caption} />
         ))}
       </section>
 
-      <section class="assembled" data-reveal>
-        <div>
-          <span class="mono">из чего собрано</span>
-          <h2>Функции без техжаргона</h2>
+      <section class="technical" data-reveal>
+        <span class="mono">техническая и операционная часть</span>
+        <div class="prose">
+          <Content />
         </div>
-        <ul>
-          {features.map((feature) => <li>{feature}</li>)}
+        <ul class="stack">
+          {data.stack.map((item) => <li>{item}</li>)}
         </ul>
+      </section>
+
+      <section class="role-result" data-reveal-group>
+        <article>
+          <span class="mono">роль 3K Studio</span>
+          <p>{data.role}</p>
+        </article>
+        <article>
+          <span class="mono">результат</span>
+          <ul>{data.result.map((item) => <li>{item}</li>)}</ul>
+        </article>
       </section>
 
       <section class="cta" data-reveal>
@@ -55,12 +87,13 @@ const screens = ['desktop-01', 'desktop-02', 'mobile-01', 'mobile-02'];
           <p>Ответьте на несколько вопросов — получите ориентир по цене и сроку. Точную смету фиксируем после проверки деталей.</p>
         </div>
         <div class="actions">
-          <a class="btn-gold" href="/brief/" data-magnetic>Собрать проект →</a>
+          {product && <a class="btn-gold" href={briefHref(product)} data-magnetic>Собрать «{product.name}» →</a>}
           <a class="btn-outline dark" href={site.telegramUrl} data-magnetic>Написать в Telegram</a>
         </div>
       </section>
     </div>
   </main>
+  </>}
   <SiteFooter />
 </Base>
 
@@ -71,8 +104,58 @@ const screens = ['desktop-01', 'desktop-02', 'mobile-01', 'mobile-02'];
     padding: 70px 0 100px;
   }
 
+  .mono {
+    color: var(--color-blue);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .context {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-bottom: 54px;
+  }
+
+  .context article {
+    border-top: 2px solid rgb(23 21 15 / 0.2);
+    padding-top: 20px;
+  }
+
+  .context p,
+  .role-result p,
+  .technical .prose :global(p) {
+    color: rgb(23 21 15 / 0.72);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 10px 0 0;
+  }
+
+  .constraints ul,
+  .role-result ul {
+    margin: 10px 0 0;
+    padding-left: 20px;
+  }
+
+  .constraints li,
+  .role-result li {
+    color: rgb(23 21 15 / 0.72);
+    font-size: 15px;
+    line-height: 1.55;
+    margin-bottom: 6px;
+  }
+
   .hero-shot {
     margin-bottom: 54px;
+  }
+
+  .hero-pair {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 24px;
+    align-items: start;
   }
 
   .screen-grid {
@@ -81,46 +164,66 @@ const screens = ['desktop-01', 'desktop-02', 'mobile-01', 'mobile-02'];
     gap: 18px;
   }
 
-  .screen-grid :global(.asset-slot:nth-child(-n + 2)) {
+  .screen-grid :global(.asset-slot-figure:nth-child(-n + 2)) {
     grid-column: span 2;
   }
 
-  .assembled,
+  .technical,
+  .role-result,
   .cta {
-    display: grid;
-    grid-template-columns: 360px minmax(0, 1fr);
-    gap: 50px;
     margin-top: 70px;
     border-top: 2px solid rgb(23 21 15 / 0.18);
     padding-top: 34px;
   }
 
-  .mono {
-    color: var(--color-blue);
+  .technical .prose {
+    max-width: 72ch;
+    margin-top: 16px;
   }
 
-  h2 {
-    margin: 12px 0 0;
+  .technical .prose :global(h2) {
+    margin: 28px 0 8px;
     font-family: var(--font-display);
-    font-size: clamp(28px, 3.5vw, 42px);
-    line-height: 1.14;
+    font-size: 22px;
   }
 
-  ul {
+  .stack {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    margin: 0;
+    gap: 10px;
+    margin: 24px 0 0;
     padding: 0;
     list-style: none;
   }
 
-  li {
+  .stack li {
     border: 1.5px solid rgb(23 21 15 / 0.2);
     background: white;
-    padding: 12px 14px;
-    color: rgb(23 21 15 / 0.78);
-    font-size: 14.5px;
+    padding: 8px 12px;
+    color: rgb(23 21 15 / 0.7);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .role-result {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .cta h2 {
+    margin: 12px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3.5vw, 42px);
+    line-height: 1.14;
+    flex-basis: 100%;
   }
 
   .cta p {
@@ -144,13 +247,14 @@ const screens = ['desktop-01', 'desktop-02', 'mobile-01', 'mobile-02'];
   }
 
   @media (max-width: 860px) {
+    .context,
     .screen-grid,
-    .assembled,
-    .cta {
+    .hero-pair,
+    .role-result {
       grid-template-columns: 1fr;
     }
 
-    .screen-grid :global(.asset-slot:nth-child(-n + 2)) {
+    .screen-grid :global(.asset-slot-figure:nth-child(-n + 2)) {
       grid-column: auto;
     }
   }

@@ -3,6 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Nav from '../../components/Nav.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
+import PriceTable from '../../components/PriceTable.astro';
 import { extensionPrices } from '../../data/products';
 ---
 
@@ -11,22 +12,7 @@ import { extensionPrices } from '../../data/products';
   <PageHeader eyebrow="прайс" title="Прайс расширений" lead="Расширения не появляются из воздуха: если задача выходит за рамки формата, считаем её отдельной строкой." />
   <main class="price-page" data-bg="paper">
     <div class="wrap">
-      <div class="table" data-reveal>
-        <div class="row head">
-          <span>Расширение</span>
-          <span>Цена</span>
-          <span>Срок</span>
-          <span>Что внутри</span>
-        </div>
-        {extensionPrices.map((item) => (
-          <article class="row">
-            <h2>{item.name}</h2>
-            <strong>{item.price}</strong>
-            <span class="term">{item.term}</span>
-            <p>{item.description}</p>
-          </article>
-        ))}
-      </div>
+      <PriceTable items={extensionPrices} />
       <section class="note" data-reveal>
         <h2>Как это применяется</h2>
         <p>Базовый формат фиксирует рамки проекта. Всё, что не входит в рамки, добавляется как расширение с отдельной ценой и сроком до старта работ.</p>
@@ -42,56 +28,6 @@ import { extensionPrices } from '../../data/products';
     background: var(--color-paper);
     color: var(--color-ink);
     padding: 80px 0 100px;
-  }
-
-  .table {
-    border-top: 2px solid rgb(23 21 15 / 0.22);
-  }
-
-  .row {
-    display: grid;
-    grid-template-columns: minmax(220px, 1.1fr) 180px 170px minmax(260px, 1fr);
-    gap: 24px;
-    align-items: baseline;
-    border-bottom: 1.5px solid rgb(23 21 15 / 0.14);
-    padding: 24px 0;
-  }
-
-  .head {
-    color: var(--color-blue);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  h2,
-  p {
-    margin: 0;
-  }
-
-  h2 {
-    font-family: var(--font-display);
-    font-size: clamp(20px, 2.4vw, 30px);
-    line-height: 1.18;
-  }
-
-  strong {
-    color: var(--color-blue);
-    font-size: 18px;
-  }
-
-  .term {
-    color: rgb(23 21 15 / 0.62);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
-  }
-
-  p {
-    color: rgb(23 21 15 / 0.7);
-    font-size: 15px;
-    line-height: 1.6;
   }
 
   .note {
@@ -115,18 +51,9 @@ import { extensionPrices } from '../../data/products';
   }
 
   @media (max-width: 860px) {
-    .row,
     .note {
       grid-template-columns: 1fr;
       gap: 10px;
-    }
-
-    .head {
-      display: none;
-    }
-
-    .row {
-      padding: 26px 0;
     }
   }
 </style>

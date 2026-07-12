@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Nav from '../../components/Nav.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import AssetSlot from '../../components/AssetSlot.astro';
+import ProofModule from '../../components/ProofModule.astro';
 import { briefHref, detailedProducts, extensionPrices } from '../../data/products';
 import { site } from '../../data/site';
 
@@ -13,7 +13,7 @@ export function getStaticPaths() {
 
 const { product } = Astro.props;
 const detail = product.detail;
-const example = product.example;
+const proof = product.proof;
 const recommended = extensionPrices.filter((extension) => product.recommendedExtensions?.includes(extension.id)).slice(0, 6);
 ---
 
@@ -21,17 +21,7 @@ const recommended = extensionPrices.filter((extension) => product.recommendedExt
   <Nav />
   <PageHeader eyebrow={`${product.term} · ${product.price}`} title={product.name} lead={product.summary} tone="gold" />
   <main class="product" data-bg="paper">
-    {example && (
-      <section class="wrap example" data-reveal>
-        <div>
-          <span class="mono">пример</span>
-          <h2>{example.title}</h2>
-          <p>{example.status === 'published' ? 'Показываем близкую работу и её устройство.' : 'Место под будущий визуальный референс продукта.'}</p>
-          <a href={example.href}>{example.status === 'published' ? 'Смотреть работу →' : 'Обсудить похожую задачу →'}</a>
-        </div>
-        <AssetSlot label={example.assetKey} ratio="16 / 10" />
-      </section>
-    )}
+    {proof && <ProofModule proof={proof} />}
 
     <section class="wrap grid" data-reveal-group>
       <article>
@@ -90,15 +80,6 @@ const recommended = extensionPrices.filter((extension) => product.recommendedExt
     padding: 80px 0 100px;
   }
 
-  .example {
-    display: grid;
-    grid-template-columns: 0.75fr 1.25fr;
-    gap: 32px;
-    align-items: center;
-    margin-bottom: 70px;
-  }
-
-  .example h2,
   .options h2,
   .cta h2 {
     margin: 12px 0 0;
@@ -107,12 +88,6 @@ const recommended = extensionPrices.filter((extension) => product.recommendedExt
     line-height: 1.12;
   }
 
-  .example p {
-    max-width: 420px;
-    margin: 18px 0 0;
-  }
-
-  .example a,
   .options-head a {
     display: inline-block;
     margin-top: 22px;
@@ -226,7 +201,6 @@ const recommended = extensionPrices.filter((extension) => product.recommendedExt
   }
 
   @media (max-width: 900px) {
-    .example,
     .grid,
     .options-grid {
       grid-template-columns: 1fr;

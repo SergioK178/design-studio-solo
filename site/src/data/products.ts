@@ -8,11 +8,28 @@ export interface ProductDetail {
   note: string;
 }
 
-export interface ProductExample {
+/**
+ * 5 варианта proof-модуля из master-spec.md §4 — каждый продукт использует ровно один,
+ * подобранный под тип задачи, а не механически повторяющийся на всех страницах.
+ */
+export type ProofVariant = 'real-interface' | 'scenario' | 'integration-diagram' | 'before-after' | 'management';
+
+export interface ProofAsset {
+  assetKey: string;
+  /** Что здесь доказано — не имя файла (design-system.md §3). */
+  caption: string;
+  /** Ярлык состояния для scenario/before-after: «До», «Шаг 2», «Публичный экран» и т.д. */
+  label?: string;
+}
+
+export interface ProductProof {
+  variant: ProofVariant;
   title: string;
   href: string;
-  assetKey: string;
   status: ProductStatus;
+  /** browser (по умолчанию в компоненте) | mobile | telegram | plain — design-system.md §4. */
+  frame?: 'browser' | 'mobile' | 'telegram' | 'plain';
+  assets: ProofAsset[];
 }
 
 export interface Product {
@@ -26,7 +43,7 @@ export interface Product {
   featured?: boolean;
   icon?: string;
   detail?: ProductDetail;
-  example?: ProductExample;
+  proof?: ProductProof;
   recommendedExtensions?: string[];
 }
 
@@ -62,11 +79,16 @@ const siteProducts: Product[] = [
       excludes: ['кастомный дизайн', 'CRM-интеграции', 'вторая страница', 'второй круг правок без доплаты'],
       note: '100% предоплата. Срок стартует от сдачи контента клиентом, не от оплаты.',
     },
-    example: {
-      title: 'Промо-лендинг: пример экрана',
-      href: '/brief/?product=start',
-      assetKey: 'works/promo/example',
-      status: 'planned',
+    proof: {
+      variant: 'real-interface',
+      title: 'MZKRS: воронка проба → КП',
+      href: '/cases/suture/',
+      status: 'published',
+      assets: [
+        { assetKey: 'works/suture/cover', caption: 'Лендинг ведёт врача от материала к заявке на бесплатный пробный набор, без давления на быструю покупку.' },
+        { assetKey: 'works/suture/detail-form', caption: 'Форма собирает материал, процедуры и роль ещё до звонка — менеджер готовит КП по делу.', label: 'Заявка' },
+        { assetKey: 'works/suture/detail-notify', caption: 'Заявка уходит менеджеру одновременно в Telegram и на почту — доходит, даже если один канал недоступен.', label: 'Приём заявки' },
+      ],
     },
     recommendedExtensions: ['extra-page', 'analytics', 'content', 'rush'],
   },
@@ -86,11 +108,16 @@ const siteProducts: Product[] = [
       excludes: ['каталог товаров', 'личные кабинеты', 'сложная ERP-логика'],
       note: 'Цена зависит от интеграций и готовности контента.',
     },
-    example: {
-      title: 'Loft Rent',
+    proof: {
+      variant: 'real-interface',
+      title: 'Loft Rent: аренда авто с онлайн-бронированием',
       href: '/cases/car-rental/',
-      assetKey: 'works/loft-rent/cover',
       status: 'published',
+      assets: [
+        { assetKey: 'works/car-rental/cover', caption: 'Каталог автопарка с реальной доступностью машин по датам — не форма «заявка в никуда».' },
+        { assetKey: 'works/car-rental/detail-booking', caption: 'Бронирование сверяется с системой учёта аренды заказчика — брони не задваиваются.', label: 'Бронирование' },
+        { assetKey: 'works/car-rental/detail-admin', caption: 'Заказчик сам добавляет и убирает машины из каталога, не трогая код.', label: 'Управление автопарком' },
+      ],
     },
     recommendedExtensions: ['crm', 'analytics', 'quiz', 'content', 'rush'],
   },
@@ -110,11 +137,17 @@ const siteProducts: Product[] = [
       excludes: ['сложную ветвящуюся логику', 'личный кабинет', 'автоматический скоринг вне сценария'],
       note: 'Сначала фиксируем ветку вопросов и поля заявки.',
     },
-    example: {
-      title: 'Квиз-лендинг',
+    proof: {
+      variant: 'scenario',
+      title: 'Сценарий квиза: от вопроса до заявки',
       href: '/brief/?product=quiz',
-      assetKey: 'works/quiz/cover',
       status: 'planned',
+      assets: [
+        { assetKey: 'products/quiz/screen-01-intro', caption: 'Один понятный вопрос на экран — не длинная форма целиком.', label: '1. Вопрос' },
+        { assetKey: 'products/quiz/screen-02-branch', caption: 'Ответ меняет следующий вопрос — заявка точнее, чем со свободным полем.', label: '2. Ветка' },
+        { assetKey: 'products/quiz/screen-03-branch', caption: 'Прогресс виден на каждом шаге, вернуться назад можно без потери ответов.', label: '3. Уточнение' },
+        { assetKey: 'products/quiz/screen-04-result', caption: 'Результат объясняет, что получит клиент, и ведёт в заявку.', label: '4. Результат' },
+      ],
     },
     recommendedExtensions: ['crm', 'analytics', 'content', 'rush'],
   },
@@ -134,11 +167,16 @@ const siteProducts: Product[] = [
       excludes: ['каталог товаров', 'интернет-магазин', 'сложные интеграции без отдельной оценки'],
       note: 'Цена зависит от количества страниц и готовности контента.',
     },
-    example: {
-      title: 'Сайт компании: пример экрана',
+    proof: {
+      variant: 'real-interface',
+      title: 'Сайт компании: структура и ключевые страницы',
       href: '/brief/?product=company',
-      assetKey: 'works/company/example',
       status: 'planned',
+      assets: [
+        { assetKey: 'products/company/hero', caption: 'Главная сразу называет услуги и ведёт к прайсу и заявке.' },
+        { assetKey: 'products/company/sitemap', caption: 'Разделы и переходы между ними фиксируются до вёрстки — маршрут клиента понятен заранее.', label: 'Карта разделов' },
+        { assetKey: 'products/company/detail-page', caption: 'Страница услуги — не абзац текста, а цена, срок и следующий шаг.', label: 'Страница услуги' },
+      ],
     },
     recommendedExtensions: ['extra-page', 'second-language', 'blog', 'content', 'analytics'],
   },
@@ -158,11 +196,15 @@ const siteProducts: Product[] = [
       excludes: ['онлайн-оплата', 'складской учёт', 'личный кабинет B2B-клиента'],
       note: 'Если данных много и они грязные, сначала оцениваем перенос.',
     },
-    example: {
-      title: 'ИМЭКС светлый',
+    proof: {
+      variant: 'management',
+      title: 'ИМЭКС: B2B-каталог медизделий',
       href: '/cases/catalog-med/',
-      assetKey: 'works/imex-light/cover',
       status: 'published',
+      assets: [
+        { assetKey: 'works/catalog-med/cover', caption: 'Закупщик собирает нужные позиции в заявку на КП — без интернет-магазинной корзины, которая тут не нужна.', label: 'Публичный экран' },
+        { assetKey: 'works/catalog-med/detail-cms', caption: 'Контент-менеджер сам правит карточки и категории в админке — без участия разработчика.', label: 'Управление каталогом' },
+      ],
     },
     recommendedExtensions: ['crm', 'analytics', 'integration-1c', 'extra-page', 'content'],
   },
@@ -182,11 +224,17 @@ const siteProducts: Product[] = [
       excludes: ['маркетплейс-логику', 'мультивендорность', 'сложный складской учёт без отдельной оценки'],
       note: 'Перед стартом фиксируем источники данных, оплату и доставку.',
     },
-    example: {
-      title: 'Магазин: пример экрана',
+    proof: {
+      variant: 'scenario',
+      title: 'Сценарий покупки: каталог → корзина → оплата',
       href: '/brief/?product=shop',
-      assetKey: 'works/shop/example',
       status: 'planned',
+      assets: [
+        { assetKey: 'products/shop/screen-01-catalog', caption: 'Каталог с фильтрами по нужным клиенту признакам, не общий шаблон маркетплейса.', label: '1. Каталог' },
+        { assetKey: 'products/shop/screen-02-cart', caption: 'Корзина показывает состав и итог без скрытых шагов до оплаты.', label: '2. Корзина' },
+        { assetKey: 'products/shop/screen-03-checkout', caption: 'Оформление заказа собирает доставку и оплату в одном экране.', label: '3. Оформление' },
+        { assetKey: 'products/shop/screen-04-confirm', caption: 'Подтверждение заказа с номером — клиент видит, что заявка принята.', label: '4. Подтверждение' },
+      ],
     },
     recommendedExtensions: ['online-payment', 'integration-1c', 'analytics', 'content', 'rush'],
   },
@@ -206,11 +254,15 @@ const siteProducts: Product[] = [
       excludes: ['полный редизайн', 'переписывание всех текстов', 'сложную SEO-миграцию без отдельной оценки'],
       note: 'Перед стартом проверяем текущую структуру и важные страницы.',
     },
-    example: {
-      title: 'Переезд с конструктора: before/after',
+    proof: {
+      variant: 'before-after',
+      title: 'Переезд с конструктора: тот же контент, свой код',
       href: '/brief/?product=migration',
-      assetKey: 'works/migration/example',
       status: 'planned',
+      assets: [
+        { assetKey: 'products/migration/before', caption: 'Сайт на конструкторе — привязан к подписке и её ограничениям вёрстки.', label: 'До' },
+        { assetKey: 'products/migration/after', caption: 'Та же структура и позиции на своём коде — без ежемесячной аренды платформы.', label: 'После' },
+      ],
     },
     recommendedExtensions: ['extra-page', 'analytics', 'content', 'rush'],
   },
@@ -279,11 +331,17 @@ export const products: Product[] = [
       excludes: ['нативное мобильное приложение', 'функции вне Telegram WebApp API'],
       note: 'Сначала определяем, что пользователь делает внутри Telegram.',
     },
-    example: {
-      title: 'Telegram Mini App',
+    proof: {
+      variant: 'scenario',
+      title: 'Сценарий Mini App внутри Telegram',
       href: '/brief/?product=tma',
-      assetKey: 'works/tma/cover',
       status: 'planned',
+      frame: 'telegram',
+      assets: [
+        { assetKey: 'works/telegram-mini-app/screen-01-catalog', caption: 'Каталог или список услуг открывается прямо в чате, без перехода в браузер.', label: '1. Каталог' },
+        { assetKey: 'works/telegram-mini-app/screen-02-select', caption: 'Выбор позиции или слота — тот же сценарий, что и на сайте, но внутри Telegram.', label: '2. Выбор' },
+        { assetKey: 'works/telegram-mini-app/screen-03-confirm', caption: 'Подтверждение уходит и пользователю, и в бот-уведомление менеджеру.', label: '3. Подтверждение' },
+      ],
     },
     recommendedExtensions: ['online-payment', 'online-booking', 'analytics', 'content'],
   },
@@ -353,8 +411,8 @@ export const extensionPrices: ExtensionPrice[] = [
   { id: 'online-booking', name: 'Онлайн-запись', price: '40–120 тыс. ₽', term: '3–10 дней', description: 'Запись на услуги, слоты, уведомления и базовые ограничения.', appliesTo: ['sites', 'telegram'] },
   { id: 'blog', name: 'Блог / раздел статей', price: '35–70 тыс. ₽', term: '3–5 дней', description: 'Раздел материалов с шаблоном статьи и списком публикаций.', appliesTo: ['sites'] },
   { id: 'quiz', name: 'Квиз', price: '40–90 тыс. ₽', term: '3–5 дней', description: 'Пошаговый опрос вместо обычной формы.', appliesTo: ['sites'] },
-  { id: 'integration-1c', name: 'Интеграция с 1С / выгрузкой', price: 'от 70 000 ₽', term: 'по задаче', description: 'Обмен каталогом, остатками, ценами или заказами.', appliesTo: ['sites', 'integrations'] },
-  { id: 'content', name: 'Контент под ключ', price: 'от 30 000 ₽', term: 'по объёму', description: 'Структура, тексты и подготовка материалов для запуска.', appliesTo: ['sites', 'telegram'] },
+  { id: 'integration-1c', name: 'Интеграция с 1С / выгрузкой', price: '70–180 тыс. ₽', term: 'по задаче', description: 'Обмен каталогом, остатками, ценами или заказами.', appliesTo: ['sites', 'integrations'] },
+  { id: 'content', name: 'Контент под ключ', price: '30–120 тыс. ₽', term: 'по объёму', description: 'Структура, тексты и подготовка материалов для запуска.', appliesTo: ['sites', 'telegram'] },
   { id: 'rush', name: 'Срочность', price: '+30%', term: 'срок фиксируется отдельно', description: 'Приоритетная сборка в сжатые сроки.', appliesTo: ['sites', 'telegram', 'integrations'] },
   { id: 'hourly', name: 'Час доработок вне прайса', price: '4 000 ₽', term: 'без срока', description: 'Небольшие задачи, которые не попадают в готовые расширения.', appliesTo: ['sites', 'telegram', 'integrations', 'support'] },
 ];

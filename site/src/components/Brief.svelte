@@ -12,21 +12,7 @@
   } from '../data/brief-v2';
   import { site } from '../data/site';
 
-  const productMap = {
-    start: 'start',
-    landing: 'landing',
-    quiz: 'quiz',
-    company: 'company',
-    catalog: 'catalog',
-    shop: 'shop',
-    tma: 'tma',
-    bot: 'bot',
-    migration: 'migration',
-    automation: 'automation',
-    crm: 'crm',
-    analytics: 'analytics',
-    support: 'support',
-  };
+  const knownProductSlugs = new Set(products.map((item) => item.slug));
 
   let stage = 'mode';
   let mode = '';
@@ -118,7 +104,7 @@
     const params = new URLSearchParams(window.location.search);
     const version = params.get('version');
     const legacyProject = params.get('product') || params.get('project');
-    const restoredProduct = legacyProject ? productMap[legacyProject] : '';
+    const restoredProduct = legacyProject && knownProductSlugs.has(legacyProject) ? legacyProject : '';
 
     if (version === 'v2') {
       mode = params.get('mode') || (restoredProduct ? 'known' : '');

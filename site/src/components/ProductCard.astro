@@ -1,0 +1,123 @@
+---
+import { briefHref, type Product } from '../data/products';
+
+interface Props {
+  product: Product;
+  showIcon?: boolean;
+}
+
+const { product, showIcon = false } = Astro.props;
+const href = product.status === 'published' ? `/products/${product.slug}/` : briefHref(product);
+const actionLabel = product.status === 'published' ? 'Подробнее →' : 'Собрать в конструкторе →';
+const statusLabel = product.status === 'published' ? 'детальная страница' : 'по запросу';
+---
+
+<a class:list={['product-card', product.status === 'planned' && 'planned']} href={href}>
+  {showIcon && (
+    <div class="icon-slot" aria-hidden="true">
+      <span class="mono">asset pending</span>
+    </div>
+  )}
+  <div class="body">
+    <span class:list={['status', product.status]}>{statusLabel}</span>
+    <h3>{product.name}</h3>
+    <p>{product.summary}</p>
+  </div>
+  <div class="meta">
+    <strong>{product.price}</strong>
+    <span>{product.term}</span>
+  </div>
+  <span class="action">{actionLabel}</span>
+</a>
+
+<style>
+  .product-card {
+    display: grid;
+    box-sizing: border-box;
+    min-height: 270px;
+    grid-template-rows: auto 1fr auto auto;
+    gap: 18px;
+    border: 1.5px solid rgb(23 21 15 / 0.18);
+    background: white;
+    padding: 22px;
+    color: var(--color-ink);
+    text-decoration: none;
+    transition:
+      box-shadow 0.25s var(--ease-site),
+      transform 0.25s var(--ease-site);
+  }
+
+  .product-card:hover {
+    box-shadow: 10px 10px 0 var(--color-gold);
+    transform: translate(-3px, -3px);
+  }
+
+  .product-card.planned {
+    opacity: 0.88;
+  }
+
+  .icon-slot {
+    display: grid;
+    width: 58px;
+    height: 58px;
+    place-items: center;
+    border: 1.5px solid rgb(229 164 59 / 0.55);
+    color: var(--color-gold);
+  }
+
+  .icon-slot .mono {
+    max-width: 7ch;
+    color: var(--color-gold);
+    font-size: 8px;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .status {
+    display: inline-block;
+    color: var(--color-blue);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .status.planned {
+    color: var(--color-ochre);
+  }
+
+  h3 {
+    margin: 12px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(19px, 2vw, 25px);
+    line-height: 1.15;
+  }
+
+  .body p {
+    margin: 12px 0 0;
+    color: rgb(23 21 15 / 0.7);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .meta {
+    display: grid;
+    gap: 6px;
+  }
+
+  .meta strong {
+    color: var(--color-blue);
+    font-size: 18px;
+  }
+
+  .meta span {
+    color: rgb(23 21 15 / 0.5);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .action {
+    color: var(--color-ochre);
+    font-weight: 700;
+  }
+</style>
