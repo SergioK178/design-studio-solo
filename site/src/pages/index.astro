@@ -7,8 +7,8 @@ import ApproachInfographics from '../components/ApproachInfographics.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import ProductCard from '../components/ProductCard.astro';
 import CasePreview from '../components/CasePreview.astro';
-import { automationExamples, faqs } from '../data/home';
-import { briefHref, featuredProducts } from '../data/products';
+import { faqs, team } from '../data/home';
+import { homeProducts } from '../data/products';
 import { site } from '../data/site';
 import { works } from '../data/works';
 ---
@@ -25,7 +25,7 @@ import { works } from '../data/works';
             <span class="mono">работы</span>
             <h2>Работы</h2>
           </div>
-          <p>Разные форматы, разные ниши, один подход к смете и срокам.</p>
+          <p>Сначала — реальные задачи бизнеса. В каждом проекте своя логика, объём и путь к заявке.</p>
         </div>
         <div class="works-grid" data-reveal-group>
           {works.filter((item) => item.status === 'planned' || item.homeFeatured).map((item) => <CasePreview work={item} />)}
@@ -40,23 +40,30 @@ import { works } from '../data/works';
             <span class="mono">форматы и цены</span>
             <h2>Выберите задачу, а не технологию</h2>
           </div>
-          <p>Цена и срок фиксируются до старта. Расширения считаем отдельно и заранее.</p>
+          <p>Такие задачи собираем в четырёх основных форматах. Цена и срок фиксируются до старта.</p>
         </div>
+        <div class="product-grid" data-reveal-group>
+          {homeProducts.map((item) => <ProductCard product={item} showIcon />)}
+        </div>
+        <a class="integration-bridge" href="/products/#integrations" data-reveal>
+          <span>
+            <strong>Интеграции — внутри задачи</strong>
+            <span>Подключим CRM, обновление каталога и внутренние процессы, если они нужны сайту.</span>
+          </span>
+          <span class="integration-action">Возможности автоматизации →</span>
+        </a>
         <a class="tg-banner" href={site.telegramUrl} target="_blank" rel="noopener" data-reveal>
           <span class="tg-badge" aria-hidden="true">
             <img src="/assets/ui/products/telegram.webp" alt="" width="224" height="224" loading="lazy" />
           </span>
           <span class="tg-text">
-            <strong>Напишите в Telegram</strong>
-            <span>Поможем выбрать формат под вашу задачу.</span>
+            <strong>Не знаете, какой формат выбрать?</strong>
+            <span>Напишите задачу своими словами — поможем определить подходящий вариант.</span>
           </span>
           <span class="tg-action">Написать в Telegram →</span>
         </a>
-        <div class="product-grid" data-reveal-group>
-          {featuredProducts.map((item) => <ProductCard product={item} showIcon />)}
-        </div>
         <div class="products-links" data-reveal>
-          <a href="/products/">Все продукты →</a>
+          <a href="/products/">Все форматы и нестандартные задачи →</a>
           <a href="/price/">Прайс расширений →</a>
         </div>
       </div>
@@ -69,7 +76,7 @@ import { works } from '../data/works';
             <span class="mono">подход</span>
             <h2>Как мы считаем и работаем</h2>
           </div>
-          <p>Без манифестов: устройство работы видно в смете, доступах и процессе.</p>
+          <p>Формат проекта меняется, правила — нет: состав работ, права и расширения известны заранее.</p>
         </div>
         <ApproachInfographics />
       </div>
@@ -77,19 +84,21 @@ import { works } from '../data/works';
 
     <ProcessChat />
 
-    <section id="automation" class="automation-section" data-bg="ink">
-      <div class="wrap automation-grid">
-        <div data-reveal>
-          <span class="mono">интеграции</span>
-          <h2>Автоматизация под процесс</h2>
-          <p>Убираем ручную рутину: то, что сейчас копируется руками, начинает происходить само.</p>
-          <a class="btn-gold" href={briefHref('automation')} data-magnetic>Описать процесс →</a>
+    <section id="team" class="team-section" data-bg="ink" aria-labelledby="team-title">
+      <div class="wrap">
+        <div class="section-head light" data-reveal>
+          <div>
+            <span class="mono">команда</span>
+            <h2 id="team-title">Отвечают те, кто делает</h2>
+          </div>
+          <p>Без менеджера-посредника: в рабочем чате стратегия, дизайн и разработка представлены напрямую.</p>
         </div>
-        <div class="automation-list" data-reveal-group>
-          {automationExamples.map((item, index) => (
+        <div class="team-grid" data-reveal-group>
+          {team.map((person) => (
             <article>
-              <span class="mono">пример 0{index + 1}</span>
-              <p>{item}</p>
+              <span class="team-role">{person.role}</span>
+              <h3>{person.name}</h3>
+              <p>{person.fact}</p>
             </article>
           ))}
         </div>
@@ -152,7 +161,7 @@ import { works } from '../data/works';
   }
 
   .approach-section,
-  .automation-section {
+  .team-section {
     background: var(--color-ink);
     color: var(--color-paper);
   }
@@ -178,8 +187,7 @@ import { works } from '../data/works';
     color: var(--color-blue);
   }
 
-  .light .mono,
-  .automation-section .mono {
+  .light .mono {
     color: var(--color-gold);
   }
 
@@ -221,7 +229,7 @@ import { works } from '../data/works';
     align-items: center;
     gap: 18px;
     box-sizing: border-box;
-    margin-bottom: 18px;
+    margin-top: 18px;
     border: 1.5px solid rgb(23 21 15 / 0.18);
     background: white;
     padding: 16px 24px;
@@ -275,6 +283,39 @@ import { works } from '../data/works';
     white-space: nowrap;
   }
 
+  .integration-bridge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+    margin-top: 18px;
+    border: 1.5px solid rgb(23 21 15 / 0.18);
+    padding: 20px 24px;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .integration-bridge > span:first-child {
+    display: grid;
+    gap: 5px;
+  }
+
+  .integration-bridge strong {
+    font-size: 16px;
+  }
+
+  .integration-bridge > span > span {
+    color: rgb(23 21 15 / 0.62);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .integration-action {
+    flex: none;
+    color: var(--color-ochre);
+    font-weight: 700;
+  }
+
   .approach-grid {
     display: grid;
     grid-template-columns: 1fr;
@@ -282,7 +323,6 @@ import { works } from '../data/works';
   }
 
   .approach-grid article,
-  .automation-list article,
   details {
     box-sizing: border-box;
     border: 1.5px solid rgb(23 21 15 / 0.18);
@@ -296,7 +336,6 @@ import { works } from '../data/works';
   }
 
   .approach-grid p,
-  .automation-section p,
   details p {
     color: rgb(23 21 15 / 0.7);
     font-size: 15px;
@@ -340,34 +379,40 @@ import { works } from '../data/works';
     grid-column: span 3;
   }
 
-  .automation-grid {
+  .team-grid {
     display: grid;
-    grid-template-columns: 390px minmax(0, 1fr);
-    gap: 52px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
   }
 
-  .automation-section h2 {
-    margin-top: 12px;
-  }
-
-  .automation-section p {
-    margin-top: 20px;
-    color: rgb(244 242 236 / 0.66);
-  }
-
-  .automation-section .btn-gold {
-    margin-top: 30px;
-  }
-
-  .automation-list {
-    display: grid;
-    gap: 16px;
-  }
-
-  .automation-list article {
+  .team-grid article {
+    min-height: 230px;
+    box-sizing: border-box;
+    border: 1.5px solid rgb(244 242 236 / 0.18);
     border-color: rgb(244 242 236 / 0.18);
     background: var(--color-ink-soft);
     padding: 24px;
+  }
+
+  .team-role {
+    color: var(--color-gold);
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+  }
+
+  .team-grid h3 {
+    margin-top: 28px;
+    font-family: var(--font-display);
+    font-size: clamp(24px, 2.4vw, 34px);
+    line-height: 1.1;
+  }
+
+  .team-grid p {
+    margin-top: 18px;
+    color: rgb(244 242 236 / 0.66);
+    font-size: 15px;
+    line-height: 1.55;
   }
 
   .brief-section {
@@ -481,9 +526,6 @@ import { works } from '../data/works';
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .automation-grid {
-      grid-template-columns: 1fr;
-    }
   }
 
   @media (max-width: 760px) {
@@ -495,6 +537,13 @@ import { works } from '../data/works';
 
     .tg-action {
       margin-left: 70px;
+    }
+
+    .integration-bridge {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px;
     }
 
     .wrap {
@@ -515,6 +564,7 @@ import { works } from '../data/works';
     .product-grid,
     .approach-grid,
     .works-grid,
+    .team-grid,
     .faq-list {
       grid-template-columns: 1fr;
     }

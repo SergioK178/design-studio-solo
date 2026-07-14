@@ -15,7 +15,7 @@ import { productGroups, products } from '../../data/products';
       {productGroups.map((group) => {
         const items = products.filter((product) => product.group === group.id);
         return (
-          <section class="group" data-reveal>
+          <section id={group.id} class="group" data-reveal>
             <div class="group-head">
               <h2 class="mono">{group.title}</h2>
               <p>{group.summary}</p>

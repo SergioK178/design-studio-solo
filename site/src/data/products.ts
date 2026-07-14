@@ -400,6 +400,8 @@ export const productGroups: ProductGroupMeta[] = [
 ];
 
 export const featuredProducts = products.filter((product) => product.featured);
+const homeProductSlugs = new Set(['start', 'landing', 'company', 'catalog']);
+export const homeProducts = products.filter((product) => homeProductSlugs.has(product.slug));
 export const detailedProducts = products.filter((product) => product.status === 'published' && product.detail);
 
 export const extensionPrices: ExtensionPrice[] = [
