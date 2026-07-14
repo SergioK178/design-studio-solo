@@ -1,0 +1,771 @@
+---
+import AssetSlot from './AssetSlot.astro';
+import { site } from '../data/site';
+
+interface Screen {
+  id: string;
+  caption: string;
+}
+
+interface Props {
+  slug: string;
+  title: string;
+  category: string;
+  client: string;
+  audience: string;
+  task: string;
+  constraints: string[];
+  solution: string;
+  screens: Screen[];
+  role: string;
+  result: string[];
+  stack: string[];
+  presentation: any;
+  productName?: string;
+  productHref?: string;
+}
+
+const {
+  slug, title, category, client, audience, task, constraints, solution,
+  screens, role, result, stack, presentation, productName, productHref,
+} = Astro.props;
+
+const [titleHead, ...titleTailWords] = title.split(' ');
+const titleTail = titleTailWords.join(' ');
+
+/** Иконка чипа стека по ключевому слову из его подписи. */
+const stackIconMap: Record<string, string> = {
+  next: 'nextjs',
+  react: 'react',
+  typescript: 'typescript',
+  tailwind: 'tailwind',
+  amocrm: 'amocrm',
+  github: 'github-actions',
+  systemd: 'systemd',
+  caddy: 'caddy',
+};
+const stackIcon = (label: string) => {
+  const key = Object.keys(stackIconMap).find((k) => label.toLowerCase().includes(k));
+  return key ? `/assets/ui/case/${stackIconMap[key]}.webp` : undefined;
+};
+---
+
+<main class="cd" data-bg="paper">
+  <!-- 1. Тёмный hero + meta-band -->
+  <section class="cd-hero" data-bg="ink">
+    <div class="wrap">
+      <div class="cd-hero-grid" data-reveal-group>
+        <div class="cd-hero-copy">
+          <p class="cd-kicker">Кейс / {category}</p>
+          <h1 class="cd-title">
+            <span class="cd-title-head">{titleHead}</span>
+            {titleTail && <span class="cd-title-tail">{titleTail}</span>}
+          </h1>
+          <p class="cd-lead">{solution}</p>
+          <dl class="cd-hero-meta">
+            <div><dt>Индустрия</dt><dd>{presentation.industry}</dd></div>
+            <div><dt>Услуги</dt><dd>{presentation.services}</dd></div>
+          </dl>
+        </div>
+        <div class="cd-hero-visual">
+          <AssetSlot label={`works/${slug}/hero`} frame="browser" tone="dark" ratio="16 / 11" />
+        </div>
+      </div>
+
+      <dl class="cd-meta-band" data-reveal>
+        {presentation.meta.map((item: any) => (
+          <div class="cd-meta-cell">
+            {item.icon
+              ? <img class="cd-meta-icon" src={item.icon} alt="" width="38" height="38" loading="lazy" />
+              : <span class="cd-icon-pending" aria-hidden="true"></span>}
+            <div>
+              <dt>{item.label}</dt>
+              <dd>{item.value}</dd>
+            </div>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <div class="wrap cd-body">
+    <!-- 2. Контекст / Задача / Ограничения -->
+    <section class="cd-context" data-reveal-group>
+      <article>
+        <h2 class="cd-col-title">Контекст</h2>
+        <p>{client}</p>
+        <p>{audience}</p>
+      </article>
+      <article>
+        <h2 class="cd-col-title">Решение</h2>
+        <p>{presentation.solutionShort ?? task}</p>
+      </article>
+      <article>
+        <h2 class="cd-col-title">Ограничения</h2>
+        <ul>{constraints.map((item) => <li>{item}</li>)}</ul>
+      </article>
+    </section>
+
+    <!-- 3. Statement -->
+    <section class="cd-statement" data-reveal>
+      <p>
+        {presentation.statement.before}
+        <s>{presentation.statement.strike}</s>{presentation.statement.middle}
+        <mark>{presentation.statement.accent}</mark>
+        {presentation.statement.after}
+      </p>
+    </section>
+
+    <!-- 4. Обложки -->
+    <section class="cd-covers" data-reveal-group aria-label="Главные экраны проекта">
+      <div class="cd-cover-desktop">
+        <AssetSlot label={`works/${slug}/cover-desktop`} frame="browser" ratio="16 / 10" />
+      </div>
+      <div class="cd-cover-mobile">
+        <AssetSlot label={`works/${slug}/cover-mobile`} frame="mobile" ratio="9 / 16" />
+      </div>
+    </section>
+
+    <!-- 5. Как мы решили -->
+    <section class="cd-solutions" data-reveal aria-label="Как мы решили">
+      <header class="cd-sec-head">
+        <h2 class="cd-h2">Как мы <em>решили</em></h2>
+        {presentation.solutionsIntro && <p class="cd-sec-intro">{presentation.solutionsIntro}</p>}
+      </header>
+      <div class="cd-solutions-grid">
+        {presentation.solutions.map((item: any, i: number) => (
+          <article class="cd-solution">
+            <span class="cd-solution-badge">
+              {item.icon
+                ? <img src={item.icon} alt="" width="52" height="52" loading="lazy" />
+                : <span class="cd-icon-pending" aria-hidden="true"></span>}
+            </span>
+            <span class="cd-solution-num">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{item.title}</h3>
+            <p>{item.note}</p>
+            <span class="cd-solution-arrow" aria-hidden="true">→</span>
+          </article>
+        ))}
+      </div>
+      <ul class="cd-stack">
+        {stack.map((item) => {
+          const src = stackIcon(item);
+          return (
+            <li>
+              {src
+                ? <img class="cd-chip-icon" src={src} alt="" width="28" height="28" loading="lazy" />
+                : <span class="cd-chip-icon" aria-hidden="true"></span>}
+              {item}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+
+    <!-- 6. Что мы сделали -->
+    <section class="cd-screens" data-reveal-group aria-label="Экраны проекта">
+      <header class="cd-sec-head">
+        <h2 class="cd-h2">Что мы <em>сделали</em></h2>
+        {presentation.screensIntro && <p class="cd-sec-intro">{presentation.screensIntro}</p>}
+      </header>
+      <div class="cd-screen-grid">
+        {screens.map((screen) => (
+          <AssetSlot label={`works/${slug}/screens/${screen.id}`} caption={screen.caption} ratio="16 / 10" />
+        ))}
+      </div>
+    </section>
+
+    <!-- 7. Роль / Результат — контрастная тёмная панель -->
+    <section class="cd-outcome" data-bg="ink" data-reveal-group>
+      <article class="cd-outcome-result">
+        <span class="cd-out-label">Результат</span>
+        <ul>{result.map((item) => <li>{item}</li>)}</ul>
+      </article>
+      <article class="cd-outcome-role">
+        <span class="cd-out-label">Роль 3K Studio</span>
+        <h2>{role}</h2>
+      </article>
+    </section>
+  </div>
+
+  <!-- 9. CTA -->
+  <section class="cd-cta-band" data-bg="ink">
+    <div class="wrap cd-cta" data-reveal>
+      <div class="cd-cta-copy">
+        <p class="cd-kicker cd-kicker--gold">{presentation.cta.title}</p>
+        <h2>Соберите проект <span class="cd-underline">в конструкторе</span></h2>
+        <p class="cd-cta-note">{presentation.cta.copy}</p>
+      </div>
+      <div class="cd-cta-actions">
+        {productHref && <a class="btn-gold" href={productHref} data-magnetic>Собрать «{productName}» →</a>}
+        <a class="btn-outline" href={site.telegramUrl} data-magnetic>Написать в Telegram ↗</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<style>
+  .cd {
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  .cd-kicker {
+    margin: 0;
+    color: var(--color-gold);
+    font-family: var(--font-text);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .cd-kicker--gold {
+    color: var(--color-gold);
+  }
+
+  /* ── Hero ────────────────────────────────────────── */
+  .cd-hero {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 104px 0 40px;
+  }
+
+  .cd-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 48px;
+    align-items: center;
+  }
+
+  .cd-title {
+    margin: 26px 0 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(48px, 7vw, 92px);
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+  }
+
+  .cd-title-head,
+  .cd-title-tail {
+    display: block;
+  }
+
+  .cd-title-tail {
+    color: var(--color-gold);
+  }
+
+  .cd-lead {
+    max-width: 46ch;
+    margin: 24px 0 0;
+    color: rgb(244 242 236 / 0.74);
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  .cd-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 36px;
+    margin: 30px 0 0;
+  }
+
+  .cd-hero-meta dt {
+    color: var(--color-gold);
+    font-family: var(--font-text);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .cd-hero-meta dd {
+    margin: 6px 0 0;
+    color: rgb(244 242 236 / 0.9);
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 22ch;
+  }
+
+  /* ── Meta-band ───────────────────────────────────── */
+  .cd-meta-band {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    margin-top: 44px;
+    padding: 24px 0 4px;
+    border-top: 1.5px solid rgb(244 242 236 / 0.16);
+  }
+
+  .cd-meta-cell {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .cd-meta-cell dt {
+    color: rgb(244 242 236 / 0.5);
+    font-family: var(--font-text);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .cd-meta-cell dd {
+    margin: 4px 0 0;
+    color: var(--color-paper);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .cd-meta-icon {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    margin-top: -2px;
+    object-fit: contain;
+  }
+
+  /* ── Icon placeholders ───────────────────────────── */
+  .cd-icon-pending {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    border: 1.5px solid rgb(229 164 59 / 0.5);
+    background:
+      linear-gradient(135deg, rgb(229 164 59 / 0.22) 25%, transparent 25%) 0 0 / 8px 8px,
+      transparent;
+  }
+
+  .cd-icon-pending--lg {
+    width: 40px;
+    height: 40px;
+    margin: 0 0 4px;
+  }
+
+  /* ── Body wrapper ────────────────────────────────── */
+  .cd-body {
+    padding: 64px 48px 20px;
+  }
+
+  .cd-h2 {
+    margin: 0 0 30px;
+    font-family: var(--font-display);
+    font-size: clamp(26px, 3.4vw, 40px);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+  }
+
+  .cd-h2 em {
+    font-style: normal;
+    color: var(--color-ochre);
+  }
+
+  .cd-col-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(22px, 1.8vw, 26px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Context ─────────────────────────────────────── */
+  .cd-context {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px 56px;
+    counter-reset: ctx;
+  }
+
+  .cd-context article {
+    counter-increment: ctx;
+    border-top: 1.5px solid var(--color-ink);
+    padding-top: 22px;
+  }
+
+  .cd-col-title::before {
+    content: counter(ctx, decimal-leading-zero);
+    display: block;
+    margin-bottom: 12px;
+    color: var(--color-ochre);
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .cd-context p {
+    max-width: 32ch;
+    color: rgb(23 21 15 / 0.66);
+    font-size: 16px;
+    line-height: 1.65;
+    margin: 18px 0 0;
+  }
+
+  .cd-context p + p {
+    margin-top: 14px;
+  }
+
+  .cd-context ul {
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cd-context li {
+    position: relative;
+    max-width: 32ch;
+    padding-left: 20px;
+    color: rgb(23 21 15 / 0.66);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .cd-context li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 8px;
+    height: 1.5px;
+    background: var(--color-ochre);
+  }
+
+  /* ── Statement ───────────────────────────────────── */
+  .cd-statement {
+    margin: 72px 0;
+  }
+
+  .cd-statement p {
+    max-width: 20ch;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(30px, 4.6vw, 56px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .cd-statement s {
+    color: rgb(23 21 15 / 0.35);
+  }
+
+  .cd-statement mark {
+    background: none;
+    color: var(--color-ochre);
+  }
+
+  /* ── Covers ──────────────────────────────────────── */
+  .cd-covers {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ── Section head (title + intro) ────────────────── */
+  .cd-sec-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    column-gap: 40px;
+    margin-bottom: 34px;
+  }
+
+  .cd-sec-head .cd-h2 {
+    margin: 0;
+  }
+
+  .cd-sec-intro {
+    justify-self: end;
+    max-width: 34ch;
+    margin: 6px 0 0;
+    color: rgb(23 21 15 / 0.6);
+    font-size: 15px;
+    line-height: 1.55;
+    text-align: left;
+  }
+
+  /* ── Solutions ("Как мы решили") ─────────────────── */
+  .cd-solutions {
+    margin-top: 80px;
+  }
+
+  .cd-solutions-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .cd-solution {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 1.5px solid rgb(23 21 15 / 0.16);
+    padding: 26px 24px 22px;
+  }
+
+  .cd-solution-badge {
+    display: grid;
+    place-content: start;
+  }
+
+  .cd-solution-badge img {
+    display: block;
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+  }
+
+  .cd-solution-badge .cd-icon-pending {
+    margin: 0;
+  }
+
+  .cd-solution-num {
+    margin: 22px 0 0;
+    color: var(--color-ochre);
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .cd-solution h3 {
+    margin: 8px 0 0;
+    font-family: var(--font-display);
+    font-size: 17px;
+    line-height: 1.2;
+  }
+
+  .cd-solution p {
+    margin: 10px 0 0;
+    color: rgb(23 21 15 / 0.62);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .cd-solution-arrow {
+    align-self: flex-end;
+    margin-top: auto;
+    padding-top: 22px;
+    color: var(--color-ochre);
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  /* ── Screens ("Что мы сделали") ──────────────────── */
+  .cd-screens {
+    margin-top: 72px;
+    border-top: 1px solid rgb(23 21 15 / 0.14);
+    padding-top: 56px;
+  }
+
+  .cd-screen-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .cd-screen-grid :global(.asset-slot-figure) {
+    grid-column: span 2;
+  }
+
+  .cd-screen-grid :global(.asset-slot-figure:nth-child(-n + 2)) {
+    grid-column: span 3;
+  }
+
+  /* ── Tech-stack чипы (низ «Как мы решили», все в один ряд) ── */
+  .cd-stack {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 34px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cd-stack li {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    border: 1.5px solid rgb(23 21 15 / 0.16);
+    background: white;
+    padding: 12px 16px;
+    color: rgb(23 21 15 / 0.82);
+    font-family: var(--font-text);
+    font-size: 15px;
+  }
+
+  img.cd-chip-icon {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+  }
+
+  span.cd-chip-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border: 1px solid rgb(23 21 15 / 0.12);
+    background:
+      linear-gradient(135deg, rgb(229 164 59 / 0.18) 25%, transparent 25%) 0 0 / 8px 8px,
+      color-mix(in srgb, var(--color-ink) 5%, white);
+  }
+
+  @media (max-width: 900px) {
+    .cd-stack {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 520px) {
+    .cd-stack {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── Outcome — контрастная тёмная панель ─────────── */
+  .cd-outcome {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    margin-top: 80px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 48px;
+  }
+
+  .cd-out-label {
+    display: block;
+    color: var(--color-gold);
+    font-family: var(--font-text);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .cd-outcome-result ul {
+    margin: 18px 0 0;
+    padding: 0;
+    max-width: 62ch;
+    list-style: none;
+  }
+
+  .cd-outcome-result li {
+    position: relative;
+    padding-left: 18px;
+    color: rgb(244 242 236 / 0.74);
+    font-size: 15.5px;
+    line-height: 1.58;
+  }
+
+  .cd-outcome-result li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--color-gold);
+  }
+
+  .cd-outcome-result li + li {
+    margin-top: 12px;
+  }
+
+  .cd-outcome-role h2 {
+    max-width: 30ch;
+    margin: 18px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(20px, 2.2vw, 28px);
+    line-height: 1.2;
+  }
+
+  /* ── CTA ─────────────────────────────────────────── */
+  .cd-cta-band {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    margin-top: 90px;
+    padding: 64px 0;
+  }
+
+  .cd-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .cd-cta h2 {
+    margin: 14px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3.6vw, 46px);
+    line-height: 1.12;
+  }
+
+  .cd-underline {
+    color: var(--color-gold);
+  }
+
+  .cd-cta-note {
+    max-width: 52ch;
+    margin: 16px 0 0;
+    color: rgb(244 242 236 / 0.72);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .cd-cta-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  /* ── Responsive ──────────────────────────────────── */
+  @media (max-width: 1040px) {
+    .cd-solutions-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 860px) {
+    .cd-hero-grid,
+    .cd-context,
+    .cd-covers,
+    .cd-outcome {
+      grid-template-columns: 1fr;
+    }
+
+    .cd-sec-head {
+      grid-template-columns: 1fr;
+      row-gap: 14px;
+    }
+
+    .cd-sec-intro {
+      justify-self: start;
+      max-width: none;
+    }
+
+    .cd-meta-band {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px 24px;
+    }
+
+    .cd-solutions-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cd-screen-grid,
+    .cd-screen-grid :global(.asset-slot-figure),
+    .cd-screen-grid :global(.asset-slot-figure:nth-child(-n + 2)) {
+      grid-template-columns: 1fr;
+      grid-column: auto;
+    }
+  }
+</style>

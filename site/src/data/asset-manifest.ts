@@ -80,6 +80,11 @@ const productProofEntries: AssetManifestEntry[] = detailedProducts
     })),
   );
 
+// Showroom-кейс Loft Rent: продуктовый ассет авто в тёмном hero (кладётся вручную, не блокирует релиз).
+const showroomEntries: AssetManifestEntry[] = [
+  { id: 'works/car-rental/hero-car', route: '/cases/car-rental/', kind: 'image', ratio: '16 / 10', formats: IMAGE_FORMATS, altRequired: true, required: false },
+];
+
 // Именованные UI-иллюстрации главной (content-assets.md §5).
 const uiEntries: AssetManifestEntry[] = [
   { id: 'ui/estimate-fragment', route: '/', kind: 'image', ratio: '16 / 9', formats: IMAGE_FORMATS, altRequired: true, required: true },
@@ -105,6 +110,7 @@ function dedupe(entries: AssetManifestEntry[]): AssetManifestEntry[] {
 export const assetManifest: AssetManifestEntry[] = dedupe([
   ...coverEntries,
   ...caseDetailEntries,
+  ...showroomEntries,
   ...productProofEntries,
   ...uiEntries,
 ]);

@@ -1,0 +1,888 @@
+---
+import AssetSlot from './AssetSlot.astro';
+import { site } from '../data/site';
+
+interface Screen {
+  id: string;
+  caption: string;
+}
+
+interface Props {
+  slug: string;
+  title: string;
+  category: string;
+  client: string;
+  audience: string;
+  task: string;
+  constraints: string[];
+  solution: string;
+  screens: Screen[];
+  role: string;
+  result: string[];
+  stack: string[];
+  presentation: any;
+  productName?: string;
+  productHref?: string;
+}
+
+const {
+  slug, title, category, client, audience, task, constraints, solution,
+  screens, role, result, stack, presentation, productName, productHref,
+} = Astro.props;
+
+const [titleHead, ...titleTailWords] = title.split(' ');
+const titleTail = titleTailWords.join(' ');
+const caption = (id: string) => screens.find((screen) => screen.id === id)?.caption;
+
+/* Декоративная шкала доступности: 1 — свободна (gold), 0 — занята. */
+const days = [1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1];
+---
+
+<main class="showroom" data-bg="paper">
+  <section class="sr-hero" data-bg="ink">
+    <div class="wrap sr-hero-grid" data-reveal-group>
+      <div class="sr-hero-copy">
+        <p class="sr-kicker">{category}</p>
+        <h1 class="sr-title">
+          <span class="sr-title-head">{titleHead}</span>
+          {titleTail && <span class="sr-title-tail">{titleTail}</span>}
+          <span class="sr-sticker" aria-hidden="true">бронь<br />по датам</span>
+        </h1>
+        <p class="sr-lead">{solution}</p>
+        <dl class="sr-facts">
+          {presentation.facts.map((fact: any) => (
+            <div><dt>{fact.label}</dt><dd>{fact.value}</dd></div>
+          ))}
+        </dl>
+      </div>
+      <div class="sr-hero-visual">
+        <AssetSlot label={`works/${slug}/hero-car`} frame="plain" tone="dark" ratio="16 / 11" />
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap sr-flow-wrap">
+    <aside class="sr-ticket" data-reveal aria-label="Сценарий бронирования">
+      <div class="sr-ticket-zone sr-ticket-route">
+        <span class="sr-ticket-label">Маршрут</span>
+        <strong>{presentation.ticket.route}</strong>
+      </div>
+      <div class="sr-ticket-zone sr-ticket-days">
+        <span class="sr-days" aria-hidden="true">
+          {days.map((free) => <i class:list={[free && 'is-free']}></i>)}
+        </span>
+        <span class="sr-ticket-note">{presentation.ticket.period}</span>
+      </div>
+      <div class="sr-ticket-zone sr-ticket-status">
+        <span class="sr-ticket-label">Статус</span>
+        <strong>{presentation.ticket.status} <span aria-hidden="true">→</span></strong>
+      </div>
+    </aside>
+
+    <section class="sr-context" data-reveal-group>
+      <article>
+        <h2 class="sr-col-title">Контекст</h2>
+        <p>{client}</p>
+        <p>{audience}</p>
+      </article>
+      <article>
+        <h2 class="sr-col-title">Задача</h2>
+        <p>{task}</p>
+      </article>
+      <article>
+        <h2 class="sr-col-title">Ограничения</h2>
+        <ul>{constraints.map((item) => <li>{item}</li>)}</ul>
+      </article>
+    </section>
+
+    <section class="sr-statement" data-reveal>
+      <p>
+        {presentation.statement.before}
+        <s>{presentation.statement.strike}</s>{presentation.statement.middle}
+        <mark>{presentation.statement.accent}</mark>
+        {presentation.statement.after}
+      </p>
+    </section>
+
+    <section class="sr-covers" data-reveal-group aria-label="Главные экраны проекта">
+      <div class="sr-cover-desktop">
+        <AssetSlot label={`works/${slug}/cover-desktop`} frame="browser" ratio="16 / 9" />
+      </div>
+      <div class="sr-cover-mobile">
+        <AssetSlot label={`works/${slug}/cover-mobile`} frame="mobile" ratio="9 / 16" />
+      </div>
+    </section>
+
+    <section class="sr-road" data-reveal aria-label="Путь заявки">
+      <header class="sr-road-head">
+        <h2>Как едет <em>заявка</em></h2>
+        <p>Один сценарий вместо трёх несвязанных инструментов: от выбора машины до сделки в CRM — без ручных пересадок.</p>
+      </header>
+      <ol class="sr-road-track">
+        {presentation.flow.map((step: any) => (
+          <li>
+            <span class="sr-road-dot" aria-hidden="true"></span>
+            <h3>{step.title}</h3>
+            <p>{step.note}</p>
+          </li>
+        ))}
+        <svg class="sr-road-car" viewBox="0 0 48 20" aria-hidden="true">
+          <path d="M4 14h2.5a3.5 3.5 0 0 1 7 0h15a3.5 3.5 0 0 1 7 0H42c1.6 0 2.6-1 2.4-2.4l-.5-3c-.2-1.1-1-1.8-2.1-2l-8.6-1.2-5.7-3.5A5 5 0 0 0 24.9 1h-8.4c-1.2 0-2.4.5-3.3 1.3L8.6 6.4 4.2 7.5C3 7.8 2.2 8.8 2.2 10v2c0 1.2.7 2 1.8 2Z" />
+          <circle cx="10" cy="15" r="3" />
+          <circle cx="32" cy="15" r="3" />
+        </svg>
+      </ol>
+    </section>
+
+    <section class="sr-screens" data-reveal-group aria-label="Экраны проекта">
+      <figure class="sr-screen">
+        <AssetSlot label={`works/${slug}/screens/desktop-01`} frame="browser" ratio="16 / 10" />
+        <figcaption>{caption('desktop-01')}</figcaption>
+      </figure>
+      <figure class="sr-screen">
+        <AssetSlot label={`works/${slug}/screens/desktop-02`} frame="browser" ratio="16 / 10" />
+        <figcaption>{caption('desktop-02')}</figcaption>
+      </figure>
+    </section>
+
+    <section class="sr-mobiles" data-reveal-group aria-label="Мобильные экраны">
+      <figure class="sr-screen sr-screen--shift">
+        <AssetSlot label={`works/${slug}/screens/mobile-01`} frame="mobile" ratio="9 / 14" />
+        <figcaption>{caption('mobile-01')}</figcaption>
+      </figure>
+      <p class="sr-mobiles-note">Мобильный сценарий — тот же, что и на десктопе: выбор машины, реальные даты, оформление в несколько шагов. Админка тоже открывается с телефона.</p>
+      <figure class="sr-screen">
+        <AssetSlot label={`works/${slug}/screens/mobile-02`} frame="mobile" ratio="9 / 14" />
+        <figcaption>{caption('mobile-02')}</figcaption>
+      </figure>
+    </section>
+
+    <section class="sr-tech" data-reveal>
+      <h2 class="sr-h2">Техническая и <em>операционная</em> часть</h2>
+      <div class="sr-tech-grid">
+        {presentation.tech.map((item: any) => (
+          <article class="sr-tech-card">
+            <span class="sr-tech-label">{item.label}</span>
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </article>
+        ))}
+      </div>
+      <ul class="sr-stack">
+        {stack.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <section class="sr-outcome" data-reveal-group>
+      <article>
+        <h2 class="sr-col-title">Роль 3K Studio</h2>
+        <p>{role}</p>
+      </article>
+      <article>
+        <h2 class="sr-col-title">Результат</h2>
+        <ul>{result.map((item) => <li>{item}</li>)}</ul>
+      </article>
+    </section>
+
+    <section class="sr-cta" data-reveal>
+      <div class="sr-cta-copy">
+        <p class="sr-kicker sr-kicker--gold">{presentation.cta.title}</p>
+        <h2>Соберите проект <span class="sr-underline">в конструкторе</span></h2>
+        <p class="sr-cta-note">{presentation.cta.copy}</p>
+      </div>
+      <div class="sr-cta-actions">
+        {productHref && <a class="btn-gold" href={productHref} data-magnetic>Собрать «{productName}» →</a>}
+        <a class="btn-outline" href={site.telegramUrl} data-magnetic>Написать в Telegram ↗</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<style>
+  .showroom {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding-bottom: 110px;
+    overflow-x: clip;
+  }
+
+  .sr-kicker {
+    margin: 0;
+    color: var(--color-gold);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .sr-kicker::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 10px;
+    background: var(--color-gold);
+    transform: rotate(45deg) translateY(-1px);
+  }
+
+  /* ── Hero ─────────────────────────────────────────────── */
+  .sr-hero {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 128px 0 96px;
+  }
+
+  .sr-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 6.5fr) minmax(0, 5.5fr);
+    gap: 24px;
+    align-items: center;
+  }
+
+  .sr-title {
+    position: relative;
+    margin: 22px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(52px, 6.2vw, 92px);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+  }
+
+  .sr-title-head,
+  .sr-title-tail {
+    display: block;
+  }
+
+  .sr-title-tail {
+    margin-left: 0.9em;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--color-gold);
+  }
+
+  .sr-sticker {
+    position: absolute;
+    right: 4%;
+    bottom: -12%;
+    display: grid;
+    place-content: center;
+    width: 108px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--color-ochre);
+    color: var(--color-paper);
+    font-family: var(--font-text);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+    text-align: center;
+    text-transform: uppercase;
+    transform: rotate(-9deg);
+  }
+
+  .sr-lead {
+    max-width: 520px;
+    margin: 34px 0 0;
+    color: rgb(244 242 236 / 0.74);
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  .sr-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 24px;
+    max-width: 480px;
+    margin: 38px 0 0;
+    border-top: 1px solid rgb(244 242 236 / 0.18);
+    padding-top: 20px;
+  }
+
+  .sr-facts div {
+    font-size: 14px;
+  }
+
+  .sr-facts dt {
+    color: rgb(244 242 236 / 0.5);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .sr-facts dd {
+    margin: 5px 0 0;
+    font-weight: 500;
+  }
+
+  /* Ассет авто «выезжает» за нижнюю кромку hero. */
+  .sr-hero-visual {
+    align-self: end;
+    margin-bottom: -140px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .sr-hero-visual :global(.asset-slot) {
+    border-width: 1px;
+  }
+
+  /* ── Билет-полоса ─────────────────────────────────────── */
+  .sr-flow-wrap {
+    display: grid;
+    gap: 128px;
+    padding-top: 64px;
+  }
+
+  .sr-ticket {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+    width: min(100%, 860px);
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .sr-ticket-zone {
+    display: grid;
+    align-content: center;
+    gap: 8px;
+    padding: 20px 24px;
+  }
+
+  .sr-ticket-zone + .sr-ticket-zone {
+    position: relative;
+    border-left: 1.5px dashed rgb(244 242 236 / 0.3);
+  }
+
+  /* Перфорация «отрывного» билета: выемки в цвет бумаги страницы. */
+  .sr-ticket-zone + .sr-ticket-zone::before,
+  .sr-ticket-zone + .sr-ticket-zone::after {
+    content: '';
+    position: absolute;
+    left: -7px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-paper);
+  }
+
+  .sr-ticket-zone + .sr-ticket-zone::before { top: -7.5px; clip-path: inset(50% 0 0 0); }
+  .sr-ticket-zone + .sr-ticket-zone::after { bottom: -7.5px; clip-path: inset(0 0 50% 0); }
+
+  .sr-ticket-label {
+    color: rgb(244 242 236 / 0.5);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .sr-ticket strong {
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .sr-ticket-status strong span {
+    color: var(--color-gold);
+  }
+
+  .sr-ticket-note {
+    color: rgb(244 242 236 / 0.56);
+    font-size: 12.5px;
+  }
+
+  .sr-days {
+    display: flex;
+    gap: 4px;
+  }
+
+  .sr-days i {
+    width: 14px;
+    height: 18px;
+    border: 1.5px solid rgb(244 242 236 / 0.32);
+    box-sizing: border-box;
+  }
+
+  .sr-days i.is-free {
+    border-color: var(--color-gold);
+    background: var(--color-gold);
+  }
+
+  /* ── Контекст ─────────────────────────────────────────── */
+  .sr-context {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: -32px;
+  }
+
+  /* Ступенчатый сдвиг колонок вместо ровной «швейцарской» линейки. */
+  .sr-context article:nth-child(2) { margin-top: 34px; }
+  .sr-context article:nth-child(3) { margin-top: 68px; }
+
+  .sr-col-title {
+    position: relative;
+    display: inline-block;
+    margin: 0;
+    font-family: var(--font-text);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .sr-col-title::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: -6px;
+    bottom: 2px;
+    z-index: -1;
+    height: 8px;
+    background: rgb(229 164 59 / 0.55);
+  }
+
+  .sr-context p,
+  .sr-outcome p {
+    margin: 14px 0 0;
+    color: rgb(23 21 15 / 0.72);
+    font-size: 15.5px;
+    line-height: 1.6;
+  }
+
+  .sr-context ul,
+  .sr-outcome ul {
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sr-context li,
+  .sr-outcome li {
+    position: relative;
+    padding-left: 18px;
+    color: rgb(23 21 15 / 0.72);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .sr-context li + li,
+  .sr-outcome li + li {
+    margin-top: 10px;
+  }
+
+  .sr-context li::before,
+  .sr-outcome li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--color-ochre);
+  }
+
+  /* ── Крупное высказывание ─────────────────────────────── */
+  .sr-statement p {
+    max-width: 1060px;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(26px, 3.4vw, 46px);
+    line-height: 1.18;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .sr-statement s {
+    color: rgb(23 21 15 / 0.38);
+    text-decoration-color: var(--color-ochre);
+    text-decoration-thickness: 3px;
+  }
+
+  .sr-statement mark {
+    background: linear-gradient(transparent 58%, rgb(229 164 59 / 0.65) 58% 94%, transparent 94%);
+    color: inherit;
+  }
+
+  /* ── Обложки ──────────────────────────────────────────── */
+  .sr-covers {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+    align-items: end;
+  }
+
+  .sr-cover-desktop { grid-column: 1 / span 9; }
+
+  .sr-cover-mobile {
+    grid-column: 10 / -1;
+    margin-bottom: -56px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Дорога заявки ────────────────────────────────────── */
+  .sr-road-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 24px;
+    align-items: end;
+    margin-bottom: 64px;
+  }
+
+  .sr-road-head h2,
+  .sr-h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 3.6vw, 50px);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .sr-road-head em,
+  .sr-h2 em {
+    font-family: var(--font-text);
+    font-style: italic;
+    font-weight: 500;
+    color: var(--color-ochre);
+    letter-spacing: -0.02em;
+  }
+
+  .sr-road-head p {
+    max-width: 46ch;
+    margin: 0;
+    color: rgb(23 21 15 / 0.68);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .sr-road-track {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Пунктирная «дорога», по которой едет заявка. */
+  .sr-road-track::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 0;
+    right: 0;
+    border-top: 2px dashed rgb(23 21 15 / 0.3);
+  }
+
+  .sr-road-track li {
+    position: relative;
+    padding-top: 34px;
+  }
+
+  .sr-road-dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-gold);
+    box-shadow: 0 0 0 4px var(--color-paper);
+  }
+
+  .sr-road-track h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .sr-road-track li p {
+    margin: 10px 0 0;
+    color: rgb(23 21 15 / 0.66);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .sr-road-car {
+    position: absolute;
+    top: -24px;
+    left: 58%;
+    width: 52px;
+    fill: var(--color-ink);
+  }
+
+  .sr-road-car circle {
+    fill: var(--color-paper);
+    stroke: var(--color-ink);
+    stroke-width: 2;
+  }
+
+  /* ── Экраны ───────────────────────────────────────────── */
+  .sr-screens {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .sr-screen {
+    margin: 0;
+  }
+
+  .sr-screen figcaption {
+    max-width: 52ch;
+    margin-top: 12px;
+    color: rgb(23 21 15 / 0.62);
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  /* ── Мобильные экраны ─────────────────────────────────── */
+  .sr-mobiles {
+    display: grid;
+    grid-template-columns: minmax(0, 3.5fr) minmax(0, 5fr) minmax(0, 3.5fr);
+    gap: 48px;
+    align-items: center;
+    max-width: 980px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .sr-screen--shift {
+    transform: translateY(-28px);
+  }
+
+  .sr-mobiles-note {
+    margin: 0;
+    color: rgb(23 21 15 / 0.68);
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  /* ── Техчасть ─────────────────────────────────────────── */
+  .sr-tech .sr-h2 {
+    max-width: 720px;
+  }
+
+  /* Спек-лист: карточки разной ширины вместо сплошной простыни текста. */
+  .sr-tech-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 44px;
+  }
+
+  .sr-tech-card {
+    position: relative;
+    border: 1.5px solid rgb(23 21 15 / 0.22);
+    padding: 26px 28px 30px;
+  }
+
+  .sr-tech-card:nth-child(1) { grid-column: 1 / span 7; }
+  .sr-tech-card:nth-child(2) { grid-column: 8 / span 5; }
+  .sr-tech-card:nth-child(3) { grid-column: 1 / span 5; }
+  .sr-tech-card:nth-child(4) { grid-column: 6 / span 7; }
+
+  /* Уголок-засечка вместо нумерации. */
+  .sr-tech-card::after {
+    content: '';
+    position: absolute;
+    top: -1.5px;
+    right: -1.5px;
+    width: 14px;
+    height: 14px;
+    border-left: 1.5px solid var(--color-ochre);
+    border-bottom: 1.5px solid var(--color-ochre);
+    background: var(--color-paper);
+  }
+
+  .sr-tech-label {
+    display: inline-block;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .sr-tech-card h3 {
+    margin: 16px 0 0;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .sr-tech-card p {
+    margin: 10px 0 0;
+    color: rgb(23 21 15 / 0.68);
+    font-size: 14.5px;
+    line-height: 1.55;
+    max-width: 58ch;
+  }
+
+  .sr-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 36px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sr-stack li {
+    border: 1.5px solid rgb(23 21 15 / 0.22);
+    background: white;
+    padding: 8px 13px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* ── Роль и результат ─────────────────────────────────── */
+  .sr-outcome {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 48px;
+    border-top: 1.5px solid rgb(23 21 15 / 0.18);
+    padding-top: 44px;
+  }
+
+  /* ── CTA ──────────────────────────────────────────────── */
+  .sr-cta {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: 32px;
+    align-items: center;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 56px;
+  }
+
+  .sr-kicker--gold::before {
+    background: var(--color-gold);
+  }
+
+  .sr-cta h2 {
+    margin: 18px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3.2vw, 44px);
+    line-height: 1.06;
+    letter-spacing: -0.04em;
+  }
+
+  .sr-underline {
+    background: linear-gradient(transparent 72%, var(--color-gold) 72% 90%, transparent 90%);
+  }
+
+  .sr-cta-note {
+    max-width: 52ch;
+    margin: 20px 0 0;
+    color: rgb(244 242 236 / 0.7);
+    font-size: 15.5px;
+    line-height: 1.55;
+  }
+
+  .sr-cta-actions {
+    display: grid;
+    gap: 14px;
+    justify-items: stretch;
+  }
+
+  .sr-cta-actions .btn-gold,
+  .sr-cta-actions .btn-outline {
+    text-align: center;
+  }
+
+  /* ── Адаптив ──────────────────────────────────────────── */
+  @media (max-width: 960px) {
+    .sr-hero-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .sr-hero-visual {
+      margin-bottom: -110px;
+      margin-top: 24px;
+    }
+
+    .sr-context article:nth-child(2),
+    .sr-context article:nth-child(3) {
+      margin-top: 0;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .sr-flow-wrap { gap: 84px; }
+
+    .sr-ticket { grid-template-columns: 1fr; }
+
+    .sr-ticket-zone + .sr-ticket-zone {
+      border-left: 0;
+      border-top: 1.5px dashed rgb(244 242 236 / 0.3);
+    }
+
+    .sr-ticket-zone + .sr-ticket-zone::before,
+    .sr-ticket-zone + .sr-ticket-zone::after {
+      top: -7px;
+      width: 12px;
+      height: 12px;
+    }
+
+    .sr-ticket-zone + .sr-ticket-zone::before { left: -7.5px; clip-path: inset(0 0 0 50%); }
+    .sr-ticket-zone + .sr-ticket-zone::after { left: auto; right: -7.5px; bottom: auto; clip-path: inset(0 50% 0 0); }
+
+    .sr-context,
+    .sr-screens,
+    .sr-outcome,
+    .sr-road-head {
+      grid-template-columns: 1fr;
+    }
+
+    .sr-road-head { gap: 18px; margin-bottom: 44px; }
+
+    .sr-road-track {
+      grid-template-columns: 1fr;
+      gap: 34px;
+      padding-left: 26px;
+    }
+
+    /* Дорога поворачивает в вертикаль. */
+    .sr-road-track::before {
+      top: 0;
+      bottom: 0;
+      left: 5px;
+      right: auto;
+      border-top: 0;
+      border-left: 2px dashed rgb(23 21 15 / 0.3);
+    }
+
+    .sr-road-track li { padding-top: 0; }
+
+    .sr-road-dot { top: 4px; left: -26px; }
+
+    .sr-road-car { display: none; }
+
+    .sr-covers { grid-template-columns: 1fr; align-items: start; }
+    .sr-cover-desktop { grid-column: auto; }
+    .sr-cover-mobile { grid-column: auto; width: min(62%, 300px); margin: 0 auto; }
+
+    .sr-mobiles { grid-template-columns: 1fr 1fr; gap: 20px; max-width: 460px; }
+    .sr-screen--shift { transform: none; }
+    .sr-mobiles-note { grid-column: 1 / -1; grid-row: 2; text-align: left; }
+
+    .sr-tech-grid { grid-template-columns: 1fr; gap: 16px; }
+    .sr-tech-card:nth-child(n) { grid-column: auto; }
+    .sr-tech-card { padding: 22px 20px 26px; }
+
+    .sr-cta { grid-template-columns: 1fr; padding: 32px 26px; }
+  }
+
+  @media (max-width: 520px) {
+    .sr-hero { padding: 108px 0 72px; }
+    .sr-title { font-size: clamp(44px, 13vw, 60px); }
+    .sr-sticker { width: 88px; font-size: 11px; right: 0; bottom: -30%; }
+    .sr-facts { grid-template-columns: 1fr 1fr; }
+  }
+</style>

@@ -3,11 +3,11 @@ import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import HeroWall from '../components/HeroWall.astro';
 import ProcessChat from '../components/ProcessChat.astro';
+import ApproachInfographics from '../components/ApproachInfographics.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import AssetSlot from '../components/AssetSlot.astro';
 import ProductCard from '../components/ProductCard.astro';
 import CasePreview from '../components/CasePreview.astro';
-import { approach, automationExamples, faqs } from '../data/home';
+import { automationExamples, faqs } from '../data/home';
 import { briefHref, featuredProducts } from '../data/products';
 import { site } from '../data/site';
 import { works } from '../data/works';
@@ -42,6 +42,16 @@ import { works } from '../data/works';
           </div>
           <p>Цена и срок фиксируются до старта. Расширения считаем отдельно и заранее.</p>
         </div>
+        <a class="tg-banner" href={site.telegramUrl} target="_blank" rel="noopener" data-reveal>
+          <span class="tg-badge" aria-hidden="true">
+            <img src="/assets/ui/products/telegram.webp" alt="" width="224" height="224" loading="lazy" />
+          </span>
+          <span class="tg-text">
+            <strong>Напишите в Telegram</strong>
+            <span>Поможем выбрать формат под вашу задачу.</span>
+          </span>
+          <span class="tg-action">Написать в Telegram →</span>
+        </a>
         <div class="product-grid" data-reveal-group>
           {featuredProducts.map((item) => <ProductCard product={item} showIcon />)}
         </div>
@@ -61,15 +71,7 @@ import { works } from '../data/works';
           </div>
           <p>Без манифестов: устройство работы видно в смете, доступах и процессе.</p>
         </div>
-        <div class="approach-grid" data-reveal-group>
-          {approach.map((item, index) => (
-            <article>
-              <AssetSlot label={['ui/estimate-fragment', 'ui/ownership-schema', 'ui/extensions-widget'][index]} tone="dark" />
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-            </article>
-          ))}
-        </div>
+        <ApproachInfographics />
       </div>
     </section>
 
@@ -214,10 +216,69 @@ import { works } from '../data/works';
     gap: 18px;
   }
 
+  .tg-banner {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-sizing: border-box;
+    margin-bottom: 18px;
+    border: 1.5px solid rgb(23 21 15 / 0.18);
+    background: white;
+    padding: 16px 24px;
+    color: var(--color-ink);
+    text-decoration: none;
+    transition:
+      box-shadow 0.25s var(--ease-site),
+      transform 0.25s var(--ease-site);
+  }
+
+  .tg-banner:hover {
+    box-shadow: 8px 8px 0 var(--color-gold);
+    transform: translate(-2px, -2px);
+  }
+
+  .tg-badge {
+    display: grid;
+    flex: none;
+    width: 52px;
+    height: 52px;
+    place-items: center;
+    border-radius: 50%;
+    background: rgb(23 21 15 / 0.05);
+  }
+
+  .tg-badge img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+  }
+
+  .tg-text {
+    display: grid;
+    gap: 3px;
+  }
+
+  .tg-text strong {
+    font-family: var(--font-display);
+    font-size: 19px;
+  }
+
+  .tg-text span {
+    color: rgb(23 21 15 / 0.6);
+    font-size: 14px;
+  }
+
+  .tg-action {
+    margin-left: auto;
+    color: var(--color-ochre);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
   .approach-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
+    grid-template-columns: 1fr;
+    gap: 28px;
   }
 
   .approach-grid article,
@@ -416,8 +477,7 @@ import { works } from '../data/works';
   }
 
   @media (max-width: 1020px) {
-    .product-grid,
-    .approach-grid {
+    .product-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -427,6 +487,16 @@ import { works } from '../data/works';
   }
 
   @media (max-width: 760px) {
+    .tg-banner {
+      flex-wrap: wrap;
+      gap: 12px 16px;
+      padding: 16px 18px;
+    }
+
+    .tg-action {
+      margin-left: 70px;
+    }
+
     .wrap {
       padding-top: 70px;
       padding-bottom: 78px;

@@ -2,29 +2,45 @@
 import { steps } from '../data/home';
 ---
 
-<section id="process" class="process" data-bg="paper">
+<section id="process" class="process" data-bg="paper" aria-labelledby="process-title">
   <div class="wrap grid">
-    <div class="sticky" data-reveal-group>
-      <span class="mono">процесс</span>
-      <h2>От заявки до запуска</h2>
-      <p>Проект живёт в&nbsp;одном чате: вопросы, макеты, ссылки на превью и&nbsp;статусы. Отвечаете, когда удобно.</p>
-      <p class="soft">Хочется голосом — проведём созвон на старте.</p>
-    </div>
-    <div class="chat" data-chat>
-      {steps.map((step) => (
-        <article>
-          <span class="mono">{step.time}</span>
-          <div class="bubble">
-            <b>{step.name}</b>
-            <p>{step.desc}</p>
-          </div>
-        </article>
+    <header class="sticky" data-reveal-group>
+      <span class="section-label">Процесс</span>
+      <h2 id="process-title">От заявки до запуска</h2>
+      <p>Весь проект ведём в&nbsp;одном Telegram-чате. Там остаются договорённости, макеты, рабочие ссылки и&nbsp;сроки.</p>
+      <p class="soft">Можно отвечать в удобное время. Если проще голосом — созвонимся на старте.</p>
+    </header>
+
+    <ol class="chat" aria-label="Этапы работы" data-chat>
+      {steps.map((step, index) => (
+        <>
+          <li class:list={['message', `message-${index + 1}`]} data-message>
+            <div class="stage-divider">
+              <span class="number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+              <span class="time">{step.time}</span>
+            </div>
+            <div class="incoming">
+              <span class="avatar" aria-hidden="true">3К</span>
+              <div class="bubble">
+                <span class="sender">3К Студия</span>
+                <h3>{step.name}</h3>
+                <p>{step.desc}</p>
+              </div>
+            </div>
+          </li>
+
+          {index === 2 && (
+            <li class="reply" data-message>
+              <span class="reply-author">Вы · в любое время</span>
+              <blockquote>
+                <p>«Посмотрел превью с телефона. Правки соберу списком и пришлю вечером».</p>
+                <span class="delivered" aria-label="Доставлено">✓✓</span>
+              </blockquote>
+            </li>
+          )}
+        </>
       ))}
-      <article class="user">
-        <span class="mono">ВЫ · В ЛЮБОЙ МОМЕНТ</span>
-        <div class="bubble">«Посмотрел превью с телефона, правки пришлю списком к вечеру» — такой формат нам подходит.</div>
-      </article>
-    </div>
+    </ol>
   </div>
 </section>
 
@@ -36,114 +52,282 @@ import { steps } from '../data/home';
 
   .grid {
     display: grid;
-    grid-template-columns: 400px 1fr;
-    gap: 70px;
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+    gap: clamp(56px, 8vw, 112px);
     align-items: start;
-    padding-top: 90px;
-    padding-bottom: 100px;
+    padding-top: 104px;
+    padding-bottom: 112px;
   }
 
   .sticky {
     position: sticky;
-    top: 40px;
+    top: 48px;
+  }
+
+  .section-label {
+    color: var(--color-blue);
+    font-size: 12px;
+    font-weight: 650;
   }
 
   h2 {
-    margin: 12px 0 0;
+    max-width: 350px;
+    margin: 16px 0 0;
     font-family: var(--font-display);
-    font-size: clamp(34px, 4vw, 44px);
+    font-size: clamp(34px, 3.3vw, 46px);
     font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.01em;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
   }
 
-  .sticky > .mono {
-    color: var(--color-blue);
-  }
-
-  p {
-    margin: 22px 0 0;
+  .sticky p {
+    max-width: 34ch;
+    margin: 28px 0 0;
     color: rgb(23 21 15 / 0.72);
     font-size: 16px;
     line-height: 1.55;
+    text-wrap: pretty;
   }
 
-  .soft {
+  .sticky .soft {
     margin-top: 16px;
-    color: rgb(23 21 15 / 0.55);
+    color: rgb(23 21 15 / 0.52);
     font-size: 14px;
   }
 
   .chat {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
-  article {
+  .message {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    align-items: flex-start;
+    gap: 7px;
   }
 
-  article > span {
-    color: rgb(23 21 15 / 0.5);
-    padding-left: 2px;
+  .stage-divider {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    width: 100%;
+    color: rgb(23 21 15 / 0.48);
+  }
+
+  .stage-divider::before,
+  .stage-divider::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: rgb(23 21 15 / 0.13);
+  }
+
+  .stage-divider::before {
+    max-width: 18px;
+  }
+
+  .number {
+    color: var(--color-blue);
     font-size: 11.5px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .time {
+    display: block;
+    color: rgb(23 21 15 / 0.5);
+    font-size: 12px;
+    font-weight: 550;
+  }
+
+  .incoming {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    width: 100%;
+  }
+
+  .avatar {
+    display: grid;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    background: var(--color-blue);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 50%;
   }
 
   .bubble {
-    align-self: flex-start;
-    max-width: 560px;
+    position: relative;
+    width: min(calc(100% - 44px), 560px);
     box-sizing: border-box;
     background: white;
-    color: var(--color-ink);
-    border: 1.5px solid rgb(23 21 15 / 0.25);
-    padding: 18px 22px;
+    border: 1px solid rgb(23 21 15 / 0.15);
+    padding: 15px 18px 17px;
+    border-radius: 4px 14px 14px 14px;
+    box-shadow: 0 8px 24px rgb(61 54 35 / 0.055);
   }
 
-  .bubble b {
-    font-size: 16.5px;
+  .bubble::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    bottom: 0;
+    width: 12px;
+    height: 13px;
+    background: white;
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  }
+
+  .message-1 .bubble {
+    width: min(calc(100% - 44px), 500px);
+  }
+
+  .message-2 .bubble {
+    width: min(calc(100% - 44px), 570px);
+  }
+
+  .message-3 .bubble {
+    width: min(calc(100% - 44px), 530px);
+  }
+
+  .message-4 .bubble {
+    width: min(calc(100% - 44px), 580px);
+  }
+
+  .sender {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--color-blue);
+    font-size: 11.5px;
+    font-weight: 650;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.25;
   }
 
   .bubble p {
+    max-width: 56ch;
     margin: 6px 0 0;
-    font-size: 14px;
-    opacity: 0.78;
+    color: rgb(23 21 15 / 0.64);
+    font-size: 14.5px;
+    line-height: 1.52;
+    text-wrap: pretty;
   }
 
-  .user .bubble {
-    align-self: flex-end;
-    max-width: 420px;
+  .reply {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+    padding: 4px 0 2px 72px;
+  }
+
+  .reply-author {
+    padding-right: 3px;
+    color: rgb(23 21 15 / 0.48);
+    font-size: 12px;
+    font-weight: 550;
+  }
+
+  blockquote {
+    position: relative;
+    max-width: 430px;
+    margin: 0;
+    box-sizing: border-box;
     background: var(--color-ink);
+    padding: 16px 45px 17px 19px;
     color: var(--color-paper);
-    border: 0;
+    border-radius: 14px 4px 14px 14px;
+  }
+
+  blockquote::after {
+    content: '';
+    position: absolute;
+    right: -7px;
+    bottom: 0;
+    width: 12px;
+    height: 13px;
+    background: var(--color-ink);
+    clip-path: polygon(0 0, 100% 100%, 0 100%);
+  }
+
+  blockquote p {
+    margin: 0;
     font-size: 14.5px;
-    line-height: 1.55;
+    line-height: 1.52;
+  }
+
+  .delivered {
+    position: absolute;
+    right: 15px;
+    bottom: 9px;
+    color: #8394ff;
+    font-size: 10px;
+    letter-spacing: -0.18em;
   }
 
   @media (max-width: 860px) {
     .grid {
       grid-template-columns: 1fr;
-      gap: 34px;
+      gap: 42px;
+      padding-top: 80px;
+      padding-bottom: 88px;
     }
 
     .sticky {
       position: static;
     }
+
+    .sticky p {
+      max-width: 52ch;
+    }
   }
 
-  /* Живая последовательность чата: классы ставит скрипт ниже,
-     индикатор «печатает» создаётся в JS, поэтому селекторы глобальные. */
-  :global(.chat.chat-armed article) {
+  @media (max-width: 560px) {
+    .grid {
+      gap: 34px;
+    }
+
+    .chat {
+      gap: 18px;
+    }
+
+    .reply {
+      padding-left: 28px;
+    }
+
+    blockquote {
+      padding: 18px 20px;
+    }
+
+    .bubble {
+      padding: 14px 16px 16px;
+    }
+  }
+
+  :global(.chat.chat-armed [data-message]) {
     opacity: 0;
-    transform: translateY(16px) scale(0.98);
+    transform: translateY(12px);
     transition:
-      opacity 0.5s var(--ease-site),
-      transform 0.5s var(--ease-site);
+      opacity 0.45s var(--ease-site),
+      transform 0.45s var(--ease-site);
   }
 
-  :global(.chat.chat-armed article.msg-in) {
+  :global(.chat.chat-armed [data-message].msg-in) {
     opacity: 1;
     transform: none;
   }
@@ -151,77 +335,61 @@ import { steps } from '../data/home';
   :global(.chat .chat-typing) {
     display: flex;
     gap: 5px;
-    align-self: flex-start;
-    background: white;
-    border: 1.5px solid rgb(23 21 15 / 0.25);
-    padding: 14px 18px;
+    width: max-content;
+    background: rgb(255 255 255 / 0.86);
+    border: 1.5px solid rgb(23 21 15 / 0.24);
+    padding: 13px 17px;
   }
 
   :global(.chat .chat-typing i) {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
-    background: rgb(23 21 15 / 0.45);
-    animation: chatDot 0.9s infinite;
+    background: rgb(23 21 15 / 0.5);
+    animation: chat-dot 0.9s infinite;
   }
 
-  :global(.chat .chat-typing i:nth-child(2)) {
-    animation-delay: 0.15s;
-  }
+  :global(.chat .chat-typing i:nth-child(2)) { animation-delay: 0.15s; }
+  :global(.chat .chat-typing i:nth-child(3)) { animation-delay: 0.3s; }
 
-  :global(.chat .chat-typing i:nth-child(3)) {
-    animation-delay: 0.3s;
-  }
-
-  @keyframes chatDot {
-    0%,
-    60%,
-    100% {
-      transform: translateY(0);
-      opacity: 0.5;
-    }
-    30% {
-      transform: translateY(-4px);
-      opacity: 1;
-    }
+  @keyframes chat-dot {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+    30% { transform: translateY(-3px); opacity: 1; }
   }
 </style>
 
 <script>
-  // Сообщения появляются по одному с индикатором «печатает» — как в реальном
-  // чате. При reduced-motion или без IO чат просто виден целиком.
   const chat = document.querySelector<HTMLElement>('[data-chat]');
   const motionOK = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
 
   if (chat && motionOK && 'IntersectionObserver' in window) {
-    const messages = Array.from(chat.querySelectorAll('article'));
+    const messages = Array.from(chat.querySelectorAll<HTMLElement>('[data-message]'));
     chat.classList.add('chat-armed');
 
-    const typing = document.createElement('div');
+    const typing = document.createElement('li');
     typing.className = 'chat-typing';
     typing.setAttribute('aria-hidden', 'true');
     typing.append(...[0, 1, 2].map(() => document.createElement('i')));
 
     const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
     const play = async () => {
       for (const message of messages) {
         chat.insertBefore(typing, message);
-        await wait(650);
+        await wait(480);
         typing.remove();
         message.classList.add('msg-in');
-        await wait(400);
+        await wait(260);
       }
     };
 
-    const io = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         if (!entries.some((entry) => entry.isIntersecting)) return;
-        io.disconnect();
+        observer.disconnect();
         void play();
       },
-      { threshold: 0.25 },
+      { threshold: 0.18 },
     );
-    io.observe(chat);
+    observer.observe(chat);
   }
 </script>
