@@ -12,18 +12,18 @@ export interface Question {
   choices: Choice[];
 }
 
-export type BranchId = 'landing' | 'company' | 'catalog' | 'shop' | 'telegram' | 'migration' | 'automation' | 'custom';
+export type BranchId = 'landing' | 'company' | 'catalog' | 'shop' | 'telegram' | 'app' | 'migration' | 'automation' | 'custom';
 
 export const recommendationQuestions: Question[] = [
   {
     id: 'business',
-    title: 'Чем занимаетесь?',
+    title: 'Какую задачу должен решать продукт?',
     choices: [
-      { id: 'services', label: 'Услуги' },
-      { id: 'wholesale', label: 'Товары оптом' },
-      { id: 'retail', label: 'Товары в розницу' },
-      { id: 'product', label: 'Продукт или сервис' },
-      { id: 'event', label: 'Мероприятие или курс' },
+      { id: 'services', label: 'Представить компанию или услуги' },
+      { id: 'wholesale', label: 'Показать ассортимент' },
+      { id: 'retail', label: 'Продавать товары' },
+      { id: 'product', label: 'Создать сервис или кабинет' },
+      { id: 'event', label: 'Запустить предложение или событие' },
     ],
   },
   {
@@ -38,7 +38,7 @@ export const recommendationQuestions: Question[] = [
   },
   {
     id: 'action',
-    title: 'Что должно происходить?',
+    title: 'Что пользователь должен уметь делать?',
     choices: [
       { id: 'lead', label: 'Оставить заявку' },
       { id: 'catalog', label: 'Выбрать из каталога' },
@@ -60,11 +60,10 @@ export const productToBranch: Record<string, BranchId> = {
   shop: 'shop',
   tma: 'telegram',
   bot: 'telegram',
+  app: 'app',
   migration: 'migration',
   redesign: 'migration',
   'multi-landing': 'landing',
-  crm: 'automation',
-  analytics: 'automation',
   automation: 'automation',
   support: 'custom',
 };
@@ -74,12 +73,12 @@ export const branchQuestions: Record<BranchId, Question[]> = {
     { id: 'traffic_detail', title: 'Основной трафик?', choices: [{ id: 'ads', label: 'Реклама' }, { id: 'search', label: 'Поиск' }, { id: 'social', label: 'Соцсети' }] },
     { id: 'content_state', title: 'Контент готов?', choices: [{ id: 'ready', label: 'Да' }, { id: 'partial', label: 'Частично' }, { id: 'need-help', label: 'Нужна помощь' }] },
     { id: 'quiz_need', title: 'Нужен квиз?', choices: [{ id: 'yes', label: 'Да' }, { id: 'no', label: 'Нет' }, { id: 'maybe', label: 'Подскажите' }] },
-    { id: 'crm_need', title: 'Нужна CRM?', choices: [{ id: 'yes', label: 'Да' }, { id: 'no', label: 'Нет' }, { id: 'later', label: 'Позже' }] },
+    { id: 'crm_need', title: 'Куда должны поступать заявки?', choices: [{ id: 'yes', label: 'В систему учёта' }, { id: 'no', label: 'В почту или Telegram' }, { id: 'later', label: 'Решим позже' }] },
   ],
   company: [
     { id: 'pages_count', title: 'Сколько страниц/услуг?', choices: [{ id: 'small', label: 'До 5' }, { id: 'medium', label: '5–10' }, { id: 'large', label: '10+' }] },
     { id: 'content_state', title: 'Контент готов?', choices: [{ id: 'ready', label: 'Да' }, { id: 'partial', label: 'Частично' }, { id: 'need-help', label: 'Нужна помощь' }] },
-    { id: 'crm_need', title: 'Нужна CRM?', choices: [{ id: 'yes', label: 'Да' }, { id: 'no', label: 'Нет' }] },
+    { id: 'crm_need', title: 'Куда должны поступать заявки?', choices: [{ id: 'yes', label: 'В систему учёта' }, { id: 'no', label: 'В почту или Telegram' }] },
     { id: 'language_need', title: 'Нужна вторая языковая версия?', choices: [{ id: 'yes', label: 'Да' }, { id: 'no', label: 'Нет' }] },
   ],
   catalog: [
@@ -99,6 +98,12 @@ export const branchQuestions: Record<BranchId, Question[]> = {
     { id: 'bot_now', title: 'Бот уже есть?', choices: [{ id: 'yes', label: 'Да' }, { id: 'no', label: 'Нет' }] },
     { id: 'payment_need', title: 'Нужна оплата?', choices: [{ id: 'yes', label: 'Да' }, { id: 'no', label: 'Нет' }] },
   ],
+  app: [
+    { id: 'users', title: 'Для кого система?', choices: [{ id: 'clients', label: 'Для клиентов' }, { id: 'team', label: 'Для сотрудников' }, { id: 'both', label: 'Для клиентов и сотрудников' }] },
+    { id: 'actions', title: 'Что пользователь должен уметь делать?', choices: [{ id: 'data', label: 'Смотреть и менять данные' }, { id: 'documents', label: 'Работать с документами' }, { id: 'orders', label: 'Управлять заказами или задачами' }] },
+    { id: 'management', title: 'Чем нужно управлять самостоятельно?', choices: [{ id: 'content', label: 'Содержимым' }, { id: 'users', label: 'Пользователями и доступами' }, { id: 'all', label: 'Всем продуктом' }] },
+    { id: 'destination', title: 'Куда должны поступать данные?', choices: [{ id: 'panel', label: 'В панель управления' }, { id: 'accounting', label: 'В систему учёта' }, { id: 'several', label: 'В несколько систем' }] },
+  ],
   migration: [
     { id: 'platform', title: 'Текущая платформа?', choices: [{ id: 'tilda', label: 'Tilda' }, { id: 'wix', label: 'Wix' }, { id: 'other', label: 'Другая' }] },
     { id: 'pages_count', title: 'Сколько страниц?', choices: [{ id: 'small', label: 'До 5' }, { id: 'medium', label: '5–20' }, { id: 'large', label: '20+' }] },
@@ -107,14 +112,14 @@ export const branchQuestions: Record<BranchId, Question[]> = {
   ],
   automation: [
     { id: 'process', title: 'Какой процесс?', choices: [{ id: 'catalog', label: 'Каталог/прайс' }, { id: 'leads', label: 'Заявки' }, { id: 'report', label: 'Отчёт' }] },
-    { id: 'source', title: 'Источник данных?', choices: [{ id: 'file', label: 'Файл' }, { id: 'site', label: 'Сайт' }, { id: 'api', label: 'API/1С' }] },
-    { id: 'destination', title: 'Куда результат?', choices: [{ id: 'site', label: 'На сайт' }, { id: 'crm', label: 'В CRM' }, { id: 'table', label: 'В таблицу' }] },
+    { id: 'source', title: 'Откуда брать данные?', choices: [{ id: 'file', label: 'Из файла' }, { id: 'site', label: 'С сайта' }, { id: 'api', label: 'Из 1С или другой системы' }] },
+    { id: 'destination', title: 'Куда передавать результат?', choices: [{ id: 'site', label: 'На сайт' }, { id: 'crm', label: 'В систему учёта' }, { id: 'table', label: 'В таблицу' }] },
     { id: 'schedule', title: 'Как часто?', choices: [{ id: 'manual', label: 'По кнопке' }, { id: 'daily', label: 'Ежедневно' }, { id: 'realtime', label: 'Почти сразу' }] },
   ],
   custom: [
-    { id: 'task', title: 'Что нужно сделать?', choices: [{ id: 'site', label: 'Сайт' }, { id: 'telegram', label: 'Telegram' }, { id: 'automation', label: 'Автоматизация' }] },
+    { id: 'task', title: 'Что нужно сделать?', choices: [{ id: 'site', label: 'Сайт' }, { id: 'telegram', label: 'Приложение внутри Telegram' }, { id: 'automation', label: 'Убрать ручную работу' }] },
     { id: 'content_state', title: 'Материалы готовы?', choices: [{ id: 'ready', label: 'Да' }, { id: 'partial', label: 'Частично' }, { id: 'need-help', label: 'Нужна помощь' }] },
-    { id: 'integrations', title: 'Интеграции нужны?', choices: [{ id: 'yes', label: 'Да' }, { id: 'no', label: 'Нет' }] },
+    { id: 'integrations', title: 'Нужно связать продукт с другими системами?', choices: [{ id: 'yes', label: 'Да' }, { id: 'no', label: 'Нет' }] },
   ],
 };
 
@@ -124,15 +129,17 @@ export const optionIdsByBranch: Record<BranchId, string[]> = {
   catalog: ['crm', 'analytics', 'integration-1c', 'extra-page', 'content', 'rush'],
   shop: ['online-payment', 'integration-1c', 'analytics', 'content', 'rush'],
   telegram: ['online-payment', 'online-booking', 'analytics', 'content', 'rush'],
+  app: ['crm', 'analytics', 'online-payment', 'workflow', 'ai-processing', 'rush'],
   migration: ['extra-page', 'analytics', 'content', 'rush'],
-  automation: ['crm', 'analytics', 'integration-1c', 'content', 'rush'],
+  automation: ['crm', 'integration-1c', 'workflow', 'ai-processing', 'rush'],
   custom: ['crm', 'analytics', 'content', 'rush'],
 };
 
 export function recommendProduct(answers: Record<string, string>): { product: string; reason: string } {
   if (answers.action === 'buy') return { product: 'shop', reason: 'Нужны каталог, заказ и оплата — это ближе всего к интернет-магазину.' };
   if (answers.action === 'book') return { product: answers.traffic === 'social' ? 'tma' : 'booking', reason: 'Главное действие — запись, значит важен короткий сценарий выбора времени.' };
-  if (answers.action === 'catalog' || answers.business === 'wholesale') return { product: 'catalog', reason: 'Покупателю нужно выбирать позиции, фильтровать и запрашивать КП.' };
+  if (answers.action === 'catalog' || answers.business === 'wholesale') return { product: 'catalog', reason: 'Покупателю нужно выбирать позиции, фильтровать и запрашивать предложение.' };
+  if (answers.business === 'product') return { product: 'app', reason: 'Для данных, документов и постоянных действий лучше подходит личный кабинет или рабочий сервис.' };
   if (answers.business === 'event') return { product: 'event', reason: 'Для события важны программа, регистрация и быстрый запуск.' };
   if (answers.traffic === 'ads') return { product: 'landing', reason: 'Для рекламного трафика лучше начать с посадочной страницы и понятной заявки.' };
   return { product: 'company', reason: 'Нужна базовая структура компании: услуги, цены, контакты и маршрут заявки.' };

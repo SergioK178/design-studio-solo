@@ -1,5 +1,6 @@
 ---
 import { wallColA, wallColB } from '../data/home';
+import { site } from '../data/site';
 
 const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
 ---
@@ -29,14 +30,15 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
 
   <div class="wrap hero-inner">
     <div class="copy">
-      <h1>Сайт под вашу задачу — <span>за неделю.</span></h1>
-      <p class="lead">Лендинги, каталоги, магазины, запись, Telegram-приложения. Цена и срок фиксируются до старта. От&nbsp;30&nbsp;000&nbsp;₽.</p>
+      <h1>Сайт под вашу задачу — <span>первый запуск от недели.</span></h1>
+      <p class="lead">Делаем лендинги, корпоративные сайты, каталоги и интернет-магазины. Подключаем управление контентом, приём заявок, оплату и нужные сервисы.</p>
+      <p class="secondary">Также создаём приложения внутри Telegram, личные кабинеты и внутренние рабочие системы.</p>
       <div class="actions">
         <a class="btn-gold" href="#brief" data-magnetic>Собрать проект →</a>
-        <a class="btn-outline" href="#works" data-magnetic>Смотреть работы →</a>
+        <a class="btn-outline" href={site.telegramUrl} target="_blank" rel="noopener" data-magnetic>Написать в Telegram</a>
       </div>
       <div class="proof">
-        <span><b>5 форматов сайтов</b></span>
+        <span><b>сайты под задачу бизнеса</b></span>
         <span><b>фиксированная смета</b></span>
         <span><b>весь код и данные — ваши</b></span>
       </div>
@@ -85,6 +87,14 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
     max-width: 420px;
     color: rgb(244 242 236 / 0.7);
     font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .secondary {
+    margin: 12px 0 0;
+    max-width: 460px;
+    color: rgb(244 242 236 / 0.52);
+    font-size: 15px;
     line-height: 1.5;
   }
 

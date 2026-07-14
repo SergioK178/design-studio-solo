@@ -160,7 +160,7 @@
       <div class="mode-grid">
         <button type="button" on:click={() => chooseMode('known')}>
           <b>Знаю, что нужно</b>
-          <span>Выберите продукт из полной линейки.</span>
+          <span>Выберите решение из полной линейки.</span>
         </button>
         <button type="button" on:click={() => chooseMode('help')}>
           <b>Помогите выбрать</b>
@@ -170,8 +170,8 @@
     </section>
   {:else if stage === 'product'}
     <section class="step">
-      <span class="mono">выбор продукта</span>
-      <h2>Что собираем?</h2>
+      <span class="mono">выбор решения</span>
+      <h2>Что нужно сделать?</h2>
       {#each productGroups as group}
         <div class="product-group">
           <h3>{group.title}</h3>
@@ -241,13 +241,13 @@
       </div>
       <div class="controls">
         <button type="button" class="secondary" on:click={() => (stage = mode === 'help' ? 'recommend' : 'product')}>Назад</button>
-        <button type="button" disabled={!branchComplete} on:click={() => (stage = 'options')}>К опциям</button>
+        <button type="button" disabled={!branchComplete} on:click={() => (stage = 'options')}>К возможностям</button>
       </div>
     </section>
   {:else if stage === 'options'}
     <section class="step">
-      <span class="mono">опции</span>
-      <h2>Что добавить?</h2>
+      <span class="mono">дополнительные возможности</span>
+      <h2>Что ещё должно уметь решение?</h2>
       <div class="check-grid">
         {#each currentOptions as option}
           <label class:active={selectedOptions.includes(option.id)}>
@@ -296,6 +296,11 @@
 
   .mono {
     color: var(--color-blue);
+    font-family: var(--font-text);
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   h2 {
@@ -488,9 +493,8 @@
 
   .estimate-list small {
     color: rgb(23 21 15 / 0.52);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
+    font-family: var(--font-text);
+    font-size: 12px;
   }
 
   @media (max-width: 720px) {

@@ -92,5 +92,5 @@ export const wallColA = [
 export const wallColB = [
   { logo: 'ИМЭКС', assetKey: 'works/catalog-med/hero-dark-usp', accent: 'ink', nav: 'USP · Ряд преимуществ', title: 'Тёмная версия: акцент на надёжности', cta: 'Материал позже' },
   { logo: 'Квиз', assetKey: 'works/quiz-landing/hero', accent: 'ochre', nav: 'Опросник · CRM', title: 'Квиз-лендинг — заявка после 5 шагов', cta: 'Скоро' },
-  { logo: 'TMA', assetKey: 'works/telegram-mini-app/hero', accent: 'blue', nav: 'Telegram · Каталог', title: 'Mini App — каталог внутри Telegram', cta: 'Скоро' },
+  { logo: 'Telegram', assetKey: 'works/telegram-mini-app/hero', accent: 'blue', nav: 'Каталог · Запись', title: 'Приложение открывается внутри Telegram', cta: 'Скоро' },
 ];

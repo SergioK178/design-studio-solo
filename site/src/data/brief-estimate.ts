@@ -51,19 +51,18 @@ const fallbackBase: BaseEstimate = {
 };
 
 const productBaseOverrides: Record<string, Partial<BaseEstimate>> = {
-  start: { label: 'Промо-лендинг', price: { min: 30000, max: 30000 }, weeks: { min: 1, max: 1 } },
-  landing: { label: 'Лендинг под рекламу', price: { min: 60000, max: 150000 }, weeks: { min: 1, max: 2 } },
-  quiz: { label: 'Квиз-лендинг', price: { min: 50000, max: 120000 }, weeks: { min: 1, max: 2 } },
-  company: { label: 'Сайт компании', price: { min: 90000, max: 250000 }, weeks: { min: 2, max: 3 } },
-  catalog: { label: 'Сайт-каталог', price: { min: 150000, max: 350000 }, weeks: { min: 2, max: 4 } },
-  shop: { label: 'Интернет-магазин', price: { min: 250000, max: 420000 }, weeks: { min: 3, max: 6 } },
-  tma: { label: 'Telegram Mini App', price: { min: 80000, max: 200000 }, weeks: { min: 2, max: 3 } },
-  bot: { label: 'Telegram-бот', price: { min: 60000, max: 180000 }, weeks: { min: 1, max: 3 } },
-  migration: { label: 'Переезд с конструктора', price: { min: 60000, max: 180000 }, weeks: { min: 1, max: 3 } },
-  crm: { label: 'Подключение CRM', price: { min: 35000, max: 90000 }, weeks: { min: 1, max: 1 } },
-  analytics: { label: 'Аналитика под ключ', price: { min: 15000, max: 30000 }, weeks: { min: 1, max: 1 } },
-  automation: { label: 'Автоматизация процесса', price: { min: 30000, max: 180000 }, weeks: { min: 1, max: 3 } },
-  support: { label: 'Поддержка и развитие', price: { min: 20000, max: 80000 }, weeks: { min: 1, max: 2 } },
+  start: { label: 'Промо-лендинг', price: { min: 39000, max: 39000 }, weeks: { min: 1, max: 1 } },
+  landing: { label: 'Лендинг под рекламу', price: { min: 80000, max: 180000 }, weeks: { min: 1, max: 2 } },
+  quiz: { label: 'Сайт с опросом и расчётом', price: { min: 60000, max: 150000 }, weeks: { min: 1, max: 2 } },
+  company: { label: 'Корпоративный сайт', price: { min: 120000, max: 300000 }, weeks: { min: 2, max: 3 } },
+  catalog: { label: 'Каталог компании', price: { min: 200000, max: 450000 }, weeks: { min: 2, max: 4 } },
+  shop: { label: 'Интернет-магазин', price: { min: 320000, max: 700000 }, weeks: { min: 3, max: 6 } },
+  tma: { label: 'Приложение внутри Telegram', price: { min: 120000, max: 300000 }, weeks: { min: 2, max: 3 } },
+  bot: { label: 'Telegram-бот', price: { min: 80000, max: 220000 }, weeks: { min: 1, max: 3 } },
+  app: { label: 'Личный кабинет или рабочий веб-сервис', price: { min: 350000, max: 900000 }, weeks: { min: 6, max: 12 } },
+  migration: { label: 'Перенос сайта и данных', price: { min: 90000, max: 250000 }, weeks: { min: 1, max: 3 } },
+  automation: { label: 'Автоматизация повторяющейся работы', price: { min: 100000, max: 400000 }, weeks: { min: 2, max: 6 } },
+  support: { label: 'Поддержка и развитие', price: { min: 25000, max: 100000 }, weeks: { min: 1, max: 4 } },
 };
 
 const optionOverrides: Record<string, Partial<OptionEstimate>> = {
