@@ -94,6 +94,54 @@ if (motionOK && finePointer && cursorTargets.length > 0) {
   }
 }
 
+// --- Курсор-превью строк решений (data-cursor-preview) -------------------------
+// Позиционирует .solution-preview за курсором внутри строки; показ/скрытие делает
+// CSS через :hover. Класс preview-armed включает display только при живом JS,
+// точном указателе и разрешённой анимации — иначе превью не существует вовсе.
+
+const previewRows = Array.from(document.querySelectorAll<HTMLElement>('[data-cursor-preview]'));
+
+if (motionOK && finePointer && previewRows.length > 0) {
+  for (const row of previewRows) {
+    const preview = row.querySelector<HTMLElement>('.solution-preview');
+    if (!preview) continue;
+    row.classList.add('preview-armed');
+
+    let x = 0;
+    let y = 0;
+    let targetX = 0;
+    let targetY = 0;
+    let raf = 0;
+
+    const place = () => {
+      preview.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+    };
+
+    const loop = () => {
+      x += (targetX - x) * 0.16;
+      y += (targetY - y) * 0.16;
+      place();
+      if (Math.abs(targetX - x) > 0.3 || Math.abs(targetY - y) > 0.3) raf = requestAnimationFrame(loop);
+      else raf = 0;
+    };
+
+    row.addEventListener('mouseenter', (event) => {
+      // Стартуем из точки входа, чтобы плашка не «прилетала» из угла строки.
+      const rect = row.getBoundingClientRect();
+      x = targetX = event.clientX - rect.left;
+      y = targetY = event.clientY - rect.top;
+      place();
+    });
+
+    row.addEventListener('mousemove', (event) => {
+      const rect = row.getBoundingClientRect();
+      targetX = event.clientX - rect.left;
+      targetY = event.clientY - rect.top;
+      if (!raf) raf = requestAnimationFrame(loop);
+    });
+  }
+}
+
 // --- Отсчёт чисел (data-countup) ----------------------------------------------
 // Анимирует первое число в текстовом содержимом от 0 до финального значения.
 

@@ -395,10 +395,24 @@ export const productGroups: ProductGroupMeta[] = [
 export const featuredProducts = products.filter((product) => product.featured);
 const homeProductSlugs = new Set(['start', 'landing', 'company', 'catalog']);
 export const homeProducts = products.filter((product) => homeProductSlugs.has(product.slug));
-export const homeSolutions = [
-  { id: 'launch', number: '01', title: 'Запустить предложение', format: 'Промо-страница или лендинг', summary: 'Для рекламы, проверки идеи, запуска услуги или мероприятия.', price: 'от 39 000 ₽', term: 'первый запуск от 5 дней', href: '/products/#launch' },
-  { id: 'company', number: '02', title: 'Представить компанию', format: 'Корпоративный сайт', summary: 'Для услуг, команды, проектов, документов и доверия к компании.', price: 'от 120 000 ₽', term: 'от 2 недель', href: '/products/#company' },
-  { id: 'commerce', number: '03', title: 'Показать и продавать продукцию', format: 'Каталог, витрина продукции или интернет-магазин', summary: 'Управление товарами, фильтры, заявки, оплата и обмен данными.', price: 'каталог от 200 000 ₽ · магазин от 320 000 ₽', term: 'от 3 недель', href: '/products/#commerce' },
+export interface HomeSolution {
+  id: string;
+  number: string;
+  title: string;
+  format: string;
+  summary: string;
+  /** Ценовые строки: label появляется, когда вариантов больше одного (каталог/магазин). */
+  prices: { label?: string; prefix: string; value: string }[];
+  term: string;
+  href: string;
+  /** Слот превью строки (asset-manifest, ui/*) — скрин подставляется владельцем позже. */
+  previewAsset: string;
+}
+
+export const homeSolutions: HomeSolution[] = [
+  { id: 'launch', number: '01', title: 'Запустить предложение', format: 'Промо-страница или лендинг', summary: 'Для рекламы, проверки идеи, запуска услуги или мероприятия.', prices: [{ prefix: 'от', value: '39 000 ₽' }], term: 'первый запуск от 5 дней', href: '/products/#launch', previewAsset: 'ui/solution-launch' },
+  { id: 'company', number: '02', title: 'Представить компанию', format: 'Корпоративный сайт', summary: 'Для услуг, команды, проектов, документов и доверия к компании.', prices: [{ prefix: 'от', value: '120 000 ₽' }], term: 'от 2 недель', href: '/products/#company', previewAsset: 'ui/solution-company' },
+  { id: 'commerce', number: '03', title: 'Показать и продавать продукцию', format: 'Каталог, витрина продукции или интернет-магазин', summary: 'Управление товарами, фильтры, заявки, оплата и обмен данными.', prices: [{ label: 'каталог', prefix: 'от', value: '200 000 ₽' }, { label: 'магазин', prefix: 'от', value: '320 000 ₽' }], term: 'от 3 недель', href: '/products/#commerce', previewAsset: 'ui/solution-commerce' },
 ];
 export const detailedProducts = products.filter((product) => product.status === 'published' && product.detail);
 

@@ -90,6 +90,12 @@ const uiEntries: AssetManifestEntry[] = [
   { id: 'ui/estimate-fragment', route: '/', kind: 'image', ratio: '16 / 9', formats: IMAGE_FORMATS, altRequired: true, required: true },
   { id: 'ui/ownership-schema', route: '/', kind: 'image', ratio: '16 / 9', formats: IMAGE_FORMATS, altRequired: true, required: true },
   { id: 'ui/extensions-widget', route: '/', kind: 'image', ratio: '16 / 9', formats: IMAGE_FORMATS, altRequired: true, required: true },
+  // Курсор-превью строк «Выберите задачу» и мокап Telegram-секции: скрины кладёт
+  // владелец, до этого AssetSlot показывает плейсхолдер — релиз не блокируют.
+  { id: 'ui/solution-launch', route: '/', kind: 'image', ratio: '16 / 10', formats: IMAGE_FORMATS, altRequired: true, required: false },
+  { id: 'ui/solution-company', route: '/', kind: 'image', ratio: '16 / 10', formats: IMAGE_FORMATS, altRequired: true, required: false },
+  { id: 'ui/solution-commerce', route: '/', kind: 'image', ratio: '16 / 10', formats: IMAGE_FORMATS, altRequired: true, required: false },
+  { id: 'ui/telegram-mini-app', route: '/', kind: 'image', ratio: '9 / 16', formats: IMAGE_FORMATS, altRequired: true, required: false },
 ];
 
 function dedupe(entries: AssetManifestEntry[]): AssetManifestEntry[] {
