@@ -68,6 +68,32 @@ test('server recomputes the estimate instead of trusting client values', async (
   expect(row.price_high).toBe(30000);
 });
 
+test('v3 submission stores contact details and passes summary to relay', async () => {
+  const res = await post({
+    answers: { version: 'v3', task: 'present', actions: 'view,lead', manage: 'texts', dataflow: 'crm', budget: 'b250' },
+    contact: { name: 'Анна', phone: '@anna', comment: 'после обеда' },
+    summary: 'Корпоративный сайт\nЗадача: представить компанию',
+    hp: '',
+    ts: Date.now() - 3000,
+  });
+  expect(res.status).toBe(200);
+  const body = await res.json();
+  expect(body.id).toBeTypeOf('number');
+
+  const lead = db.prepare('SELECT * FROM leads').get() as any;
+  expect(lead.kind).toBe('company');
+
+  const details = db.prepare('SELECT * FROM lead_details').get() as any;
+  expect(details.lead_id).toBe(body.id);
+  expect(details.name).toBe('Анна');
+  expect(details.contact).toBe('@anna');
+  expect(JSON.parse(details.answers_json).task).toBe('present');
+
+  const relayPayload = relay.mock.calls[0][0];
+  expect(relayPayload.summary).toContain('Корпоративный сайт');
+  expect(relayPayload.summary).toContain('Анна · @anna');
+});
+
 test('accepts a plain form-urlencoded submission (no-JS fallback)', async () => {
   const form = new URLSearchParams({
     ...answers,

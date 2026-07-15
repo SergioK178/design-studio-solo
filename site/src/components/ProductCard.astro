@@ -8,7 +8,7 @@ interface Props {
 
 const { product, showIcon = false } = Astro.props;
 const href = product.status === 'published' ? `/products/${product.slug}/` : briefHref(product);
-const actionLabel = product.status === 'published' ? 'Подробнее →' : 'Собрать в конструкторе →';
+const actionLabel = product.status === 'published' ? 'Подробнее →' : 'Разобрать задачу →';
 const statusLabel = product.status === 'published' ? 'детальная страница' : 'по запросу';
 ---
 

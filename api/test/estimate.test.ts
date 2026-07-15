@@ -40,3 +40,43 @@ test('v2 unknown product falls back without crashing', () => {
   expect(r.kind).toBe('unknown');
   expect(r.priceLow).toBeGreaterThan(0);
 });
+
+test('v3 corporate site: presenting services with leads', () => {
+  const r = estimate({
+    version: 'v3',
+    task: 'present',
+    actions: 'view,lead',
+    manage: 'texts',
+    dataflow: 'notify',
+    deadline: 'month',
+    budget: 'b250',
+  });
+  expect(r.version).toBe('v3');
+  expect(r.kind).toBe('company');
+  expect(r.priceLow).toBe(140000);
+  expect(r.priceHigh).toBe(260000);
+});
+
+test('v3 buy action elevates to shop even for present task', () => {
+  const r = estimate({ version: 'v3', task: 'present', actions: 'view,buy' });
+  expect(r.kind).toBe('shop');
+});
+
+test('v3 integrations add price on top of base', () => {
+  const base = estimate({ version: 'v3', task: 'present', actions: 'lead' });
+  const withOnec = estimate({ version: 'v3', task: 'present', actions: 'lead', dataflow: 'onec' });
+  expect(withOnec.priceLow).toBe(base.priceLow + 60000);
+  expect(withOnec.termHigh).toBe(base.termHigh + 2);
+});
+
+test('v3 included actions do not double-charge', () => {
+  const plain = estimate({ version: 'v3', task: 'sell', actions: '' });
+  const withIncluded = estimate({ version: 'v3', task: 'sell', actions: 'view,lead,pick,choose,buy' });
+  expect(withIncluded.priceLow).toBe(plain.priceLow);
+});
+
+test('v3 empty answers fall back to custom without crashing', () => {
+  const r = estimate({ version: 'v3' });
+  expect(r.kind).toBe('custom');
+  expect(r.priceLow).toBeGreaterThan(0);
+});

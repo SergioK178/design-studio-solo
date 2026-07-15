@@ -121,11 +121,11 @@ const product = products.find((item) => item.slug === data.productSlug);
       <section class="cta" data-reveal>
         <div>
           <span class="mono">похожая задача?</span>
-          <h2>Соберите проект в конструкторе</h2>
-          <p>Ответьте на несколько вопросов — получите ориентир по цене и сроку. Точную смету фиксируем после проверки деталей.</p>
+          <h2>Разберите задачу в брифе</h2>
+          <p>Ответьте на несколько вопросов — предложим формат и ориентир по цене и сроку. Точную смету фиксируем после проверки деталей.</p>
         </div>
         <div class="actions">
-          {product && <a class="btn-gold" href={briefHref(product)} data-magnetic>Собрать «{product.name}» →</a>}
+          {product && <a class="btn-gold" href={briefHref(product)} data-magnetic>Разобрать похожую задачу →</a>}
           <a class="btn-outline dark" href={site.telegramUrl} data-magnetic>Написать в Telegram</a>
         </div>
       </section>

@@ -9,6 +9,7 @@ interface RelayPayload {
   kind: string;
   priceLabel: string;
   panelUrl: string;
+  summary?: string;
 }
 
 export default {
@@ -23,7 +24,9 @@ export default {
     }
 
     const payload = await request.json<RelayPayload>();
-    const text = `Заявка №${payload.id} · ${payload.kind} · ${payload.priceLabel}\n${payload.panelUrl}`;
+    const text = payload.summary
+      ? `${payload.summary}\n${payload.panelUrl}`
+      : `Заявка №${payload.id} · ${payload.kind} · ${payload.priceLabel}\n${payload.panelUrl}`;
 
     await fetch(`https://api.telegram.org/bot${env.TG_BOT_TOKEN}/sendMessage`, {
       method: 'POST',

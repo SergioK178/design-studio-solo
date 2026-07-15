@@ -1,17 +1,15 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Nav from '../../components/Nav.astro';
-import PageHeader from '../../components/PageHeader.astro';
 import Brief from '../../components/Brief.svelte';
 import SiteFooter from '../../components/SiteFooter.astro';
 ---
 
-<Base title="Умный бриф · 3K Studio">
+<Base title="Разбор задачи · 3K Studio">
   <Nav />
-  <PageHeader eyebrow="бриф" title="Соберите проект и получите смету" lead="3–5 минут. Смета — ориентир, точную цену и срок фиксируем в договоре." tone="gold" />
   <main class="brief-page" data-bg="ink">
-    <div class="wrap brief-wrap">
-      <section class="brief-panel" aria-label="Конструктор проекта">
+    <div class="wrap">
+      <section class="brief-panel" aria-label="Разбор задачи">
         <Brief client:load />
       </section>
       <noscript>
@@ -20,7 +18,7 @@ import SiteFooter from '../../components/SiteFooter.astro';
           <p>Напишите задачу свободным текстом — заявка уйдёт напрямую нам, без сторонних сервисов.</p>
           <form action="/api/lead" method="post">
             <label>
-              <span class="mono">Что нужно сделать?</span>
+              <span class="mono">Что должно заработать?</span>
               <textarea name="answers[freeform]" rows="6" placeholder="Сайт, каталог, Telegram, автоматизация — опишите задачу как удобно"></textarea>
             </label>
             <input type="hidden" name="version" value="v2" />
@@ -40,17 +38,12 @@ import SiteFooter from '../../components/SiteFooter.astro';
   .brief-page {
     background: var(--color-ink);
     color: var(--color-paper);
-    min-height: 680px;
-    padding: 80px 0 100px;
-  }
-
-  .brief-wrap {
-    display: block;
+    min-height: 720px;
+    padding: 120px 0 110px;
   }
 
   .brief-panel {
-    max-width: 980px;
-    min-height: 520px;
+    min-height: 560px;
   }
 
   aside {
@@ -85,39 +78,35 @@ import SiteFooter from '../../components/SiteFooter.astro';
     font-size: 10px;
   }
 
-  select,
   textarea {
     width: 100%;
     border: 0;
     background: var(--color-paper);
     color: var(--color-ink);
     padding: 12px;
-    font: 500 14px / 1.2 var(--font-text);
-  }
-
-  textarea {
+    font: 500 14px / 1.45 var(--font-text);
     resize: vertical;
-    line-height: 1.45;
   }
 
   .fallback-link {
     display: block;
+    border: 0;
     background: var(--color-gold);
     color: var(--color-ink);
     padding: 14px 16px;
-    font-weight: 600;
+    font: 600 15px / 1.2 var(--font-text);
     text-align: center;
-    text-decoration: none;
+    cursor: pointer;
   }
 
   @media (max-width: 860px) {
     .brief-page {
-      min-height: 620px;
-      padding: 54px 0 72px;
+      min-height: 640px;
+      padding: 96px 0 72px;
     }
 
     .brief-panel {
-      min-height: 480px;
+      min-height: 500px;
     }
   }
 </style>

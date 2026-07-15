@@ -58,10 +58,11 @@ const productBaseOverrides: Record<string, Partial<BaseEstimate>> = {
   catalog: { label: 'Каталог компании', price: { min: 200000, max: 450000 }, weeks: { min: 2, max: 4 } },
   shop: { label: 'Интернет-магазин', price: { min: 320000, max: 700000 }, weeks: { min: 3, max: 6 } },
   tma: { label: 'Приложение внутри Telegram', price: { min: 120000, max: 300000 }, weeks: { min: 2, max: 3 } },
-  bot: { label: 'Telegram-бот', price: { min: 80000, max: 220000 }, weeks: { min: 1, max: 3 } },
+  bot: { label: 'Telegram-бот', price: { min: 60000, max: 180000 }, weeks: { min: 1, max: 3 } },
   app: { label: 'Личный кабинет или рабочий веб-сервис', price: { min: 350000, max: 900000 }, weeks: { min: 6, max: 12 } },
   migration: { label: 'Перенос сайта и данных', price: { min: 90000, max: 250000 }, weeks: { min: 1, max: 3 } },
-  automation: { label: 'Автоматизация повторяющейся работы', price: { min: 100000, max: 400000 }, weeks: { min: 2, max: 6 } },
+  // Срок «по задаче» у обмена данными парсится в 0 недель — фиксируем руками.
+  'data-exchange': { weeks: { min: 1, max: 3 } },
   support: { label: 'Поддержка и развитие', price: { min: 25000, max: 100000 }, weeks: { min: 1, max: 4 } },
 };
 

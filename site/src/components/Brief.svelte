@@ -1,94 +1,126 @@
 <script>
   import { onMount } from 'svelte';
-  import { estimateV2 } from '../data/brief-estimate';
+  import { fly } from 'svelte/transition';
+  import { expoOut } from 'svelte/easing';
   import {
-    branchForProduct,
-    branchQuestions,
-    optionsForBranch,
-    productGroups,
-    products,
-    recommendationQuestions,
-    recommendProduct,
-  } from '../data/brief-v2';
+    documentLines,
+    emptyAnswers,
+    estimateV3,
+    payloadV3,
+    questionById,
+    studioSummary,
+  } from '../data/brief-v3';
   import { site } from '../data/site';
 
-  const knownProductSlugs = new Set(products.map((item) => item.slug));
+  /* Экраны: intro → вопросы → result → contact → sent. */
+  let screen = 'intro';
+  let stepIndex = 0;
+  let answers = emptyAnswers();
+  let docOpen = false;
 
-  let stage = 'mode';
-  let mode = '';
-  let product = '';
-  let recommendAnswers = {};
-  let branchAnswers = {};
-  let selectedOptions = [];
-  let copied = false;
+  let contactName = '';
+  let contactPhone = '';
+  let contactComment = '';
+  let hp = '';
+  let sending = false;
+  let sendError = false;
+  let leadId = null;
 
-  const productBySlug = Object.fromEntries(products.map((item) => [item.slug, item]));
+  const mountedAt = Date.now();
+  let reduced = false;
 
-  function chooseMode(nextMode) {
-    mode = nextMode;
-    stage = nextMode === 'known' ? 'product' : 'recommend';
-    copied = false;
+  /* Последовательность шагов зависит от первой развилки. */
+  $: steps = [
+    'task',
+    ...(answers.task === 'update' ? ['updateGoal'] : []),
+    ...(answers.task === 'other' ? ['otherText'] : []),
+    'actions',
+    'content',
+    'manage',
+    'dataflow',
+    'have',
+    'deadline',
+    'budget',
+  ];
+
+  $: stepId = steps[Math.min(stepIndex, steps.length - 1)];
+  $: question = stepId === 'otherText' ? null : questionById[stepId];
+  $: stage = question?.stage ?? 1;
+  $: stageName = question?.stageName ?? 'Задача';
+  $: lines = documentLines(answers);
+  $: result = estimateV3(answers);
+  $: needSystems = answers.dataflow.includes('crm') || answers.dataflow.includes('onec');
+  $: contactReady = contactName.trim().length > 0 && contactPhone.trim().length > 1;
+
+  $: stepDone =
+    stepId === 'otherText'
+      ? answers.otherText.trim().length > 0
+      : question?.multi
+        ? answers[stepId].length > 0
+        : Boolean(answers[stepId]);
+
+  const flyIn = (node) => fly(node, { y: 26, duration: reduced ? 0 : 500, delay: reduced ? 0 : 180, easing: expoOut });
+  const flyOut = (node) => fly(node, { y: -20, duration: reduced ? 0 : 220, easing: expoOut });
+  const lineIn = (node) => fly(node, { y: 12, duration: reduced ? 0 : 450, easing: expoOut });
+
+  function start() {
+    screen = 'question';
+    stepIndex = 0;
   }
 
-  function selectProduct(slug) {
-    product = slug;
-    branchAnswers = {};
-    selectedOptions = [];
-    stage = 'branch';
-    copied = false;
+  function next() {
+    if (stepIndex < steps.length - 1) stepIndex += 1;
+    else showResult();
   }
 
-  function answerRecommendation(questionId, value) {
-    recommendAnswers = { ...recommendAnswers, [questionId]: value };
-    copied = false;
+  function back() {
+    if (screen === 'result') {
+      screen = 'question';
+      stepIndex = steps.length - 1;
+      return;
+    }
+    if (stepIndex > 0) stepIndex -= 1;
+    else screen = 'intro';
   }
 
-  function answerBranch(questionId, value) {
-    branchAnswers = { ...branchAnswers, [questionId]: value };
-    copied = false;
+  let advanceTimer;
+  function pickSingle(id, value) {
+    answers = { ...answers, [id]: value };
+    if (id === 'task') {
+      // Смена задачи меняет маршрут — уточнения сбрасываем.
+      answers = { ...answers, updateGoal: '', otherText: '' };
+    }
+    clearTimeout(advanceTimer);
+    advanceTimer = setTimeout(next, reduced ? 0 : 420);
   }
 
-  function applyRecommendation() {
-    const recommendation = recommendProduct(recommendAnswers);
-    product = recommendation.product;
-    stage = 'branch';
-    copied = false;
+  function toggleMulti(id, choice) {
+    const current = new Set(answers[id]);
+    if (choice.exclusive) {
+      answers = { ...answers, [id]: current.has(choice.id) ? [] : [choice.id] };
+      return;
+    }
+    const q = questionById[id];
+    const exclusives = new Set(q.choices.filter((c) => c.exclusive).map((c) => c.id));
+    for (const ex of exclusives) current.delete(ex);
+    if (current.has(choice.id)) current.delete(choice.id);
+    else current.add(choice.id);
+    answers = { ...answers, [id]: [...current] };
   }
 
-  function toggleOption(id) {
-    selectedOptions = selectedOptions.includes(id)
-      ? selectedOptions.filter((item) => item !== id)
-      : [...selectedOptions, id];
-    copied = false;
+  function showResult() {
+    screen = 'result';
+    docOpen = false;
+    saveDraft();
+    syncUrl();
   }
 
-  function draftUrl() {
-    if (typeof window === 'undefined') return '';
-    const params = new URLSearchParams(payload);
-    return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+  function editAnswers() {
+    screen = 'question';
+    stepIndex = 0;
   }
 
-  function estimateText() {
-    const itemRows = (result.items ?? []).map((item) => `- ${item.label}: ${item.priceLabel}, ${item.weeksLabel}`);
-    return [
-      'Смета 3K Studio',
-      `Формат: ${currentProduct?.name ?? result.kind}`,
-      ...itemRows,
-      `Итого: ${result.priceLabel}, ${result.weeksLabel}`,
-      'Смета — ориентир. Точную цену и срок фиксируем в договоре.',
-      `Черновик: ${draftUrl()}`,
-    ].join('\n');
-  }
-
-  async function copyEstimate() {
-    await navigator.clipboard.writeText(estimateText());
-    copied = true;
-  }
-
-  function telegramHref() {
-    return `${site.telegramUrl}?text=${encodeURIComponent(`Привет. Собрал проект в конструкторе.\n\n${estimateText()}`)}`;
-  }
-
+  /* Черновик: ссылка восстанавливает ответы, POST — для сводки студии. */
   let draftSaved = false;
   function saveDraft() {
     if (draftSaved) return;
@@ -96,430 +128,970 @@
     fetch('/api/draft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers: payload }),
+      body: JSON.stringify({ answers: payloadV3(answers) }),
     }).catch(() => {});
+  }
+
+  function syncUrl() {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams({ ...payloadV3(answers), stage: 'result' });
+    history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
   }
 
   function restoreFromUrl() {
     const params = new URLSearchParams(window.location.search);
-    const version = params.get('version');
-    const legacyProject = params.get('product') || params.get('project');
-    const restoredProduct = legacyProject && knownProductSlugs.has(legacyProject) ? legacyProject : '';
-
-    if (version === 'v2') {
-      mode = params.get('mode') || (restoredProduct ? 'known' : '');
-      product = restoredProduct || params.get('product') || '';
-      const options = params.get('options');
-      selectedOptions = options ? options.split(',').filter(Boolean) : [];
-      const nextRecommend = {};
-      const nextBranch = {};
-      for (const [key, value] of params.entries()) {
-        if (key.startsWith('recommend_')) nextRecommend[key.replace('recommend_', '')] = value;
-        if (key.startsWith('branch_')) nextBranch[key.replace('branch_', '')] = value;
-      }
-      recommendAnswers = nextRecommend;
-      branchAnswers = nextBranch;
-      stage = product ? 'result' : mode === 'help' ? 'recommend' : 'product';
-      return;
-    }
-
-    if (restoredProduct) {
-      mode = 'known';
-      product = restoredProduct;
-      stage = 'branch';
+    if (params.get('version') !== 'v3') return;
+    const list = (key) => (params.get(key) ?? '').split(',').filter(Boolean);
+    answers = {
+      task: params.get('task') ?? '',
+      updateGoal: params.get('update_goal') ?? '',
+      otherText: params.get('other_text') ?? '',
+      actions: list('actions'),
+      content: list('content'),
+      manage: list('manage'),
+      dataflow: list('dataflow'),
+      systems: params.get('systems') ?? '',
+      have: list('have'),
+      deadline: params.get('deadline') ?? '',
+      budget: params.get('budget') ?? '',
+    };
+    if (params.get('stage') === 'result' && answers.task) {
+      draftSaved = true; // черновик по ссылке не дублируем
+      screen = 'result';
+    } else if (answers.task) {
+      // Переход с карточки продукта: задача предзаполнена, начинаем со следующего шага.
+      screen = 'question';
+      stepIndex = firstIncompleteStep();
     }
   }
 
-  $: currentProduct = productBySlug[product];
-  $: currentBranch = branchForProduct(product || 'unknown');
-  $: currentBranchQuestions = branchQuestions[currentBranch] ?? branchQuestions.custom;
-  $: currentOptions = optionsForBranch(currentBranch);
-  $: recommendation = recommendProduct(recommendAnswers);
-  $: recommendationComplete = recommendationQuestions.every((question) => Boolean(recommendAnswers[question.id]));
-  $: branchComplete = currentBranchQuestions.every((question) => Boolean(branchAnswers[question.id]));
-  $: payload = {
-    version: 'v2',
-    mode,
-    product: product || 'unknown',
-    branch: currentBranch,
-    options: selectedOptions.join(','),
-    ...Object.fromEntries(Object.entries(recommendAnswers).map(([key, value]) => [`recommend_${key}`, value])),
-    ...Object.fromEntries(Object.entries(branchAnswers).map(([key, value]) => [`branch_${key}`, value])),
-  };
-  $: result = estimateV2(payload);
-  $: if (stage === 'result') saveDraft();
+  function firstIncompleteStep() {
+    const sequence = [
+      'task',
+      ...(answers.task === 'update' ? ['updateGoal'] : []),
+      ...(answers.task === 'other' ? ['otherText'] : []),
+      'actions',
+      'content',
+      'manage',
+      'dataflow',
+      'have',
+      'deadline',
+      'budget',
+    ];
+    const done = (id) =>
+      id === 'otherText'
+        ? answers.otherText.trim().length > 0
+        : Array.isArray(answers[id])
+          ? answers[id].length > 0
+          : Boolean(answers[id]);
+    const index = sequence.findIndex((id) => !done(id));
+    return index === -1 ? sequence.length - 1 : index;
+  }
 
-  onMount(restoreFromUrl);
+  function telegramText() {
+    const number = leadId ? `Бриф №${leadId}.\n` : '';
+    return `Привет! Заполнил разбор задачи на сайте.\n${number}\n${studioSummary(answers, result)}\n\nЧерновик: ${draftUrl()}`;
+  }
+
+  function draftUrl() {
+    if (typeof window === 'undefined') return '';
+    const params = new URLSearchParams({ ...payloadV3(answers), stage: 'result' });
+    return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+  }
+
+  function telegramHref() {
+    return `${site.telegramUrl}?text=${encodeURIComponent(telegramText())}`;
+  }
+
+  async function submitLead(event) {
+    event.preventDefault();
+    if (!contactReady || sending) return;
+    sending = true;
+    sendError = false;
+    try {
+      const response = await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          answers: payloadV3(answers),
+          contact: { name: contactName.trim(), phone: contactPhone.trim(), comment: contactComment.trim() },
+          summary: studioSummary(answers, result),
+          hp,
+          ts: mountedAt,
+        }),
+      });
+      if (!response.ok) throw new Error('lead failed');
+      const data = await response.json();
+      leadId = data.id ?? null;
+      screen = 'sent';
+    } catch {
+      sendError = true;
+    } finally {
+      sending = false;
+    }
+  }
+
+  onMount(() => {
+    reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    restoreFromUrl();
+  });
+
+  const planNotes = {
+    core: 'В комфортный бюджет помещается основной состав — связи с системами удобнее добавить вторым этапом.',
+    staged: 'Чтобы остаться в названном бюджете, предложим поэтапный запуск: сначала ядро, затем расширения.',
+    open: 'Состав работ уточним на коротком созвоне — до договора и без обязательств.',
+    full: '',
+  };
 </script>
 
 <div class="brief" data-testid="brief">
-  {#if stage === 'mode'}
-    <section class="step">
-      <span class="mono">конструктор</span>
-      <h2>Как начнём?</h2>
-      <div class="mode-grid">
-        <button type="button" on:click={() => chooseMode('known')}>
-          <b>Знаю, что нужно</b>
-          <span>Выберите решение из полной линейки.</span>
-        </button>
-        <button type="button" on:click={() => chooseMode('help')}>
-          <b>Помогите выбрать</b>
-          <span>Ответьте на 3 вопроса — предложим формат.</span>
-        </button>
+  {#if screen === 'intro'}
+    <section class="intro" in:flyIn>
+      <p class="mono label">бриф · разбор задачи</p>
+      <h1>Расскажите, что должно заработать</h1>
+      <p class="intro-lead">
+        Ответьте на несколько вопросов — предложим подходящий формат, предварительную стоимость и следующий шаг.
+      </p>
+      <ul class="intro-meta" aria-label="Как устроен бриф">
+        <li>3–5 минут</li>
+        <li>Без регистрации</li>
+        <li>Ответы можно изменить</li>
+        <li>Расчёт предварительный</li>
+      </ul>
+      <div class="intro-actions">
+        <button type="button" class="btn-gold" on:click={start}>Начать</button>
+        <a class="btn-outline" href={site.telegramUrl}>Написать в Telegram</a>
       </div>
     </section>
-  {:else if stage === 'product'}
-    <section class="step">
-      <span class="mono">выбор решения</span>
-      <h2>Что нужно сделать?</h2>
-      {#each productGroups as group}
-        <div class="product-group">
-          <h3>{group.title}</h3>
-          <div class="product-list">
-            {#each products.filter((item) => item.group === group.id) as item}
-              <button type="button" class:active={product === item.slug} on:click={() => selectProduct(item.slug)}>
-                <b>{item.name}</b>
-                <span>{item.price} · {item.term}</span>
-              </button>
+  {:else if screen === 'question'}
+    <div class="interview">
+      <section class="screen" aria-live="polite">
+        {#key stepId}
+          <div class="screen-inner" in:flyIn out:flyOut>
+            <header class="stage-head">
+              <span class="stage-number" aria-hidden="true">{String(stage).padStart(2, '0')}</span>
+              <span class="mono stage-name">{stageName}</span>
+            </header>
+
+            {#if stepId === 'otherText'}
+              <h2>Опишите задачу своими словами</h2>
+              <p class="hint">Пары предложений достаточно — детали разберём вместе.</p>
+              <textarea
+                class="free-text"
+                rows="5"
+                placeholder="Что должно заработать и для кого"
+                bind:value={answers.otherText}
+              ></textarea>
+            {:else}
+              <h2>{question.title}</h2>
+              {#if question.hint}<p class="hint">{question.hint}</p>{/if}
+
+              <div class="options" role={question.multi ? 'group' : 'radiogroup'} aria-label={question.title}>
+                {#each question.choices as choice (choice.id)}
+                  {#if question.multi}
+                    <button
+                      type="button"
+                      class="option"
+                      role="checkbox"
+                      aria-checked={answers[stepId].includes(choice.id)}
+                      class:selected={answers[stepId].includes(choice.id)}
+                      on:click={() => toggleMulti(stepId, choice)}
+                    >
+                      <span class="mark mark-square" aria-hidden="true"></span>
+                      <span class="option-label">{choice.label}</span>
+                    </button>
+                  {:else}
+                    <button
+                      type="button"
+                      class="option"
+                      role="radio"
+                      aria-checked={answers[stepId] === choice.id}
+                      class:selected={answers[stepId] === choice.id}
+                      on:click={() => pickSingle(stepId, choice.id)}
+                    >
+                      <span class="mark mark-dot" aria-hidden="true"></span>
+                      <span class="option-label">{choice.label}</span>
+                    </button>
+                  {/if}
+                {/each}
+              </div>
+
+              {#if stepId === 'dataflow' && needSystems}
+                <label class="systems" in:lineIn>
+                  <span class="mono">Какие системы уже используются?</span>
+                  <input
+                    type="text"
+                    placeholder="Например: Битрикс24, amoCRM, МойСклад, 1С"
+                    bind:value={answers.systems}
+                  />
+                </label>
+              {/if}
+            {/if}
+          </div>
+        {/key}
+
+        <footer class="screen-foot">
+          <div class="progress" aria-label={`Этап ${stage} из 6`}>
+            <span class="progress-count">{stage} из 6</span>
+            <span class="progress-track" aria-hidden="true"><i style={`width:${(stage / 6) * 100}%`}></i></span>
+          </div>
+          <div class="foot-actions">
+            <button type="button" class="ghost" on:click={back}>Назад</button>
+            {#if question?.multi || stepId === 'otherText'}
+              <button type="button" class="btn-gold small" disabled={!stepDone} on:click={next}>Дальше</button>
+            {/if}
+          </div>
+        </footer>
+      </section>
+
+      <aside class="doc" aria-label="Разбор задачи — составляется по вашим ответам">
+        <header>
+          <span class="mono">разбор задачи</span>
+        </header>
+        <div class="doc-body">
+          {#each lines as line (line)}
+            <p in:lineIn>{line}</p>
+          {/each}
+          <span class="caret" aria-hidden="true"></span>
+        </div>
+        <footer class="doc-foot">Составляем по вашим ответам — станет основой оценки.</footer>
+      </aside>
+
+      <div class="doc-mobile" class:open={docOpen}>
+        <button type="button" class="doc-toggle" on:click={() => (docOpen = !docOpen)} aria-expanded={docOpen}>
+          <span class="mono">разбор задачи</span>
+          <span class="doc-last">{docOpen ? 'Свернуть' : (lines[lines.length - 1] ?? 'Появится после первого ответа')}</span>
+        </button>
+        {#if docOpen}
+          <div class="doc-mobile-body">
+            {#each lines as line (line)}
+              <p>{line}</p>
             {/each}
           </div>
-        </div>
-      {/each}
-      <div class="controls">
-        <button type="button" class="secondary" on:click={() => (stage = 'mode')}>Назад</button>
+        {/if}
       </div>
-    </section>
-  {:else if stage === 'recommend'}
-    <section class="step">
-      <span class="mono">поможем выбрать</span>
-      <h2>Ответьте на 3 вопроса</h2>
-      <div class="question-stack">
-        {#each recommendationQuestions as question}
-          <fieldset>
-            <legend>{question.title}</legend>
-            <div class="options">
-              {#each question.choices as choice}
-                <label class:active={recommendAnswers[question.id] === choice.id}>
-                  <input type="radio" name={question.id} value={choice.id} checked={recommendAnswers[question.id] === choice.id} on:change={() => answerRecommendation(question.id, choice.id)} />
-                  <span>{choice.label}</span>
-                </label>
-              {/each}
+    </div>
+  {:else if screen === 'result' || screen === 'contact' || screen === 'sent'}
+    <section class="sheet" data-testid="brief-result" data-format={result.format} in:flyIn>
+      {#if screen === 'sent'}
+        <p class="mono sheet-label">отправлено</p>
+        <h2>Проект {leadId ? `№${leadId} ` : ''}у нас</h2>
+        <p class="sheet-lead">
+          Проверим спорные места и вернёмся с 2–4 уточняющими вопросами. После этого пришлём состав работ,
+          фиксированную цену и срок.
+        </p>
+        <div class="sheet-actions">
+          <a class="btn-dark" href={telegramHref()}>Открыть чат в Telegram</a>
+        </div>
+      {:else}
+        <p class="mono sheet-label">заключение студии</p>
+        <h2>{result.title}</h2>
+        <p class="sheet-lead">{result.lead}</p>
+
+        <dl class="sheet-rows">
+          <div class="row">
+            <dt>Первый запуск</dt>
+            <dd>{result.weeksLabel}</dd>
+          </div>
+          <div class="row">
+            <dt>Ориентир</dt>
+            <dd>{result.priceLabel}</dd>
+          </div>
+          <div class="row">
+            <dt>В основе</dt>
+            <dd>{result.core.join(', ')}</dd>
+          </div>
+          {#if result.later.length}
+            <div class="row">
+              <dt>Можно добавить позже</dt>
+              <dd>{result.later.join(', ')}</dd>
             </div>
-          </fieldset>
-        {/each}
-      </div>
-      {#if recommendationComplete}
-        <div class="recommendation">
-          <span class="mono">рекомендуем</span>
-          <b>{productBySlug[recommendation.product]?.name ?? recommendation.product}</b>
-          <p>{recommendation.reason}</p>
-        </div>
+          {/if}
+        </dl>
+
+        <h3>Почему такой формат</h3>
+        <p class="sheet-reason">{result.reason}</p>
+        {#if planNotes[result.plan]}
+          <p class="sheet-reason">{planNotes[result.plan]}</p>
+        {/if}
+
+        {#if result.manual.length}
+          <div class="manual">
+            <p>
+              Часть задачи требует короткого разбора: {result.manual.join('; ')}. Мы уточним её до договора и не
+              начнём дополнительные работы без согласованной оценки.
+            </p>
+          </div>
+        {/if}
+
+        <p class="sheet-note">Расчёт предварительный — точную цену и срок фиксируем в договоре.</p>
+
+        {#if screen === 'contact'}
+          <form class="contact" on:submit={submitLead}>
+            <label>
+              <span class="mono">Имя</span>
+              <input type="text" name="name" autocomplete="name" bind:value={contactName} />
+            </label>
+            <label>
+              <span class="mono">Телефон или Telegram</span>
+              <input type="text" name="phone" autocomplete="tel" bind:value={contactPhone} />
+            </label>
+            <label>
+              <span class="mono">Комментарий — по желанию</span>
+              <textarea name="comment" rows="3" bind:value={contactComment}></textarea>
+            </label>
+            <input type="text" name="hp" bind:value={hp} class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+            {#if sendError}
+              <p class="send-error">Не получилось отправить. Попробуйте ещё раз или напишите в Telegram.</p>
+            {/if}
+            <div class="sheet-actions">
+              <button type="submit" class="btn-dark" disabled={!contactReady || sending}>
+                {sending ? 'Отправляем…' : 'Отправить проект'}
+              </button>
+              <button type="button" class="ghost-dark" on:click={() => (screen = 'result')}>Назад</button>
+            </div>
+          </form>
+        {:else}
+          <div class="sheet-actions">
+            <button type="button" class="btn-dark" on:click={() => (screen = 'contact')}>Отправить проект в студию</button>
+            <a class="ghost-dark" href={telegramHref()}>Обсудить в Telegram</a>
+            <button type="button" class="ghost-dark" on:click={editAnswers}>Изменить ответы</button>
+          </div>
+        {/if}
       {/if}
-      <div class="controls">
-        <button type="button" class="secondary" on:click={() => (stage = 'mode')}>Назад</button>
-        <button type="button" disabled={!recommendationComplete} on:click={applyRecommendation}>Продолжить</button>
-      </div>
-    </section>
-  {:else if stage === 'branch'}
-    <section class="step">
-      <span class="mono">{currentProduct?.name ?? 'проект'}</span>
-      <h2>Уточним рамки</h2>
-      <div class="question-stack">
-        {#each currentBranchQuestions as question}
-          <fieldset>
-            <legend>{question.title}</legend>
-            <div class="options">
-              {#each question.choices as choice}
-                <label class:active={branchAnswers[question.id] === choice.id}>
-                  <input type="radio" name={question.id} value={choice.id} checked={branchAnswers[question.id] === choice.id} on:change={() => answerBranch(question.id, choice.id)} />
-                  <span>{choice.label}</span>
-                </label>
-              {/each}
-            </div>
-          </fieldset>
-        {/each}
-      </div>
-      <div class="controls">
-        <button type="button" class="secondary" on:click={() => (stage = mode === 'help' ? 'recommend' : 'product')}>Назад</button>
-        <button type="button" disabled={!branchComplete} on:click={() => (stage = 'options')}>К возможностям</button>
-      </div>
-    </section>
-  {:else if stage === 'options'}
-    <section class="step">
-      <span class="mono">дополнительные возможности</span>
-      <h2>Что ещё должно уметь решение?</h2>
-      <div class="check-grid">
-        {#each currentOptions as option}
-          <label class:active={selectedOptions.includes(option.id)}>
-            <input type="checkbox" checked={selectedOptions.includes(option.id)} on:change={() => toggleOption(option.id)} />
-            <b>{option.name}</b>
-            <span>{option.price} · {option.term}</span>
-          </label>
-        {/each}
-      </div>
-      <div class="controls">
-        <button type="button" class="secondary" on:click={() => (stage = 'branch')}>Назад</button>
-        <button type="button" on:click={() => (stage = 'result')}>Показать смету</button>
-      </div>
-    </section>
-  {:else}
-    <section class="result" data-testid="brief-result" data-product={product} data-branch={currentBranch} data-options={selectedOptions.join(',')}>
-      <span class="mono">предварительная смета</span>
-      <h2>{result.priceLabel}, {result.weeksLabel}</h2>
-      <div class="estimate-list">
-        {#each result.items ?? [] as item}
-          <article>
-            <b>{item.label}</b>
-            <span>{item.priceLabel}</span>
-            <small>{item.weeksLabel}</small>
-          </article>
-        {/each}
-      </div>
-      <p>Смета — ориентир. Точную цену и срок фиксируем в договоре.</p>
-      <div class="controls">
-        <button type="button" class="secondary" on:click={() => (stage = 'options')}>Назад к ответам</button>
-        <button type="button" class="secondary" on:click={copyEstimate}>{copied ? 'Смета скопирована' : 'Скопировать смету'}</button>
-        <a class="primary-link" href={telegramHref()}>Обсудить в Telegram</a>
-      </div>
     </section>
   {/if}
 </div>
 
 <style>
   .brief {
-    background: var(--color-paper);
-    box-sizing: border-box;
-    color: var(--color-ink);
-    min-height: 520px;
-    padding: 30px;
+    color: var(--color-paper);
+    min-height: 560px;
   }
 
   .mono {
-    color: var(--color-blue);
+    color: var(--color-gold);
     font-family: var(--font-text);
     font-size: 13px;
     font-weight: 650;
-    letter-spacing: 0;
-    text-transform: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Интро ---------- */
+
+  .intro {
+    max-width: 720px;
+    padding: 24px 0 8px;
+  }
+
+  h1 {
+    margin: 18px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(34px, 5vw, 58px);
+    font-weight: 800;
+    line-height: 1.08;
+  }
+
+  .intro-lead {
+    margin: 22px 0 0;
+    max-width: 560px;
+    color: rgb(244 242 236 / 0.78);
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  .intro-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 0;
+    margin: 30px 0 0;
+    padding: 0;
+    list-style: none;
+    color: rgb(244 242 236 / 0.6);
+    font-size: 14px;
+  }
+
+  .intro-meta li + li::before {
+    content: '·';
+    margin: 0 10px;
+    color: var(--color-gold);
+  }
+
+  .intro-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 40px;
+  }
+
+  .btn-gold {
+    border: 0;
+    cursor: pointer;
+    background: var(--color-gold);
+    color: var(--color-ink);
+    padding: 19px 34px;
+    font: 600 15.5px / 1.2 var(--font-text);
+  }
+
+  .btn-gold:hover {
+    background: var(--color-paper);
+  }
+
+  .btn-gold:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  .btn-gold.small {
+    padding: 14px 26px;
+  }
+
+  .btn-outline {
+    display: inline-block;
+    border: 1.5px solid rgb(244 242 236 / 0.4);
+    padding: 17.5px 30px;
+    font: 600 15.5px / 1.2 var(--font-text);
+    color: rgb(244 242 236 / 0.9);
+    text-decoration: none;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--color-paper);
+  }
+
+  /* ---------- Интервью ---------- */
+
+  .interview {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+    gap: clamp(48px, 7vw, 96px);
+    align-items: start;
+  }
+
+  .screen {
+    display: grid;
+    min-height: 540px;
+    grid-template-rows: 1fr auto;
+  }
+
+  .screen-inner {
+    grid-area: 1 / 1;
+  }
+
+  .stage-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  .stage-number {
+    color: rgb(244 242 236 / 0.28);
+    font-size: clamp(44px, 5vw, 64px);
+    font-weight: 250;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .stage-name {
+    letter-spacing: 0.02em;
   }
 
   h2 {
-    margin: 10px 0 0;
+    margin: 20px 0 0;
+    max-width: 560px;
     font-family: var(--font-display);
-    font-size: clamp(30px, 4vw, 48px);
-    font-weight: 800;
-    line-height: 1.12;
+    font-size: clamp(24px, 2.8vw, 36px);
+    font-weight: 700;
+    line-height: 1.16;
   }
 
-  .mode-grid,
-  .product-list,
-  .options,
-  .check-grid,
-  .estimate-list {
-    display: grid;
-    gap: 12px;
+  .hint {
+    margin: 12px 0 0;
+    color: rgb(244 242 236 / 0.55);
+    font-size: 14.5px;
+    line-height: 1.5;
   }
 
-  .mode-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .options {
+    margin-top: 26px;
+    border-top: 1px solid rgb(244 242 236 / 0.16);
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid rgb(244 242 236 / 0.16);
+    background: none;
+    padding: 13px 4px;
+    color: rgb(244 242 236 / 0.82);
+    font: 500 16px / 1.35 var(--font-text);
+    text-align: left;
+    cursor: pointer;
+    transition:
+      color 0.25s,
+      padding-left 0.35s var(--ease-site),
+      box-shadow 0.35s var(--ease-site);
+  }
+
+  .option:hover {
+    color: var(--color-paper);
+  }
+
+  .option.selected {
+    color: var(--color-gold);
+    font-weight: 650;
+    padding-left: 14px;
+    box-shadow: inset 3px 0 0 var(--color-gold);
+  }
+
+  .mark {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid rgb(244 242 236 / 0.45);
+    transition:
+      background 0.25s,
+      border-color 0.25s;
+  }
+
+  .mark-dot {
+    border-radius: 50%;
+  }
+
+  .option.selected .mark {
+    border-color: var(--color-gold);
+    background: var(--color-gold);
+  }
+
+  .free-text,
+  .systems input {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid rgb(244 242 236 / 0.28);
+    background: rgb(244 242 236 / 0.04);
+    color: var(--color-paper);
+    padding: 16px;
+    font: 500 16px / 1.5 var(--font-text);
+    resize: vertical;
+  }
+
+  .free-text:focus,
+  .systems input:focus {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+
+  .free-text {
     margin-top: 28px;
   }
 
-  button,
-  .primary-link {
-    box-sizing: border-box;
+  .free-text::placeholder,
+  .systems input::placeholder {
+    color: rgb(244 242 236 / 0.4);
+  }
+
+  .systems {
+    display: grid;
+    gap: 10px;
+    margin-top: 26px;
+    max-width: 480px;
+  }
+
+  .screen-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 36px;
+    padding-top: 16px;
+  }
+
+  .progress {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 180px;
+  }
+
+  .progress-count {
+    color: rgb(244 242 236 / 0.6);
+    font-size: 13.5px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .progress-track {
+    display: block;
+    flex: 1;
+    height: 1.5px;
+    min-width: 90px;
+    background: rgb(244 242 236 / 0.18);
+  }
+
+  .progress-track i {
+    display: block;
+    height: 100%;
+    background: var(--color-gold);
+    transition: width 0.5s var(--ease-site);
+  }
+
+  .foot-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .ghost {
     border: 0;
-    background: var(--color-ink);
-    color: var(--color-paper);
-    padding: 16px 22px;
-    font: 600 15px / 1.2 var(--font-text);
-    text-decoration: none;
+    background: none;
+    color: rgb(244 242 236 / 0.6);
+    font: 600 14.5px / 1 var(--font-text);
+    padding: 14px 6px;
     cursor: pointer;
   }
 
-  button:disabled {
+  .ghost:hover {
+    color: var(--color-paper);
+  }
+
+  /* ---------- Живой документ ---------- */
+
+  .doc {
+    position: sticky;
+    top: 96px;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    min-height: 340px;
+    padding: 26px 28px 22px;
+  }
+
+  .doc header .mono {
+    color: var(--color-ochre);
+  }
+
+  .doc-body {
+    flex: 1;
+    margin-top: 18px;
+  }
+
+  .doc-body p {
+    margin: 0 0 12px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .caret {
+    display: inline-block;
+    width: 9px;
+    height: 18px;
+    background: var(--color-ochre);
+    vertical-align: text-bottom;
+    animation: caretBlink 1.1s steps(1) infinite;
+  }
+
+  @keyframes caretBlink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .doc-foot {
+    margin-top: 22px;
+    padding-top: 14px;
+    border-top: 1px solid rgb(23 21 15 / 0.14);
+    color: rgb(23 21 15 / 0.55);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .doc-mobile {
+    display: none;
+  }
+
+  /* ---------- Лист заключения ---------- */
+
+  .sheet {
+    box-sizing: border-box;
+    max-width: 780px;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding: clamp(28px, 5vw, 56px);
+  }
+
+  .sheet-label {
+    margin: 0;
+    color: var(--color-ochre);
+  }
+
+  .sheet h2 {
+    margin-top: 14px;
+    max-width: none;
+    font-size: clamp(26px, 3.4vw, 40px);
+  }
+
+  .sheet-lead {
+    margin: 18px 0 0;
+    max-width: 600px;
+    color: rgb(23 21 15 / 0.78);
+    font-size: 16.5px;
+    line-height: 1.6;
+  }
+
+  .sheet-rows {
+    margin: 34px 0 0;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(150px, 220px) 1fr;
+    gap: 20px;
+    border-top: 1px solid rgb(23 21 15 / 0.16);
+    padding: 14px 0;
+  }
+
+  dt {
+    color: rgb(23 21 15 / 0.55);
+    font-size: 14px;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 650;
+    font-size: 15.5px;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+
+  h3 {
+    margin: 34px 0 0;
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 700;
+  }
+
+  .sheet-reason {
+    margin: 12px 0 0;
+    max-width: 620px;
+    color: rgb(23 21 15 / 0.75);
+    font-size: 15.5px;
+    line-height: 1.6;
+  }
+
+  .manual {
+    margin-top: 26px;
+    border-left: 3px solid var(--color-ochre);
+    padding: 4px 0 4px 18px;
+  }
+
+  .manual p {
+    margin: 0;
+    color: rgb(23 21 15 / 0.78);
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+
+  .sheet-note {
+    margin: 26px 0 0;
+    color: rgb(23 21 15 / 0.5);
+    font-size: 13px;
+  }
+
+  .sheet-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+    margin-top: 30px;
+  }
+
+  .btn-dark {
+    display: inline-block;
+    border: 0;
+    cursor: pointer;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 18px 30px;
+    font: 600 15.5px / 1.2 var(--font-text);
+    text-decoration: none;
+  }
+
+  .btn-dark:hover {
+    background: var(--color-blue);
+  }
+
+  .btn-dark:disabled {
     cursor: not-allowed;
     opacity: 0.45;
   }
 
-  .mode-grid button,
-  .product-list button {
-    display: grid;
-    gap: 8px;
-    border: 1.5px solid rgb(23 21 15 / 0.22);
-    background: white;
-    color: var(--color-ink);
-    text-align: left;
-  }
-
-  .mode-grid b,
-  .product-list b,
-  .check-grid b {
-    font-size: 16px;
-  }
-
-  .mode-grid span,
-  .product-list span,
-  .check-grid span {
-    color: rgb(23 21 15 / 0.62);
-    font-size: 13.5px;
-    line-height: 1.45;
-  }
-
-  .product-group {
-    margin-top: 30px;
-  }
-
-  h3,
-  legend {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 700;
-  }
-
-  .product-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 14px;
-  }
-
-  fieldset {
+  .ghost-dark {
     border: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  .question-stack {
-    display: grid;
-    gap: 28px;
-    margin-top: 30px;
-  }
-
-  .options {
-    margin-top: 12px;
-  }
-
-  label {
-    box-sizing: border-box;
-    display: flex;
-    gap: 14px;
-    align-items: center;
-    border: 1.5px solid rgb(23 21 15 / 0.22);
-    background: white;
-    padding: 16px;
+    background: none;
+    color: rgb(23 21 15 / 0.7);
+    font: 600 14.5px / 1 var(--font-text);
+    padding: 16px 8px;
+    text-decoration: underline;
+    text-underline-offset: 4px;
     cursor: pointer;
   }
 
-  label.active,
-  .product-list button.active {
-    border-color: var(--color-blue);
-    box-shadow: 6px 6px 0 var(--color-gold);
-  }
-
-  input {
-    accent-color: var(--color-blue);
-  }
-
-  .recommendation {
-    margin-top: 26px;
-    border: 1.5px solid rgb(23 21 15 / 0.22);
-    background: white;
-    padding: 20px;
-  }
-
-  .recommendation b {
-    display: block;
-    margin-top: 8px;
-    font-family: var(--font-display);
-    font-size: 24px;
-  }
-
-  .recommendation p,
-  .result p {
-    color: rgb(23 21 15 / 0.72);
-    font-size: 16px;
-    line-height: 1.6;
-  }
-
-  .check-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 28px;
-  }
-
-  .check-grid label {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: start;
-  }
-
-  .check-grid span {
-    grid-column: 2;
-  }
-
-  .controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 30px;
-  }
-
-  .secondary {
-    border: 1.5px solid rgb(23 21 15 / 0.28);
-    background: transparent;
+  .ghost-dark:hover {
     color: var(--color-ink);
   }
 
-  .result h2 {
-    color: var(--color-blue);
-  }
+  /* ---------- Контакт ---------- */
 
-  .estimate-list {
-    margin-top: 28px;
-  }
-
-  .estimate-list article {
+  .contact {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
     gap: 18px;
-    align-items: baseline;
-    border-top: 1.5px solid rgb(23 21 15 / 0.16);
-    padding: 16px 0;
+    margin-top: 34px;
+    max-width: 480px;
   }
 
-  .estimate-list span {
-    color: var(--color-blue);
-    font-weight: 700;
+  .contact label {
+    display: grid;
+    gap: 8px;
   }
 
-  .estimate-list small {
-    color: rgb(23 21 15 / 0.52);
-    font-family: var(--font-text);
+  .contact .mono {
+    color: rgb(23 21 15 / 0.6);
     font-size: 12px;
   }
 
-  @media (max-width: 720px) {
-    .brief {
-      min-height: 480px;
-      padding: 22px;
-    }
+  .contact input,
+  .contact textarea {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid rgb(23 21 15 / 0.3);
+    background: white;
+    color: var(--color-ink);
+    padding: 13px 14px;
+    font: 500 15px / 1.4 var(--font-text);
+    resize: vertical;
+  }
 
-    .mode-grid,
-    .product-list,
-    .check-grid,
-    .estimate-list article {
+  .contact input:focus,
+  .contact textarea:focus {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 1px;
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .send-error {
+    margin: 0;
+    color: var(--color-ochre-dk);
+    font-size: 14px;
+  }
+
+  /* ---------- Адаптив ---------- */
+
+  @media (max-width: 960px) {
+    .interview {
       grid-template-columns: 1fr;
+      gap: 0;
     }
 
-    button,
-    .primary-link {
+    .doc {
+      display: none;
+    }
+
+    .screen {
+      min-height: 480px;
+    }
+
+    .doc-mobile {
+      display: block;
+      margin-top: 26px;
+      background: var(--color-paper);
+      color: var(--color-ink);
+    }
+
+    .doc-toggle {
+      display: grid;
+      gap: 6px;
       width: 100%;
-      box-sizing: border-box;
+      border: 0;
+      background: none;
+      padding: 16px 18px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .doc-toggle .mono {
+      color: var(--color-ochre);
+      font-size: 11px;
+    }
+
+    .doc-last {
+      overflow: hidden;
+      color: rgb(23 21 15 / 0.8);
+      font-size: 13.5px;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+    }
+
+    .doc-mobile-body {
+      padding: 0 18px 16px;
+    }
+
+    .doc-mobile-body p {
+      margin: 0 0 10px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .screen {
+      min-height: 440px;
+    }
+
+    .option {
+      font-size: 15px;
+      padding: 14px 2px;
+    }
+
+    .screen-foot {
+      flex-direction: column-reverse;
+      align-items: stretch;
+    }
+
+    .foot-actions {
+      justify-content: space-between;
+    }
+
+    .btn-gold.small {
+      flex: 1;
       text-align: center;
     }
 
-    .mode-grid button,
-    .product-list button {
-      text-align: left;
+    .row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .sheet-actions {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .caret {
+      animation: none;
     }
   }
 </style>

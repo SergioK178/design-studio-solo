@@ -1,5 +1,6 @@
 import rawMatrix from './brief-matrix.json' with { type: 'json' };
 import { baseEstimates, optionEstimates, type V2Range } from './v2-config.ts';
+import { estimateV3Flat } from './estimate-v3.ts';
 
 export type Answers = Record<string, string>;
 
@@ -39,7 +40,7 @@ export interface Estimate {
   priceLabel: string;
   weeksLabel: string;
   items?: EstimateItem[];
-  version?: 'v1' | 'v2';
+  version?: 'v1' | 'v2' | 'v3';
 }
 
 export interface EstimateItem {
@@ -162,7 +163,22 @@ export function estimateV2(answers: Answers): Estimate {
   };
 }
 
+export function estimateV3(answers: Answers): Estimate {
+  const result = estimateV3Flat(answers);
+  return {
+    kind: result.kind,
+    priceLow: result.priceLow,
+    priceHigh: result.priceHigh,
+    termLow: result.termLow,
+    termHigh: result.termHigh,
+    priceLabel: priceLabel({ min: result.priceLow, max: result.priceHigh }),
+    weeksLabel: weeksLabel(result.termLow, result.termHigh),
+    version: 'v3',
+  };
+}
+
 export function estimate(answers: Answers): Estimate {
+  if (answers.version === 'v3') return estimateV3(answers);
   if (answers.version === 'v2') return estimateV2(answers);
 
   const questions = matrix.questions;

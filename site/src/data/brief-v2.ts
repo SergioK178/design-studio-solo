@@ -65,6 +65,10 @@ export const productToBranch: Record<string, BranchId> = {
   redesign: 'migration',
   'multi-landing': 'landing',
   automation: 'automation',
+  'leads-inbox': 'automation',
+  'data-exchange': 'automation',
+  documents: 'automation',
+  wholesale: 'catalog',
   support: 'custom',
 };
 

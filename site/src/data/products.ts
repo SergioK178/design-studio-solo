@@ -140,7 +140,7 @@ const siteProducts: Product[] = [
     proof: {
       variant: 'scenario',
       title: 'Сценарий квиза: от вопроса до заявки',
-      href: '/brief/?product=quiz',
+      href: '/brief/?version=v3&task=launch',
       status: 'planned',
       assets: [
         { assetKey: 'products/quiz/screen-01-intro', caption: 'Один понятный вопрос на экран — не длинная форма целиком.', label: '1. Вопрос' },
@@ -170,7 +170,7 @@ const siteProducts: Product[] = [
     proof: {
       variant: 'real-interface',
       title: 'Сайт компании: структура и ключевые страницы',
-      href: '/brief/?product=company',
+      href: '/brief/?version=v3&task=present',
       status: 'planned',
       assets: [
         { assetKey: 'products/company/hero', caption: 'Главная сразу называет услуги и ведёт к прайсу и заявке.' },
@@ -184,7 +184,7 @@ const siteProducts: Product[] = [
     slug: 'catalog',
     name: 'Каталог компании',
     group: 'commerce',
-    summary: 'Витрина продукции с фильтрами, панелью управления и запросом предложения.',
+    summary: 'Витрина продукции с фильтрами и запросом предложения. В цене — панель управления и перенос данных.',
     price: '200–450 тыс. ₽',
     term: '2–4 недели',
     status: 'published',
@@ -212,7 +212,7 @@ const siteProducts: Product[] = [
     slug: 'shop',
     name: 'Интернет-магазин',
     group: 'commerce',
-    summary: 'Каталог, корзина, оплата, доставка.',
+    summary: 'Каталог, корзина, оплата и доставка. В цене — панель управления и работа с данными.',
     price: '320–700 тыс. ₽',
     term: '3–6 недель',
     status: 'published',
@@ -227,7 +227,7 @@ const siteProducts: Product[] = [
     proof: {
       variant: 'scenario',
       title: 'Сценарий покупки: каталог → корзина → оплата',
-      href: '/brief/?product=shop',
+      href: '/brief/?version=v3&task=sell',
       status: 'planned',
       assets: [
         { assetKey: 'products/shop/screen-01-catalog', caption: 'Каталог с фильтрами по нужным клиенту признакам, не общий шаблон маркетплейса.', label: '1. Каталог' },
@@ -237,6 +237,15 @@ const siteProducts: Product[] = [
       ],
     },
     recommendedExtensions: ['online-payment', 'integration-1c', 'analytics', 'content', 'rush'],
+  },
+  {
+    slug: 'wholesale',
+    name: 'Оптовый каталог с запросом КП',
+    group: 'commerce',
+    summary: 'Позиции, цены и условия для оптовых покупателей — вместо корзины заявка на коммерческое предложение.',
+    price: '150–320 тыс. ₽',
+    term: '2–4 недели',
+    status: 'planned',
   },
   {
     slug: 'migration',
@@ -257,7 +266,7 @@ const siteProducts: Product[] = [
     proof: {
       variant: 'before-after',
       title: 'Переезд с конструктора: тот же контент, свой код',
-      href: '/brief/?product=migration',
+      href: '/brief/?version=v3&task=update',
       status: 'planned',
       assets: [
         { assetKey: 'products/migration/before', caption: 'Сайт на конструкторе — привязан к подписке и её ограничениям вёрстки.', label: 'До' },
@@ -319,7 +328,7 @@ export const products: Product[] = [
     slug: 'tma',
     name: 'Приложение внутри Telegram',
     group: 'apps',
-    summary: 'Каталог, запись или заявки прямо в Telegram.',
+    summary: 'Полноценные экраны внутри Telegram: каталог, запись или заявки — не переписка с ботом.',
     price: '120–300 тыс. ₽',
     term: '2–3 недели',
     status: 'published',
@@ -334,7 +343,7 @@ export const products: Product[] = [
     proof: {
       variant: 'scenario',
       title: 'Сценарий приложения внутри Telegram',
-      href: '/brief/?product=tma',
+      href: '/brief/',
       status: 'planned',
       frame: 'telegram',
       assets: [
@@ -349,8 +358,8 @@ export const products: Product[] = [
     slug: 'bot',
     name: 'Telegram-бот',
     group: 'apps',
-    summary: 'Заявки, уведомления, сценарии общения и простая автоматизация.',
-    price: '80–220 тыс. ₽',
+    summary: 'Диалог в чате: заявки, уведомления, команды и передача обращений менеджеру.',
+    price: '60–180 тыс. ₽',
     term: '1–3 недели',
     status: 'planned',
   },
@@ -364,12 +373,30 @@ export const products: Product[] = [
     status: 'planned',
   },
   {
-    slug: 'automation',
-    name: 'Автоматизация повторяющейся работы',
+    slug: 'leads-inbox',
+    name: 'Заявки в одну систему',
     group: 'automation',
-    summary: 'Ручная рутина с данными, заявками и отчётами начинает происходить сама.',
-    price: '100–400 тыс. ₽',
+    summary: 'Обращения с сайта, почты и мессенджеров сами попадают в систему учёта и уведомляют менеджера.',
+    price: '40–120 тыс. ₽',
+    term: '1–2 недели',
+    status: 'planned',
+  },
+  {
+    slug: 'data-exchange',
+    name: 'Обмен данными между системами',
+    group: 'automation',
+    summary: 'Каталог, остатки, цены и заказы синхронизируются между сайтом, 1С и таблицами без ручного переноса.',
+    price: '80–200 тыс. ₽',
     term: 'по задаче',
+    status: 'planned',
+  },
+  {
+    slug: 'documents',
+    name: 'Документы и отчёты по шаблону',
+    group: 'automation',
+    summary: 'Счета, договоры и регулярные отчёты собираются из рабочих данных автоматически.',
+    price: '60–180 тыс. ₽',
+    term: '1–3 недели',
     status: 'planned',
   },
   {
@@ -418,22 +445,45 @@ export const detailedProducts = products.filter((product) => product.status === 
 
 export const extensionPrices: ExtensionPrice[] = [
   { id: 'extra-page', name: 'Дополнительная страница', price: 'от 15 000 ₽', term: '+1–2 дня', description: 'Новая страница в существующей структуре сайта.', appliesTo: ['launch', 'company', 'commerce'] },
-  { id: 'crm', name: 'Передача заявок в систему учёта', price: '40–100 тыс. ₽', term: '2–5 дней', description: 'Заявки автоматически попадают в amoCRM, Битрикс24 или другую систему учёта.', appliesTo: ['launch', 'company', 'commerce', 'apps', 'automation'] },
-  { id: 'analytics', name: 'Настройка аналитики', price: '20–40 тыс. ₽', term: '1–2 дня', description: 'События, цели и проверка маршрута заявки.', appliesTo: ['launch', 'company', 'commerce', 'apps'] },
+  { id: 'crm', name: 'Передача заявок в систему учёта', price: '25–80 тыс. ₽', term: '2–5 дней', description: 'Заявки автоматически попадают в amoCRM, Битрикс24 или другую систему учёта. Цена растёт с количеством форм, направлений и правил обработки.', appliesTo: ['launch', 'company', 'commerce', 'apps', 'automation'] },
+  { id: 'analytics', name: 'Настройка аналитики', price: '15–40 тыс. ₽', term: '1–2 дня', description: 'События, цели и проверка маршрута заявки.', appliesTo: ['launch', 'company', 'commerce', 'apps'] },
   { id: 'second-language', name: 'Вторая языковая версия', price: '40–90 тыс. ₽', term: '3–7 дней', description: 'Дублирование структуры и настройка переключения языка.', appliesTo: ['company', 'commerce'] },
-  { id: 'online-payment', name: 'Онлайн-оплата', price: '40–90 тыс. ₽', term: '3–7 дней', description: 'Подключение оплаты и проверка её прохождения.', appliesTo: ['launch', 'commerce', 'apps'] },
-  { id: 'online-booking', name: 'Онлайн-запись', price: '50–130 тыс. ₽', term: '3–10 дней', description: 'Запись на услуги, выбор времени и уведомления.', appliesTo: ['company', 'apps'] },
+  { id: 'online-payment', name: 'Онлайн-оплата', price: '30–80 тыс. ₽', term: '3–7 дней', description: 'Подключение оплаты и проверка её прохождения. Верхняя граница — сценарий с подтверждениями, ошибками и уведомлениями.', appliesTo: ['launch', 'commerce', 'apps'] },
+  { id: 'online-booking', name: 'Онлайн-запись', price: '45–130 тыс. ₽', term: '3–10 дней', description: 'Запись на услуги, выбор времени и уведомления.', appliesTo: ['company', 'apps'] },
   { id: 'blog', name: 'Раздел статей', price: '35–70 тыс. ₽', term: '3–5 дней', description: 'Раздел материалов с шаблоном статьи и списком публикаций.', appliesTo: ['company'] },
   { id: 'quiz', name: 'Опрос и расчёт', price: '40–90 тыс. ₽', term: '3–5 дней', description: 'Пошаговые вопросы вместо обычной формы.', appliesTo: ['launch'] },
-  { id: 'integration-1c', name: 'Обмен данными с 1С', price: '80–200 тыс. ₽', term: 'по задаче', description: 'Обмен каталогом, остатками, ценами или заказами.', appliesTo: ['commerce', 'automation'] },
-  { id: 'content', name: 'Наполнение и перенос материалов', price: '40–140 тыс. ₽', term: 'по объёму', description: 'Структура, тексты и подготовка материалов для запуска.', appliesTo: ['launch', 'company', 'commerce', 'apps'] },
-  { id: 'workflow', name: 'Связывание нескольких сервисов', price: '60–180 тыс. ₽', term: 'по задаче', description: 'Передача данных между сайтом, таблицами, почтой и рабочими системами.', appliesTo: ['automation', 'apps', 'commerce'] },
-  { id: 'ai-processing', name: 'Обработка данных с помощью ИИ', price: '80–240 тыс. ₽', term: 'по задаче', description: 'Разбор, классификация или подготовка данных по согласованным правилам.', appliesTo: ['automation', 'apps'] },
+  { id: 'integration-1c', name: 'Обмен данными с 1С', price: '70–220 тыс. ₽', term: 'по задаче', description: 'Обмен каталогом, остатками, ценами или заказами.', appliesTo: ['commerce', 'automation'] },
+  { id: 'content', name: 'Наполнение и перенос материалов', price: '30–140 тыс. ₽', term: 'по объёму', description: 'Структура, тексты и подготовка материалов для запуска.', appliesTo: ['launch', 'company', 'commerce', 'apps'] },
+  { id: 'workflow', name: 'Связывание нескольких сервисов', price: '50–180 тыс. ₽', term: 'по задаче', description: 'Передача данных между сайтом, таблицами, почтой и рабочими системами — со сценарием, обработкой ошибок и контролем результата.', appliesTo: ['automation', 'apps', 'commerce'] },
+  { id: 'ai-processing', name: 'Разбор и проверка данных', price: '60–220 тыс. ₽', term: 'по задаче', description: 'Разобрать документы, классифицировать обращения, подготовить описания или проверить данные по согласованным правилам.', appliesTo: ['automation', 'apps'] },
   { id: 'rush', name: 'Срочность', price: '+30%', term: 'срок фиксируется отдельно', description: 'Приоритетная сборка в сжатые сроки.', appliesTo: ['launch', 'company', 'commerce', 'apps', 'automation'] },
   { id: 'hourly', name: 'Час отдельных доработок', price: '4 000 ₽', term: 'без срока', description: 'Небольшие задачи, которые не попадают в готовые расширения.', appliesTo: ['development'] },
 ];
 
+/** Слаг продукта → задача первого этапа брифа v3. Нет уверенного соответствия — без предзаполнения. */
+const briefTaskBySlug: Record<string, string> = {
+  start: 'launch',
+  landing: 'launch',
+  quiz: 'launch',
+  event: 'launch',
+  'multi-landing': 'launch',
+  expert: 'present',
+  company: 'present',
+  booking: 'present',
+  catalog: 'assortment',
+  wholesale: 'assortment',
+  shop: 'sell',
+  app: 'cabinet',
+  migration: 'update',
+  redesign: 'update',
+  automation: 'manual',
+  'leads-inbox': 'manual',
+  'data-exchange': 'manual',
+  documents: 'manual',
+};
+
 export function briefHref(product: Product | string): string {
   const slug = typeof product === 'string' ? product : product.slug;
-  return `/brief/?product=${encodeURIComponent(slug)}`;
+  const task = briefTaskBySlug[slug];
+  return task ? `/brief/?version=v3&task=${task}` : '/brief/';
 }

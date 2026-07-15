@@ -27,6 +27,23 @@ test('GET /admin/leads renders both leads as html', async () => {
   expect(html).toContain('catalog');
 });
 
+test('GET /admin/leads shows contact and summary from lead_details', async () => {
+  db.prepare(
+    `INSERT INTO lead_details (lead_id, name, contact, comment, answers_json, summary)
+     VALUES (1, 'Анна', '@anna', 'после обеда', '{"task":"present"}', 'Корпоративный сайт\nЗадача: представить компанию')`,
+  ).run();
+
+  const res = await app.request('/admin/leads');
+  const html = await res.text();
+  expect(html).toContain('Анна · @anna');
+  expect(html).toContain('Корпоративный сайт');
+  expect(html).toContain('после обеда');
+
+  const csv = await (await app.request('/admin/leads.csv')).text();
+  expect(csv.split('\n')[0]).toContain('summary');
+  expect(csv).toContain('Анна');
+});
+
 test('GET /admin/leads.csv returns csv with header and both rows', async () => {
   const res = await app.request('/admin/leads.csv');
   expect(res.status).toBe(200);

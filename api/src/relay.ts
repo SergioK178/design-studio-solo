@@ -3,6 +3,8 @@ export interface RelayPayload {
   kind: string;
   priceLabel: string;
   panelUrl: string;
+  /** Человекочитаемая сводка задачи — вместо сырого JSON в Telegram. */
+  summary?: string;
 }
 
 export async function sendRelay(payload: RelayPayload): Promise<void> {
