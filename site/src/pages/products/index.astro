@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import Nav from '../../components/Nav.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import { briefHref, productGroups, products } from '../../data/products';
+import { productGroups, products } from '../../data/products';
 
 const groupNumber = (index: number) => String(index + 1).padStart(2, '0');
 ---
@@ -33,7 +33,7 @@ const groupNumber = (index: number) => String(index + 1).padStart(2, '0');
                 const fixed = item.price.endsWith(' фикс');
                 const priceValue = fixed ? item.price.slice(0, -' фикс'.length) : item.price;
                 return (
-                  <a class="product-row" href={item.status === 'published' && item.detail ? `/products/${item.slug}/` : briefHref(item)}>
+                  <a class="product-row" href={`/products/${item.slug}/`}>
                     <div class="product-copy"><h3>{item.name}</h3><p>{item.summary}</p></div>
                     <div class="product-meta"><b>{priceValue}{fixed && <em>фикс</em>}</b><span>{item.term}</span></div>
                     <span class="product-arrow" aria-hidden="true">↗</span>

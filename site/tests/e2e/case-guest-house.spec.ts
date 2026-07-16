@@ -7,8 +7,9 @@ test('guest-house case presents its editorial story and accessible audience swit
   await expect(page.getByRole('heading', { name: 'Один объект — два сценария покупки' })).toBeVisible();
   await expect(page.getByLabel('Ключевые результаты').getByText('≈126 кБ', { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Смотреть сайт' })).toHaveAttribute('href', 'https://olginka-residence.online');
-  await expect(page.getByLabel('Пайплайн релиза').getByText('Релиз активирован')).toBeVisible();
-  await expect(page.getByLabel('Пайплайн релиза').getByText('Откат')).toBeVisible();
+  const pipeline = page.getByLabel('Пайплайн релиза');
+  await expect(pipeline.getByText('Исходный код')).toBeVisible();
+  await expect(pipeline.getByText('Healthcheck')).toBeVisible();
 
   const ownerTab = page.getByRole('tab', { name: 'Владелец' });
   const investorTab = page.getByRole('tab', { name: 'Инвестор' });

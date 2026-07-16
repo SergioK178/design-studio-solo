@@ -1,18 +1,38 @@
 import { expect, test } from '@playwright/test';
 import { extensionPrices, products } from '../../src/data/products';
 import { estimateV2, priceRangeFromLabel } from '../../src/data/brief-estimate';
+import { site } from '../../src/data/site';
 
 test('products and extension price pages expose product system', async ({ page }) => {
   await page.goto('/products/');
-  await expect(page.getByRole('heading', { name: 'Все продукты' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Выберите задачу' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Промо-лендинг' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Telegram Mini App' })).toBeVisible();
-  await expect(page.getByText('Разобрать задачу →').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Приложение внутри Telegram' })).toBeVisible();
 
   await page.goto('/price/');
   await expect(page.getByRole('heading', { name: 'Прайс расширений' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Подключение CRM' })).toBeVisible();
-  await expect(page.getByText('35–90 тыс. ₽')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Передача заявок в систему учёта' })).toBeVisible();
+  await expect(page.getByText('25–80 тыс. ₽')).toBeVisible();
+});
+
+test('every product card leads to its own page, never straight to the brief form', async ({ page }) => {
+  await page.goto('/products/');
+  for (const product of products) {
+    const row = page.locator('.product-row', { has: page.getByRole('heading', { name: product.name, exact: true }) });
+    await expect(row, `у продукта "${product.slug}" нет строки в каталоге`).toHaveAttribute('href', `/products/${product.slug}/`);
+  }
+});
+
+test('product pages use tiered CTA: brief for standard formats, conversation for custom ones', async ({ page }) => {
+  // planned-продукт типового тира: страница существует, primary CTA — бриф с предзаполненной задачей
+  await page.goto('/products/wholesale/');
+  await expect(page.getByRole('heading', { name: 'Оптовый каталог с запросом КП' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Разобрать задачу в брифе' })).toHaveAttribute('href', '/brief/?version=v3&task=assortment');
+
+  // дорогой кастомный продукт: primary CTA — разговор, бриф второстепенной ссылкой
+  await page.goto('/products/web-service/');
+  await expect(page.getByRole('link', { name: /Обсудить задачу/ })).toHaveAttribute('href', site.telegramUrl);
+  await expect(page.getByRole('link', { name: /опишите задачу в брифе/ })).toHaveAttribute('href', '/brief/?version=v3&task=tool');
 });
 
 test('every /price/ row matches the brief calculator for that extension', async ({ page }) => {
