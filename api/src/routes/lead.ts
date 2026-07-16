@@ -1,6 +1,6 @@
 import type { Hono } from 'hono';
 import type { Database } from 'better-sqlite3';
-import { estimate, matrix, type Answers } from '../brief/estimate.ts';
+import { estimate, type Answers } from '../brief/estimate.ts';
 import { allow } from '../rate-limit.ts';
 import type { sendRelay } from '../relay.ts';
 
@@ -34,12 +34,9 @@ async function parseBody(c: { req: { header: (name: string) => string | undefine
 
   const form = await c.req.formData();
   const answers: Answers = {};
-  for (const question of matrix.questions) {
-    const value = form.get(question.id);
-    if (typeof value === 'string') answers[question.id] = value;
+  for (const [key, value] of form.entries()) {
+    if (typeof value === 'string' && !['hp', 'ts'].includes(key)) answers[key] = value;
   }
-  const freeform = form.get('answers[freeform]');
-  if (typeof freeform === 'string' && freeform.trim()) answers.freeform = freeform;
   return {
     answers,
     hp: String(form.get('hp') ?? ''),

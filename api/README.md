@@ -1,5 +1,9 @@
 # Mini API contracts
 
+API принимает только актуальный формат брифа v3. При первом запуске создаётся
+SQLite-база по `DB_PATH` (по умолчанию `./data/app.db`) и применяется единая
+исходная схема из `migrations/0001_initial.sql`.
+
 Phase 4 owns the actual API service. Phase 5 adds the metrics contract below.
 
 ## Metrics write

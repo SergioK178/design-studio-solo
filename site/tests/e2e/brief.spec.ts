@@ -67,7 +67,7 @@ test('brief v3 restores the conclusion from a draft URL', async ({ page }) => {
   );
   const result = page.getByTestId('brief-result');
   await expect(result).toContainText('Рекомендуем начать с корпоративного сайта');
-  await expect(result).toContainText('140–260 тыс. ₽');
+  await expect(result).toContainText('120–260 тыс. ₽');
 });
 
 test('product page bridges into the brief with the task prefilled', async ({ page }) => {

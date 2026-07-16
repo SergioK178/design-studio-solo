@@ -7,7 +7,7 @@ let app: Hono;
 let db: ReturnType<typeof openDb>;
 let relay: ReturnType<typeof vi.fn>;
 
-const answers = { project: 'start', content: 'ready', design: 'system', integrations: 'none', urgency: 'normal', budget: '50-150' };
+const answers = { version: 'v3', task: 'present', actions: 'view,lead', manage: 'texts', dataflow: 'notify', budget: 'b250' };
 
 beforeEach(() => {
   db = openDb(':memory:');
@@ -64,8 +64,8 @@ test('server recomputes the estimate instead of trusting client values', async (
   });
   expect(res.status).toBe(200);
   const row = db.prepare('SELECT * FROM leads').get() as any;
-  expect(row.price_low).toBe(30000);
-  expect(row.price_high).toBe(30000);
+  expect(row.price_low).toBe(140000);
+  expect(row.price_high).toBe(260000);
 });
 
 test('v3 submission stores contact details and passes summary to relay', async () => {

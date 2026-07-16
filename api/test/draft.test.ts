@@ -10,7 +10,7 @@ beforeEach(() => {
   app = createApp(db);
 });
 
-const answers = { project: 'start', content: 'ready', design: 'system', integrations: 'none', urgency: 'normal', budget: '50-150' };
+const answers = { version: 'v3', task: 'present', actions: 'view,lead', manage: 'texts', dataflow: 'notify', budget: 'b250' };
 
 test('POST /api/draft creates a draft and returns id + estimate', async () => {
   const res = await app.request('/api/draft', {
@@ -21,7 +21,7 @@ test('POST /api/draft creates a draft and returns id + estimate', async () => {
   expect(res.status).toBe(200);
   const body = await res.json();
   expect(body.id).toBeTruthy();
-  expect(body.estimate.priceLow).toBe(30000);
+  expect(body.estimate.priceLow).toBe(140000);
 });
 
 test('GET /api/draft/:id restores saved answers', async () => {
