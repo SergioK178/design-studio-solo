@@ -1,0 +1,1389 @@
+---
+import AssetSlot from './AssetSlot.astro';
+import { site } from '../data/site';
+import type { CatalogPresentation } from '../content.config';
+
+interface Screen {
+  id: string;
+  caption: string;
+}
+
+interface Props {
+  slug: string;
+  title: string;
+  category: string;
+  client: string;
+  audience: string;
+  task: string;
+  constraints: string[];
+  solution: string;
+  screens: Screen[];
+  role: string;
+  result: string[];
+  stack: string[];
+  presentation: CatalogPresentation;
+  productName?: string;
+  productHref?: string;
+}
+
+const { slug, title, category, screens, presentation, productHref } = Astro.props;
+const p = presentation;
+
+const num = (i: number) => String(i + 1).padStart(2, '0');
+const screenById = (id: string) => screens.find((s) => s.id === id);
+const catalogShot = screenById('catalog-01');
+const cardShot = screenById('card-detail');
+const mobileShots = screens.filter((s) => s.id.startsWith('mobile'));
+const popularShot = screenById('popular');
+---
+
+<main class="cc" data-bg="paper">
+  <!-- 1. Тёмный hero -->
+  <section class="cc-hero" data-bg="ink">
+    <div class="wrap">
+      <div class="cc-hero-grid cc-grid12" data-reveal-group>
+        <div class="cc-hero-copy">
+          <p class="cc-kicker">Кейс / {category}</p>
+          <h1 class="cc-title">
+            <span class="cc-title-head">{title}</span>
+            <span class="cc-title-sub">{p.subtitle}</span>
+          </h1>
+          <p class="cc-lead">{p.lead}</p>
+          <dl class="cc-hero-meta">
+            {p.meta.map((item) => (
+              <div>
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <div class="cc-hero-visual">
+          <span class="cc-hero-rail" aria-hidden="true">CATALOGUE / PROCUREMENT / REQUEST</span>
+          <div class="cc-hero-frame">
+            <AssetSlot label={`works/${slug}/hero`} frame="browser" tone="dark" ratio="16 / 10" priority />
+          </div>
+        </div>
+      </div>
+
+      <ul class="cc-markers" data-reveal>
+        {p.markers.map((item) => (
+          <li>
+            {item.icon
+              ? <img src={item.icon} alt="" width="46" height="46" loading="lazy" />
+              : <span class="cc-icon-pending" aria-hidden="true"></span>}
+            {item.title}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <div class="wrap cc-body">
+    <!-- 2. Контекст / Задача / Ограничения -->
+    <section class="cc-context cc-grid12" data-reveal-group>
+      <article>
+        <h2 class="cc-col-title">Контекст</h2>
+        <p>{p.contextShort}</p>
+      </article>
+      <article>
+        <h2 class="cc-col-title">Задача</h2>
+        <p>{p.taskShort}</p>
+      </article>
+      <article>
+        <h2 class="cc-col-title">Ограничения</h2>
+        <p>{p.constraintsShort}</p>
+      </article>
+    </section>
+
+    <!-- 3. Тезис + обложки -->
+    <section class="cc-statement cc-grid12" data-reveal-group>
+      <p class="cc-statement-copy">
+        {p.statement.before} <s>{p.statement.strike}</s>{p.statement.middle} <mark>{p.statement.accent}</mark>{p.statement.after}
+      </p>
+      <!-- Mobile перекрывает desktop и выравнен с ним по нижней линии. -->
+      <div class="cc-covers">
+        <div class="cc-cover-desktop">
+          <AssetSlot label={`works/${slug}/cover-desktop`} frame="browser" ratio="16 / 10" />
+        </div>
+        <div class="cc-cover-mobile">
+          <AssetSlot label={`works/${slug}/cover-mobile`} frame="mobile" ratio="9 / 16" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Информационная архитектура -->
+    <section class="cc-arch" data-reveal-group aria-label={p.architecture.title}>
+      <div class="cc-arch-grid cc-grid12">
+        <header class="cc-arch-copy">
+          <p class="cc-eyebrow">{p.architecture.kicker}</p>
+          <h2 class="cc-h2">{p.architecture.title}</h2>
+          <p class="cc-note">{p.architecture.text}</p>
+          <p class="cc-note">Основные направления: {p.architecture.categories.join(', ').toLowerCase()}.</p>
+        </header>
+        <ol class="cc-flow">
+          {p.architecture.flow.map((step, i) => (
+            <li>
+              <span class="cc-flow-icon">
+                {step.icon
+                  ? <img src={step.icon} alt="" width="44" height="44" loading="lazy" />
+                  : <span class="cc-icon-pending" aria-hidden="true"></span>}
+              </span>
+              <span class="cc-flow-num">{num(i)}</span>
+              <span class="cc-flow-title">{step.title}</span>
+              <span class="cc-flow-note">{step.note}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <ul class="cc-tags">
+        {p.architecture.tags.map((tag) => <li>{tag}</li>)}
+      </ul>
+    </section>
+
+    <!-- 5. Как мы решили -->
+    <section class="cc-solutions" data-reveal aria-label="Решения">
+      <header class="cc-sec-head">
+        <div>
+          <p class="cc-eyebrow">Как мы решили</p>
+          <h2 class="cc-h2">Решения, которые упрощают <em>закупочный путь</em></h2>
+        </div>
+        {p.solutionsIntro && <p class="cc-sec-intro">{p.solutionsIntro}</p>}
+      </header>
+      <div class="cc-solutions-grid">
+        {p.solutions.map((item, i) => (
+          <article class="cc-solution">
+            <span class="cc-solution-badge">
+              {item.icon
+                ? <img src={item.icon} alt="" width="58" height="58" loading="lazy" />
+                : <span class="cc-icon-pending" aria-hidden="true"></span>}
+            </span>
+            <span class="cc-solution-num">{num(i)}</span>
+            <h3>{item.title}</h3>
+            <p>{item.note}</p>
+          </article>
+        ))}
+      </div>
+      <ul class="cc-features">
+        {p.features.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <!-- 6. Бирюзовый блок: сбор заявки за четыре шага — кульминация страницы -->
+    <section class="cc-request cc-grid12" data-reveal-group aria-label={p.request.title}>
+      <div class="cc-request-copy">
+        <p class="cc-eyebrow cc-eyebrow--on-teal">{p.request.kicker}</p>
+        <h2 class="cc-request-title">{p.request.title}</h2>
+        <p class="cc-request-note">{p.request.text}</p>
+        <figure class="cc-request-object">
+          <AssetSlot label={`works/${slug}/request-object`} frame="plain" ratio="4 / 3" />
+          <figcaption>Позиции собираются в заявку без корзины и онлайн-оплаты.</figcaption>
+        </figure>
+        <ul class="cc-badges">
+          {p.request.badges.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+      <ol class="cc-steps">
+        {p.request.steps.map((step, i) => (
+          <li>
+            <span class="cc-step-num">{i + 1}</span>
+            <div class="cc-step-copy">
+              <h3>{step.title}</h3>
+              <p>{step.note}</p>
+            </div>
+            <span class="cc-step-arrow" aria-hidden="true">→</span>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <!-- 7. Два сценария закупки -->
+    <section class="cc-tracks" data-reveal-group aria-label="Сценарии закупки">
+      <div class="cc-tracks-grid cc-grid12">
+        {p.tracks.map((track) => (
+          <article class="cc-track">
+            <p class="cc-eyebrow">{track.kicker}</p>
+            <h2 class="cc-track-title">{track.title}</h2>
+            <AssetSlot
+              label={`works/${slug}/tracks/${track.asset}`}
+              frame="browser"
+              ratio={track.action ? '4 / 3' : '16 / 10'}
+            />
+            <ul class="cc-track-points">
+              {track.points.map((point) => <li>{point}</li>)}
+            </ul>
+            {track.action && <span class="cc-track-action">{track.action}</span>}
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- 8. Каталог в деталях: общий интерфейс, деталь, мобильный, популярные позиции -->
+    <section class="cc-detail" data-reveal-group aria-label={p.catalogDetail.title}>
+      <header class="cc-sec-head">
+        <div>
+          <p class="cc-eyebrow">{p.catalogDetail.kicker}</p>
+          <h2 class="cc-h2">{p.catalogDetail.title}</h2>
+        </div>
+        <p class="cc-sec-intro">{p.catalogDetail.text}</p>
+      </header>
+
+      <div class="cc-detail-row cc-grid12">
+        {catalogShot && (
+          <div class="cc-shot-wide">
+            <AssetSlot label={`works/${slug}/screens/${catalogShot.id}`} caption={catalogShot.caption} ratio="16 / 10" />
+          </div>
+        )}
+        {cardShot && (
+          <div class="cc-shot-detail">
+            <AssetSlot label={`works/${slug}/screens/${cardShot.id}`} caption={cardShot.caption} ratio="4 / 5" />
+          </div>
+        )}
+      </div>
+
+      <div class="cc-detail-row cc-grid12">
+        {mobileShots.map((shot) => (
+          <div class="cc-shot-mobile">
+            <AssetSlot label={`works/${slug}/screens/${shot.id}`} caption={shot.caption} frame="mobile" ratio="9 / 16" />
+          </div>
+        ))}
+        <p class="cc-mobile-statement">{p.catalogDetail.mobileStatement}</p>
+      </div>
+
+      {popularShot && (
+        <div class="cc-detail-row">
+          <div class="cc-shot-popular">
+            <AssetSlot label={`works/${slug}/screens/${popularShot.id}`} caption={popularShot.caption} ratio="2.85 / 1" />
+          </div>
+        </div>
+      )}
+    </section>
+
+    <!-- 9. Документы -->
+    <section class="cc-docs" data-reveal-group aria-label={p.documents.title}>
+      <header class="cc-docs-head">
+        <p class="cc-eyebrow">{p.documents.kicker}</p>
+        <h2 class="cc-h2">{p.documents.title}</h2>
+      </header>
+      <div class="cc-docs-grid">
+        {p.documents.items.map((item) => (
+          <article class="cc-doc">
+            {item.icon
+              ? <img src={item.icon} alt="" width="46" height="46" loading="lazy" />
+              : <span class="cc-icon-pending" aria-hidden="true"></span>}
+            <h3>{item.title}</h3>
+            <p>{item.note}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <!-- 10. Что сделали / Результат -->
+    <section class="cc-outcome cc-grid12" data-bg="ink" data-reveal-group>
+      <article class="cc-outcome-plan">
+        <span class="cc-out-label">Что сделали</span>
+        <h2>{p.outcome.title}</h2>
+        <ul>{p.outcome.planning.map((item) => <li>{item}</li>)}</ul>
+      </article>
+      <article class="cc-outcome-result">
+        <p class="cc-outcome-summary">{p.outcome.summary}</p>
+        <ul class="cc-out-markers">
+          {p.markersOut.map((item) => <li>{item}</li>)}
+        </ul>
+      </article>
+    </section>
+  </div>
+
+  <!-- 11. CTA -->
+  <section class="cc-cta-band" data-bg="ink">
+    <div class="wrap cc-cta" data-reveal>
+      <div class="cc-cta-copy">
+        <p class="cc-kicker">{p.cta.title}</p>
+        <h2>Есть сложный каталог или <span class="cc-cta-accent">несколько сценариев покупки?</span></h2>
+        <p class="cc-cta-note">{p.cta.copy}</p>
+      </div>
+      <div class="cc-cta-actions">
+        {productHref && <a class="btn-gold" href={productHref} data-magnetic>Разобрать похожую задачу →</a>}
+        <a class="btn-outline" href={site.telegramUrl} data-magnetic>Написать в Telegram ↗</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<style>
+  .cc {
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  /* Сетка страницы: 12 колонок, gap 24px (ТЗ §4.1). */
+  .cc-grid12 {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .cc-kicker {
+    margin: 0;
+    color: var(--color-gold);
+    font-family: var(--font-text);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .cc-eyebrow {
+    margin: 0 0 12px;
+    color: var(--color-teal);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .cc-eyebrow--on-teal {
+    color: rgb(244 242 236 / 0.72);
+  }
+
+  .cc-h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 3.2vw, 44px);
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+    max-width: 20ch;
+  }
+
+  .cc-h2 em {
+    font-style: normal;
+    color: var(--color-teal);
+  }
+
+  .cc-note {
+    max-width: 46ch;
+    margin: 18px 0 0;
+    color: rgb(23 21 15 / 0.66);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .cc-icon-pending {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border: 1px solid rgb(14 107 134 / 0.5);
+    background: linear-gradient(135deg, rgb(14 107 134 / 0.2) 25%, transparent 25%) 0 0 / 8px 8px;
+  }
+
+  /* ── Hero ────────────────────────────────────────── */
+  .cc-hero {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 96px 0 0;
+  }
+
+  .cc-hero-grid {
+    align-items: center;
+    min-height: 700px;
+  }
+
+  .cc-hero-copy {
+    grid-column: span 5;
+  }
+
+  .cc-hero-visual {
+    position: relative;
+    grid-column: span 7;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .cc-title {
+    margin: 22px 0 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 0.94;
+    letter-spacing: -0.02em;
+  }
+
+  .cc-title-head {
+    display: block;
+    font-size: clamp(46px, 5.4vw, 76px);
+  }
+
+  .cc-title-sub {
+    display: block;
+    margin-top: 10px;
+    max-width: 13ch;
+    font-size: clamp(30px, 2.9vw, 42px);
+    line-height: 1.02;
+  }
+
+  .cc-lead {
+    max-width: 40ch;
+    margin: 24px 0 0;
+    color: rgb(244 242 236 / 0.76);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .cc-hero-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin: 34px 0 0;
+  }
+
+  .cc-hero-meta dt {
+    color: var(--color-teal);
+    font-family: var(--font-text);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    filter: brightness(1.7);
+  }
+
+  .cc-hero-meta dd {
+    margin: 8px 0 0;
+    color: rgb(244 242 236 / 0.9);
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  /* Координатная сетка за интерфейсом — техническая разметка, не декор. */
+  .cc-hero-visual::before {
+    content: '';
+    position: absolute;
+    inset: -32px -48px -32px 0;
+    background:
+      repeating-linear-gradient(0deg, rgb(14 107 134 / 0.55) 0 1px, transparent 1px 44px),
+      repeating-linear-gradient(90deg, rgb(14 107 134 / 0.55) 0 1px, transparent 1px 44px);
+    -webkit-mask-image: radial-gradient(ellipse at center, black, transparent 78%);
+    mask-image: radial-gradient(ellipse at center, black, transparent 78%);
+  }
+
+  .cc-hero-rail {
+    position: relative;
+    writing-mode: vertical-rl;
+    color: rgb(244 242 236 / 0.4);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.24em;
+  }
+
+  .cc-hero-frame {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cc-markers {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin: 56px 0 0;
+    padding: 0;
+    border-top: 1px solid rgb(244 242 236 / 0.18);
+    list-style: none;
+  }
+
+  .cc-markers li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 80px;
+    color: rgb(244 242 236 / 0.88);
+    font-size: 15.5px;
+    line-height: 1.3;
+  }
+
+  .cc-markers li + li {
+    border-left: 1px solid rgb(244 242 236 / 0.14);
+    padding-left: 24px;
+  }
+
+  /* Комплект нарисован тёмной линией под светлый фон. На чёрном hero он тонет,
+     поэтому кладём его белым силуэтом: бирюзовый акцент теряется, но линия читается. */
+  .cc-markers img {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    opacity: 0.88;
+  }
+
+  /* ── Body ────────────────────────────────────────── */
+  .cc-body {
+    padding-top: 112px;
+  }
+
+  .cc-col-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2vw, 27px);
+    line-height: 1.1;
+  }
+
+  .cc-context article {
+    grid-column: span 4;
+    counter-increment: ctx;
+    border-top: 1px solid var(--color-ink);
+    padding-top: 24px;
+  }
+
+  .cc-context {
+    counter-reset: ctx;
+  }
+
+  .cc-col-title::before {
+    content: counter(ctx, decimal-leading-zero);
+    display: block;
+    margin-bottom: 14px;
+    color: var(--color-teal);
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .cc-context p {
+    max-width: 34ch;
+    margin: 18px 0 0;
+    color: rgb(23 21 15 / 0.66);
+    font-size: 16.5px;
+    line-height: 1.55;
+  }
+
+  /* ── Statement + обложки ─────────────────────────── */
+  .cc-statement {
+    align-items: center;
+    margin: 120px 0;
+  }
+
+  .cc-statement-copy {
+    grid-column: span 5;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(34px, 3.6vw, 52px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+  }
+
+  .cc-statement-copy s,
+  .cc-statement-copy mark {
+    background: none;
+    color: var(--color-teal);
+    text-decoration: none;
+  }
+
+  /* Desktop и mobile — одна композиция: перекрытие 24px, общая нижняя линия. */
+  .cc-covers {
+    grid-column: span 7;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .cc-cover-desktop {
+    flex: 0 0 78%;
+  }
+
+  .cc-cover-mobile {
+    flex: 1;
+    min-width: 0;
+    margin-left: -24px;
+    margin-bottom: -32px;
+  }
+
+  /* ── Архитектура ─────────────────────────────────── */
+  .cc-arch {
+    border-top: 1px solid rgb(23 21 15 / 0.16);
+    padding-top: 48px;
+  }
+
+  .cc-arch-grid {
+    align-items: start;
+  }
+
+  .cc-arch-copy {
+    grid-column: span 4;
+  }
+
+  .cc-flow {
+    grid-column: span 8;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cc-flow li {
+    position: relative;
+    padding: 0 20px 0 0;
+  }
+
+  /* Тонкая линия-стрелка между этапами вместо блок-схемы. */
+  .cc-flow li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    right: 6px;
+    left: calc(100% - 14px);
+    height: 1px;
+    background: rgb(14 107 134 / 0.5);
+  }
+
+  .cc-flow-icon img {
+    display: block;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+
+  .cc-flow-num {
+    display: block;
+    margin: 20px 0 6px;
+    color: var(--color-teal);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+  }
+
+  .cc-flow-title {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 15.5px;
+    line-height: 1.2;
+  }
+
+  .cc-flow-note {
+    display: block;
+    margin-top: 8px;
+    color: rgb(23 21 15 / 0.58);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .cc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 48px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cc-tags li {
+    border: 1px solid rgb(23 21 15 / 0.16);
+    padding: 9px 16px;
+    color: rgb(23 21 15 / 0.7);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  /* ── Section head ────────────────────────────────── */
+  .cc-sec-head {
+    display: grid;
+    grid-template-columns: 7fr 5fr;
+    align-items: end;
+    column-gap: 24px;
+    margin-bottom: 48px;
+  }
+
+  .cc-sec-intro {
+    max-width: 40ch;
+    margin: 0;
+    color: rgb(23 21 15 / 0.6);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* ── Решения ─────────────────────────────────────── */
+  .cc-solutions {
+    margin-top: 120px;
+  }
+
+  .cc-solutions-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .cc-solution {
+    display: flex;
+    flex-direction: column;
+    min-height: 280px;
+    border: 1px solid rgb(23 21 15 / 0.16);
+    background: white;
+    padding: 26px;
+  }
+
+  .cc-solution-badge img {
+    display: block;
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+  }
+
+  .cc-solution-num {
+    margin: 22px 0 0;
+    color: var(--color-teal);
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .cc-solution h3 {
+    margin: 10px 0 0;
+    font-family: var(--font-display);
+    font-size: 18px;
+    line-height: 1.16;
+  }
+
+  .cc-solution p {
+    margin: 12px 0 0;
+    color: rgb(23 21 15 / 0.62);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .cc-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cc-features li {
+    border: 1px solid rgb(23 21 15 / 0.16);
+    background: white;
+    padding: 11px 18px;
+    color: rgb(23 21 15 / 0.72);
+    font-size: 14px;
+  }
+
+  /* ── Бирюзовый блок: четыре шага ─────────────────── */
+  .cc-request {
+    align-items: start;
+    min-height: 520px;
+    margin-top: 120px;
+    background: linear-gradient(150deg, var(--color-teal), var(--color-teal-dk));
+    color: var(--color-paper);
+    padding: 56px;
+  }
+
+  .cc-request-copy {
+    grid-column: span 5;
+  }
+
+  .cc-request-title {
+    max-width: 14ch;
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1.04;
+  }
+
+  .cc-request-note {
+    max-width: 40ch;
+    margin: 20px 0 0;
+    color: rgb(244 242 236 / 0.8);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  /* Вырезка продукции лежит прямо на бирюзе — рамка и белая подложка AssetSlot тут лишние. */
+  .cc-request-object {
+    margin: 28px 0 0;
+  }
+
+  .cc-request-object :global(.asset-slot) {
+    border: none;
+    background: none;
+  }
+
+  .cc-request-object :global(.pending) {
+    background: rgb(244 242 236 / 0.08);
+  }
+
+  .cc-request-object figcaption {
+    margin-top: 12px;
+    color: rgb(244 242 236 / 0.62);
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+
+  .cc-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cc-badges li {
+    border: 1px solid rgb(244 242 236 / 0.4);
+    padding: 8px 14px;
+    color: var(--color-paper);
+    font-size: 13px;
+  }
+
+  /* Карточки шагов тянутся на высоту левой колонки — блок читается как одна композиция. */
+  .cc-steps {
+    grid-column: span 7;
+    align-self: stretch;
+    display: grid;
+    grid-auto-rows: 1fr;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cc-steps li {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    min-height: 108px;
+    background: rgb(244 242 236 / 0.1);
+    border: 1px solid rgb(244 242 236 / 0.3);
+    padding: 22px 28px;
+  }
+
+  .cc-step-num {
+    flex-shrink: 0;
+    color: var(--color-paper);
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .cc-step-copy {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cc-steps h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 18px;
+    line-height: 1.16;
+  }
+
+  .cc-steps p {
+    max-width: 44ch;
+    margin: 8px 0 0;
+    color: rgb(244 242 236 / 0.78);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .cc-step-arrow {
+    flex-shrink: 0;
+    color: rgb(244 242 236 / 0.6);
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  /* ── Два сценария закупки ────────────────────────── */
+  .cc-tracks {
+    margin-top: 24px;
+    background: var(--color-mist);
+    padding: 56px;
+  }
+
+  .cc-tracks-grid {
+    align-items: start;
+  }
+
+  .cc-track:first-child {
+    grid-column: span 7;
+  }
+
+  .cc-track:last-child {
+    grid-column: span 5;
+  }
+
+  .cc-track-title {
+    max-width: 18ch;
+    margin: 0 0 32px;
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2.3vw, 28px);
+    line-height: 1.1;
+  }
+
+  .cc-track-points {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 32px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cc-track-points li {
+    position: relative;
+    padding-left: 18px;
+    color: rgb(23 21 15 / 0.7);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .cc-track-points li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 8px;
+    height: 1px;
+    background: var(--color-teal);
+  }
+
+  .cc-tracks-grid > .cc-track:last-child .cc-track-points {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cc-track-action {
+    display: inline-block;
+    margin-top: 24px;
+    background: var(--color-teal);
+    padding: 12px 22px;
+    color: var(--color-paper);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  /* ── Каталог в деталях ───────────────────────────── */
+  .cc-detail {
+    margin-top: 120px;
+  }
+
+  .cc-detail-row {
+    align-items: start;
+  }
+
+  .cc-detail-row + .cc-detail-row {
+    margin-top: 24px;
+  }
+
+  .cc-shot-wide { grid-column: span 8; }
+  .cc-shot-detail { grid-column: span 4; }
+  .cc-shot-mobile { grid-column: span 3; }
+
+  .cc-mobile-statement {
+    grid-column: span 6;
+    align-self: center;
+    max-width: 22ch;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2.2vw, 28px);
+    line-height: 1.14;
+  }
+
+  .cc-shot-popular {
+    margin-top: 24px;
+  }
+
+  /* ── Документы ───────────────────────────────────── */
+  .cc-docs {
+    margin-top: 120px;
+    background: var(--color-mist);
+    padding: 56px;
+  }
+
+  .cc-docs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  .cc-doc {
+    min-height: 160px;
+    border: 1px solid rgb(23 21 15 / 0.14);
+    background: white;
+    padding: 22px 24px;
+  }
+
+  .cc-doc img {
+    display: block;
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+  }
+
+  .cc-doc h3 {
+    margin: 14px 0 0;
+    font-family: var(--font-display);
+    font-size: 17px;
+    line-height: 1.16;
+  }
+
+  .cc-doc p {
+    margin: 8px 0 0;
+    color: rgb(23 21 15 / 0.62);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  /* ── Что сделали / Результат ─────────────────────── */
+  .cc-outcome {
+    align-items: start;
+    min-height: 400px;
+    margin-top: 120px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 56px;
+  }
+
+  .cc-outcome-plan {
+    grid-column: span 5;
+  }
+
+  .cc-outcome-result {
+    grid-column: span 7;
+  }
+
+  .cc-out-label {
+    display: block;
+    margin-bottom: 18px;
+    color: var(--color-gold);
+    font-family: var(--font-text);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .cc-outcome-plan h2 {
+    max-width: 16ch;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(26px, 2.6vw, 34px);
+    line-height: 1.1;
+  }
+
+  .cc-outcome-plan ul {
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cc-outcome-plan li {
+    position: relative;
+    max-width: 40ch;
+    padding-left: 18px;
+    color: rgb(244 242 236 / 0.74);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .cc-outcome-plan li + li {
+    margin-top: 12px;
+  }
+
+  .cc-outcome-plan li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--color-gold);
+  }
+
+  .cc-outcome-summary {
+    max-width: 26ch;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(24px, 2.4vw, 32px);
+    line-height: 1.2;
+  }
+
+  .cc-out-markers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 40px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cc-out-markers li {
+    padding: 10px 18px;
+    border: 1px solid rgb(244 242 236 / 0.24);
+    color: var(--color-paper);
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  /* ── CTA ─────────────────────────────────────────── */
+  .cc-cta-band {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    margin-top: 120px;
+    padding: 88px 0;
+  }
+
+  .cc-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .cc-cta-copy {
+    max-width: 62ch;
+  }
+
+  .cc-cta h2 {
+    max-width: 18ch;
+    margin: 16px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(30px, 3.2vw, 44px);
+    line-height: 1.1;
+  }
+
+  .cc-cta-accent {
+    color: var(--color-gold);
+  }
+
+  .cc-cta-note {
+    max-width: 56ch;
+    margin: 18px 0 0;
+    color: rgb(244 242 236 / 0.72);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .cc-cta-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  /* ── Tablet: 768–1100 ────────────────────────────── */
+  @media (max-width: 1200px) {
+    /* Пять решений становятся сеткой 3 + 2 (ТЗ §4.2). */
+    .cc-solutions-grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .cc-solution {
+      grid-column: span 2;
+    }
+
+    .cc-solution:nth-child(4),
+    .cc-solution:nth-child(5) {
+      grid-column: span 3;
+    }
+  }
+
+  @media (max-width: 1100px) {
+    .cc-hero-copy,
+    .cc-hero-visual,
+    .cc-statement-copy,
+    .cc-covers,
+    .cc-arch-copy,
+    .cc-flow,
+    .cc-request-copy,
+    .cc-steps,
+    .cc-track:first-child,
+    .cc-track:last-child,
+    .cc-outcome-plan,
+    .cc-outcome-result,
+    .cc-shot-wide,
+    .cc-shot-detail {
+      grid-column: 1 / -1;
+    }
+
+    .cc-hero-grid {
+      min-height: 0;
+      row-gap: 48px;
+    }
+
+    .cc-context article {
+      grid-column: span 6;
+    }
+
+    .cc-flow {
+      margin-top: 40px;
+    }
+
+    .cc-statement {
+      row-gap: 48px;
+    }
+
+    .cc-shot-mobile {
+      grid-column: span 4;
+    }
+
+    .cc-mobile-statement {
+      grid-column: span 4;
+    }
+
+    .cc-request,
+    .cc-tracks,
+    .cc-docs,
+    .cc-outcome {
+      padding: 40px;
+    }
+
+    .cc-outcome-result {
+      margin-top: 40px;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .cc-hero {
+      padding-top: 72px;
+    }
+
+    .cc-body {
+      padding-top: 72px;
+    }
+
+    .cc-statement,
+    .cc-solutions,
+    .cc-request,
+    .cc-detail,
+    .cc-docs,
+    .cc-outcome,
+    .cc-cta-band {
+      margin-top: 72px;
+    }
+
+    .cc-statement {
+      margin: 72px 0;
+    }
+
+    .cc-hero-visual::before,
+    .cc-hero-rail {
+      display: none;
+    }
+
+    .cc-markers {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0;
+    }
+
+    .cc-markers li {
+      min-height: 72px;
+    }
+
+    .cc-markers li + li {
+      border-left: none;
+      padding-left: 0;
+    }
+
+    .cc-sec-head {
+      grid-template-columns: 1fr;
+      row-gap: 16px;
+    }
+
+    .cc-sec-intro {
+      max-width: none;
+    }
+
+    .cc-context article,
+    .cc-solution,
+    .cc-solution:nth-child(4),
+    .cc-solution:nth-child(5) {
+      grid-column: 1 / -1;
+    }
+
+    .cc-solutions-grid,
+    .cc-flow,
+    .cc-docs-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cc-solution {
+      min-height: 0;
+    }
+
+    .cc-flow li {
+      padding: 0 0 24px;
+    }
+
+    .cc-flow li::after {
+      content: none !important;
+    }
+
+    /* На мобильном обложки расходятся: перекрытие ломает мелкий экран. */
+    .cc-covers {
+      display: block;
+    }
+
+    .cc-cover-mobile {
+      margin: 24px auto 0;
+      max-width: 240px;
+    }
+
+    .cc-shot-mobile,
+    .cc-mobile-statement {
+      grid-column: 1 / -1;
+    }
+
+    .cc-shot-mobile :global(.asset-slot) {
+      max-width: 260px;
+    }
+
+    .cc-request,
+    .cc-tracks,
+    .cc-docs,
+    .cc-outcome {
+      padding: 28px;
+    }
+
+    .cc-request {
+      min-height: 0;
+    }
+
+    .cc-steps li {
+      min-height: 0;
+      padding: 20px;
+      gap: 16px;
+    }
+
+    .cc-outcome {
+      min-height: 0;
+    }
+
+    .cc-cta-band {
+      padding: 72px 0;
+    }
+
+    .cc-cta-actions {
+      width: 100%;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .cc-cta-actions :global(a) {
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .cc-markers {
+      grid-template-columns: 1fr;
+    }
+
+    .cc-hero-meta {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+  }
+</style>

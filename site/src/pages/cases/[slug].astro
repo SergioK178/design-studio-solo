@@ -8,6 +8,7 @@ import AssetSlot from '../../components/AssetSlot.astro';
 import EditorialCase from '../../components/EditorialCase.astro';
 import ShowroomCase from '../../components/ShowroomCase.astro';
 import CaseDetail from '../../components/CaseDetail.astro';
+import CatalogCase from '../../components/CatalogCase.astro';
 import { site } from '../../data/site';
 import { briefHref, products } from '../../data/products';
 
@@ -27,6 +28,24 @@ const product = products.find((item) => item.slug === data.productSlug);
   <Nav />
   {data.presentation?.variant === 'detail' ? (
     <CaseDetail
+      slug={slug}
+      title={data.title}
+      category={data.category}
+      client={data.client}
+      audience={data.audience}
+      task={data.task}
+      constraints={data.constraints}
+      solution={data.solution}
+      screens={data.screens}
+      role={data.role}
+      result={data.result}
+      stack={data.stack}
+      presentation={data.presentation}
+      productName={product?.name}
+      productHref={product ? briefHref(product) : undefined}
+    />
+  ) : data.presentation?.variant === 'catalog' ? (
+    <CatalogCase
       slug={slug}
       title={data.title}
       category={data.category}

@@ -23,6 +23,27 @@ const CASE_SCREEN_SLOTS: { id: string; ratio: string }[] = [
   { id: 'mobile-02', ratio: '9 / 14' },
 ];
 
+// Кейсы с собственной раскладкой экранов: id слотов задаёт сам кейс, а не общий набор.
+const CASE_SCREEN_OVERRIDES: Record<string, { id: string; ratio: string }[]> = {
+  'catalog-med': [
+    { id: 'catalog-01', ratio: '16 / 10' },
+    { id: 'card-detail', ratio: '4 / 5' },
+    { id: 'mobile-01', ratio: '9 / 16' },
+    { id: 'mobile-02', ratio: '9 / 16' },
+    { id: 'popular', ratio: '2.85 / 1' },
+  ],
+};
+
+// Слоты сверх общей схемы: вырезка продукции и скрины сценариев в catalog-варианте.
+const CASE_EXTRA_SLOTS: Record<string, { id: string; ratio: string }[]> = {
+  'catalog-med': [
+    { id: 'hero', ratio: '16 / 10' },
+    { id: 'request-object', ratio: '4 / 3' },
+    { id: 'tracks/institutions', ratio: '16 / 10' },
+    { id: 'tracks/quote', ratio: '4 / 3' },
+  ],
+};
+
 // Обложка кейса — используется в CasePreview на главной и на /cases/ для любого статуса.
 const coverEntries: AssetManifestEntry[] = works.map((work) => ({
   id: work.assetKey,
@@ -54,11 +75,20 @@ const caseDetailEntries: AssetManifestEntry[] = publishedWorks.flatMap((work) =>
     altRequired: true,
     required: true,
   },
-  ...CASE_SCREEN_SLOTS.map((screen) => ({
+  ...(CASE_SCREEN_OVERRIDES[work.slug] ?? CASE_SCREEN_SLOTS).map((screen) => ({
     id: `works/${work.slug}/screens/${screen.id}`,
     route: `/cases/${work.slug}/`,
     kind: 'image' as AssetKind,
     ratio: screen.ratio,
+    formats: IMAGE_FORMATS,
+    altRequired: true,
+    required: true,
+  })),
+  ...(CASE_EXTRA_SLOTS[work.slug] ?? []).map((slot) => ({
+    id: `works/${work.slug}/${slot.id}`,
+    route: `/cases/${work.slug}/`,
+    kind: 'image' as AssetKind,
+    ratio: slot.ratio,
     formats: IMAGE_FORMATS,
     altRequired: true,
     required: true,

@@ -15,9 +15,15 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
               <b>{card.logo}</b>
               <span>{card.nav}</span>
             </div>
-            <div class="slot" aria-label={`${card.assetKey}: asset pending`}>
-              <span class="mono">asset pending</span>
-              <em>{card.assetKey}</em>
+            <div class="slot">
+              {card.assetSrc ? (
+                <img src={card.assetSrc} alt={card.title} loading="lazy" />
+              ) : (
+                <>
+                  <span class="mono">asset pending</span>
+                  <em>{card.assetKey}</em>
+                </>
+              )}
             </div>
             <strong>{card.title}</strong>
             <span class="wall-cta">{card.cta}</span>
@@ -173,13 +179,21 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
     display: grid;
     place-content: center;
     gap: 6px;
-    height: 76px;
+    height: 140px;
     margin-bottom: 10px;
+    overflow: hidden;
     border: 1px solid rgb(23 21 15 / 0.16);
     background:
       linear-gradient(135deg, rgb(229 164 59 / 0.12) 25%, transparent 25%) 0 0 / 14px 14px,
       color-mix(in srgb, var(--color-paper) 82%, white);
     text-align: center;
+  }
+
+  .slot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .slot .mono {

@@ -1,4 +1,6 @@
 ---
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { assetManifestById } from '../data/asset-manifest';
 
 interface Props {
@@ -14,11 +16,38 @@ interface Props {
   caption?: string;
   /** Нейтральный preview для editorial-кейса до поставки реального ассета. */
   schematic?: boolean;
+  /** Ассет первого экрана: грузим сразу, без lazy. */
+  priority?: boolean;
 }
 
-const { label, src = '', alt, tone = 'light', ratio, frame = 'browser', caption, schematic = false } = Astro.props;
+const PUBLIC_ASSETS = fileURLToPath(new URL('../../public/assets/', import.meta.url));
+const ASSET_EXTENSIONS = ['avif', 'webp', 'png', 'jpg'];
+const resolvedCache = new Map<string, string | undefined>();
+
+/**
+ * Ищет реальный файл по ключу ассета в public/assets. Пока файла нет — слот показывает
+ * «asset pending»; как только файл положили, он появляется сам, без правок разметки.
+ *
+ * Ищем только ключи из манифеста: под works/<slug>/ лежат и ассеты слотов, и мелкие иконки
+ * meta-полосы с совпадающими именами (works/car-rental/hero.webp — иконка 240px, а не hero).
+ * Манифест здесь и есть контракт, что ключ — полноразмерный ассет слота.
+ */
+function resolveAsset(key: string): string | undefined {
+  if (resolvedCache.has(key)) return resolvedCache.get(key);
+  const declared = Boolean(assetManifestById[key]);
+  const found = declared
+    ? ASSET_EXTENSIONS.map((ext) => `${key}.${ext}`).find((name) => fs.existsSync(`${PUBLIC_ASSETS}${name}`))
+    : undefined;
+  const url = found ? `/assets/${found}` : undefined;
+  resolvedCache.set(key, url);
+  return url;
+}
+
+const { label, src, alt, tone = 'light', ratio, frame = 'browser', caption, schematic = false, priority = false } = Astro.props;
 const manifestEntry = assetManifestById[label];
 const resolvedRatio = ratio ?? manifestEntry?.ratio ?? '16 / 10';
+const resolvedSrc = src || resolveAsset(label) || '';
+const resolvedAlt = alt ?? caption ?? label;
 
 if (import.meta.env.DEV && src && !alt) {
   console.warn(`[AssetSlot] "${label}": передан src без содержательного alt.`);
@@ -26,8 +55,8 @@ if (import.meta.env.DEV && src && !alt) {
 ---
 
 <figure class="asset-slot-figure">
-  <div class:list={['asset-slot', `tone-${tone}`, `frame-${frame}`, src && 'has-src', schematic && 'is-schematic']} style={`--asset-ratio: ${resolvedRatio}`}>
-    {src ? <img src={src} alt={alt ?? label} loading="lazy" /> : (
+  <div class:list={['asset-slot', `tone-${tone}`, `frame-${frame}`, resolvedSrc && 'has-src', schematic && 'is-schematic']} style={`--asset-ratio: ${resolvedRatio}`}>
+    {resolvedSrc ? <img src={resolvedSrc} alt={resolvedAlt} loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined} /> : (
       <div class="pending" aria-label={schematic ? label : `${label}: asset pending`}>
         {schematic ? <div class="schematic" aria-hidden="true"><i></i><i></i><i></i><i></i></div> : <><span class="mono">asset pending</span><strong>{label}</strong></>}
       </div>

@@ -122,7 +122,7 @@ const siteProducts: Product[] = [
     },
     proof: {
       variant: 'real-interface',
-      title: 'Ольгинка: страница одного объекта под трафик',
+      title: 'Приморская 22А: страница одного объекта под трафик',
       href: '/cases/guest-house/',
       status: 'published',
       assets: [

@@ -17,7 +17,7 @@ const Title = titleTag;
   href={work.href}
   data-cursor={work.status === 'planned' ? 'Скоро' : 'Смотреть →'}
 >
-  <AssetSlot label={work.assetKey} src={work.assetSrc} />
+  <AssetSlot label={work.assetKey} src={work.assetSrc} frame={work.assetSrc ? 'plain' : 'browser'} />
   <div class="copy">
     <span class="mono">{work.category}</span>
     <Title>{work.title}</Title>

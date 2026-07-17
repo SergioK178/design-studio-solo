@@ -97,6 +97,86 @@ const detailPresentation = z.object({
 });
 
 /**
+ * Catalog-презентация (catalog-med): сложная номенклатура → сценарий закупки.
+ * Отличается от detail четырьмя секциями: архитектура каталога, бирюзовый блок сбора
+ * заявки, два сценария закупки (B2B/B2G) и документы.
+ */
+const catalogPresentation = z.object({
+  variant: z.literal('catalog'),
+  subtitle: z.string(),
+  tagline: z.string(),
+  /** Описание в hero — 3–4 строки; длинный solution из frontmatter сюда не выводим. */
+  lead: z.string(),
+  industry: z.string(),
+  services: z.string(),
+  meta: z.array(z.object({ label: z.string(), value: z.string(), icon: z.string().optional() })).min(2).max(5),
+  /** Низ hero: каталог продукции, адаптивный интерфейс, сценарий заявки, раздел для учреждений. */
+  markers: z.array(z.object({ title: z.string(), icon: z.string().optional() })).min(3).max(4),
+  /** Сжатые версии client/audience, task и constraints — на странице не дублируем длинные поля. */
+  contextShort: z.string(),
+  taskShort: z.string(),
+  constraintsShort: z.string(),
+  statement: z.object({
+    before: z.string(),
+    strike: z.string(),
+    middle: z.string(),
+    accent: z.string(),
+    after: z.string(),
+  }),
+  architecture: z.object({
+    kicker: z.string(),
+    title: z.string(),
+    text: z.string(),
+    categories: z.array(z.string()).min(4).max(8),
+    flow: z.array(z.object({ title: z.string(), note: z.string(), icon: z.string().optional() })).min(3).max(6),
+    tags: z.array(z.string()).max(6),
+  }),
+  solutionsIntro: z.string().optional(),
+  solutions: z.array(z.object({ title: z.string(), note: z.string(), icon: z.string().optional() })).min(3).max(6),
+  features: z.array(z.string()),
+  request: z.object({
+    kicker: z.string(),
+    title: z.string(),
+    text: z.string(),
+    badges: z.array(z.string()).max(3),
+    steps: z.array(z.object({ title: z.string(), note: z.string() })).min(4).max(4),
+  }),
+  tracks: z
+    .array(z.object({
+      kicker: z.string(),
+      title: z.string(),
+      points: z.array(z.string()).min(2).max(4),
+      /** Хвост id ассета: works/<slug>/tracks/<asset>. */
+      asset: z.string(),
+      action: z.string().optional(),
+    }))
+    .min(2)
+    .max(2),
+  catalogDetail: z.object({
+    kicker: z.string(),
+    title: z.string(),
+    text: z.string(),
+    /** Тезис между мобильными экранами во втором ряду раскладки. */
+    mobileStatement: z.string(),
+  }),
+  documents: z.object({
+    kicker: z.string(),
+    title: z.string(),
+    items: z.array(z.object({ title: z.string(), note: z.string(), icon: z.string().optional() })).min(3).max(4),
+  }),
+  outcome: z.object({
+    title: z.string(),
+    planning: z.array(z.string()).min(3),
+    /** Крупный итоговый текст правой колонки — один сильный вывод, а не список. */
+    summary: z.string(),
+  }),
+  markersOut: z.array(z.string()),
+  cta: z.object({ title: z.string(), copy: z.string() }),
+});
+
+export type CatalogPresentation = z.infer<typeof catalogPresentation>;
+
+/**
  * 9-частная структура кейса из master-spec.md §4: контекст/аудитория, задача/ограничения,
  * решение, hero, экраны с подписями, техчасть (тело статьи), роль студии, результат, CTA к продукту.
  */
@@ -116,7 +196,7 @@ const cases = defineCollection({
     productSlug: z.string(),
     stack: z.array(z.string()),
     presentation: z
-      .discriminatedUnion('variant', [editorialPresentation, showroomPresentation, detailPresentation])
+      .discriminatedUnion('variant', [editorialPresentation, showroomPresentation, detailPresentation, catalogPresentation])
       .optional(),
     status: z.enum(['published']),
   }),
