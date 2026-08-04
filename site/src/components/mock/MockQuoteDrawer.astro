@@ -1,0 +1,254 @@
+---
+/**
+ * Сцена 04 — заявка вместо корзины: панель «Запрос КП» поверх каталога.
+ * Цен нет и быть не может: в опте они зависят от объёма и договора.
+ */
+import MockFrame from './MockFrame.astro';
+import CaseIcon from '../CaseIcon.astro';
+import { catalogTiles, quoteItems } from '../../data/mocks/imex';
+---
+
+<MockFrame url="imex-med.ru/catalog">
+  <div class="scene">
+    <!-- За панелью остаётся каталог: закупщик не уходит со страницы, пока собирает заявку. -->
+    <div class="behind" aria-hidden="true">
+      {catalogTiles.slice(0, 4).map((tile) => (
+        <div class="b-card">
+          <span class="b-thumb"></span>
+          <b>{tile.title}</b>
+          <em>{tile.category}</em>
+        </div>
+      ))}
+    </div>
+
+    <aside class="drawer">
+      <header>
+        <h4>Запрос КП</h4>
+        <span class="mock-chip">{quoteItems.length} позиции</span>
+        <span class="close">×</span>
+      </header>
+      <p class="intro">Отправьте заявку на коммерческое предложение. Свяжемся и подготовим условия.</p>
+
+      <div class="items">
+        {quoteItems.map((item) => (
+          <article class="item">
+            <div class="mock-thumb"><CaseIcon name="first-aid-kit" size={22} /></div>
+            <div class="item-copy">
+              <p class="item-title">{item.title}</p>
+              <p class="mock-sku">Арт. {item.sku}</p>
+              <p class="item-note">{item.maker} · вариант {item.variant}</p>
+            </div>
+            <div class="qty"><span>−</span><b>{item.qty}</b><span>+</span></div>
+          </article>
+        ))}
+      </div>
+
+      <div class="comment">
+        <p class="mock-label">Комментарий к заявке</p>
+        <p class="placeholder">Укажите аналоги, требуемые документы, сроки доставки…</p>
+      </div>
+
+      <footer>
+        <div>
+          <p class="mock-label">Итого позиций</p>
+          <b>{quoteItems.length}</b>
+        </div>
+        <div class="actions">
+          <span class="mock-btn">Запросить КП</span>
+          <span class="mock-btn mock-btn--ghost">Продолжить подбор</span>
+        </div>
+      </footer>
+    </aside>
+  </div>
+</MockFrame>
+
+<style>
+  .scene {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 24em;
+    background: var(--m-soft);
+  }
+
+  .behind {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    gap: 1em;
+    min-height: 30em;
+    padding: 1.6em;
+    opacity: 0.45;
+    filter: blur(1.2px);
+  }
+
+  .b-card {
+    display: grid;
+    gap: 0.4em;
+    align-content: start;
+    padding: 0.9em;
+    border: 1px solid var(--m-line-soft);
+    border-radius: 0.6em;
+    background: #fff;
+  }
+
+  .b-thumb {
+    aspect-ratio: 16 / 9;
+    border-radius: 0.4em;
+    background: #e6edef;
+  }
+
+  .b-card b {
+    font-size: 0.92em;
+    line-height: 1.2;
+  }
+
+  .b-card em {
+    color: var(--m-muted);
+    font-size: 0.85em;
+    font-style: normal;
+  }
+
+  .drawer {
+    display: grid;
+    align-content: start;
+    gap: 1em;
+    padding: 1.3em 1.4em 1.4em;
+    background: #fff;
+    box-shadow: -20px 0 50px rgb(20 34 38 / 0.14);
+  }
+
+  .drawer header {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+  }
+
+  .drawer h4 {
+    margin: 0;
+    font-family: var(--m-display);
+    font-size: 1.6em;
+    font-weight: 600;
+  }
+
+  .close {
+    margin-left: auto;
+    color: var(--m-muted);
+    font-size: 1.4em;
+    line-height: 1;
+  }
+
+  .intro {
+    margin: 0;
+    color: var(--m-muted);
+    font-size: 0.9em;
+  }
+
+  .items {
+    display: grid;
+    gap: 0.7em;
+  }
+
+  .item {
+    display: grid;
+    grid-template-columns: 3em minmax(0, 1fr) auto;
+    gap: 0.8em;
+    align-items: center;
+    padding: 0.8em;
+    border: 1px solid var(--m-line-soft);
+    border-radius: 0.6em;
+  }
+
+  .mock-thumb {
+    aspect-ratio: 1;
+  }
+
+  .item-copy p {
+    margin: 0;
+  }
+
+  .item-title {
+    font-size: 0.92em;
+    font-weight: 600;
+    line-height: 1.25;
+    text-wrap: pretty;
+  }
+
+  .item-note {
+    color: var(--m-muted);
+    font-size: 0.85em;
+  }
+
+  .qty {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    padding: 0.35em 0.7em;
+    border: 1px solid var(--m-line);
+    border-radius: 0.5em;
+    color: var(--m-accent);
+    font-size: 0.9em;
+  }
+
+  .qty b {
+    color: var(--m-text);
+  }
+
+  .comment {
+    padding: 0.9em 1em;
+    border: 1px solid var(--m-line-soft);
+    border-radius: 0.6em;
+  }
+
+  .comment .mock-label {
+    margin: 0 0 0.5em;
+  }
+
+  .placeholder {
+    margin: 0;
+    padding: 0.7em 0.8em;
+    border: 1px solid var(--m-line-soft);
+    border-radius: 0.4em;
+    color: rgb(107 122 128 / 0.75);
+    font-size: 0.88em;
+  }
+
+  .drawer footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1em;
+    padding-top: 1em;
+    border-top: 1px solid var(--m-line-soft);
+  }
+
+  .drawer footer b {
+    font-family: var(--m-display);
+    font-size: 1.8em;
+    line-height: 1;
+  }
+
+  .drawer footer .mock-label {
+    margin: 0 0 0.2em;
+  }
+
+  .actions {
+    display: grid;
+    gap: 0.5em;
+    margin-left: auto;
+  }
+
+  /* На узком экране панель занимает всю ширину — подложка не нужна. */
+  @media (max-width: 760px) {
+    .scene {
+      grid-template-columns: 1fr;
+    }
+
+    .behind {
+      display: none;
+    }
+
+    .drawer {
+      box-shadow: none;
+    }
+  }
+</style>

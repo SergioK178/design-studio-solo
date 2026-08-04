@@ -84,7 +84,7 @@ export const team = [
 ];
 
 export const wallColA = [
-  { logo: 'Приморская 22А', assetKey: 'works/guest-house/hero', assetSrc: '/assets/works/guest-house/cover.webp', accent: 'ink', nav: 'Владелец · Инвестор', title: 'Премиальный лендинг — два режима показа', cta: 'Смотреть' },
+  { logo: 'Приморская 22А', assetKey: 'works/guest-house/hero', assetSrc: '/assets/works/guest-house/cover.webp', accent: 'ink', nav: 'Владелец · Инвестор', title: 'Дом у моря — два сценария покупки', cta: 'Смотреть' },
   { logo: 'Loft Rent', assetKey: 'works/car-rental/hero', assetSrc: '/assets/works/car-rental/cover.webp', accent: 'ochre', nav: 'Парк · Заявка', title: 'Сайт услуг с каталогом авто', cta: 'Смотреть' },
   { logo: 'ИМЭКС', assetKey: 'works/catalog-med/hero', accent: 'blue', nav: 'Каталог · КП', title: 'Сайт-каталог для оптовика', cta: 'Смотреть' },
 ];

@@ -1,0 +1,43 @@
+---
+/** Шапка сайта ИМЭКС внутри сцены: логотип, пять разделов, действие. */
+import '../../styles/mock-ui.css';
+import { nav } from '../../data/mocks/imex';
+
+interface Props {
+  active?: string;
+  action?: string;
+  count?: number;
+}
+
+const { active = 'Каталог', action = 'Получить КП', count } = Astro.props;
+---
+
+<div class="mock-bar">
+  <b>ИМЭКС</b>
+  <nav>
+    {nav.map((item) => (item === active ? <em>{item}</em> : <span>{item}</span>))}
+  </nav>
+  {count ? <span class="mock-chip">Заявка {count}</span> : null}
+  <span class="mock-btn">{action}</span>
+</div>
+
+<style>
+  .mock-bar .mock-chip {
+    margin-left: auto;
+  }
+
+  .mock-bar .mock-chip + .mock-btn {
+    margin-left: 0.8em;
+  }
+
+  /* Узкая сцена: в шапке остаются логотип и первые разделы, остальное режется по ширине. */
+  @container (max-width: 520px) {
+    .mock-bar nav :global(*):nth-child(n + 4) {
+      display: none;
+    }
+
+    .mock-bar .mock-chip {
+      display: none;
+    }
+  }
+</style>

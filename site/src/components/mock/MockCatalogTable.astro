@@ -1,0 +1,260 @@
+---
+/**
+ * Сцена 01 — каталог таблицей: фильтры слева, строки с артикулами и числом исполнений справа.
+ * Строк семь, фильтров пять: на скриншоте их два десятка, и в масштабе кейса они превращались в рябь.
+ */
+import MockFrame from './MockFrame.astro';
+import MockBar from './MockBar.astro';
+import { availabilityFacets, catalogRows, catalogTotals, categoryFacets, manufacturerFacets } from '../../data/mocks/imex';
+---
+
+<MockFrame url="imex-med.ru/catalog">
+  <MockBar active="Каталог" />
+
+  <div class="scene">
+    <aside class="side">
+      <p class="side-head">Фильтр</p>
+
+      <section>
+        <p class="mock-label">Наличие и поставка</p>
+        {availabilityFacets.map((item) => (
+          <div class="mock-check"><i></i>{item}</div>
+        ))}
+      </section>
+
+      <section>
+        <p class="mock-label">Категория</p>
+        {categoryFacets.map((item) => (
+          <div class="mock-check"><i></i>{item.title}<b>{item.count}</b></div>
+        ))}
+        <span class="side-more">Показать все</span>
+      </section>
+
+      <section>
+        <p class="mock-label">Производитель</p>
+        {manufacturerFacets.map((item) => (
+          <div class="mock-check"><i></i>{item.title}<b>{item.count}</b></div>
+        ))}
+      </section>
+    </aside>
+
+    <div class="main">
+      <div class="toolbar">
+        <p>Найдено <b>{catalogTotals.groups}</b> товарных групп</p>
+        <span class="sort">Сначала в наличии</span>
+        <div class="view">
+          <span>Плитка</span>
+          <span class="is-on">Таблица</span>
+        </div>
+      </div>
+
+      <div class="thead">
+        <span>Название</span>
+        <span class="col-cat">Категория / производитель</span>
+        <span class="col-var">Варианты</span>
+        <span class="col-status">Статус</span>
+        <span></span>
+      </div>
+
+      {catalogRows.map((row) => (
+        <div class:list={['trow', row.highlight && 'is-lit']}>
+          <span class="cell-title">
+            {row.title}
+            <em class="mock-sku">арт. {row.sku}</em>
+          </span>
+          <span class="col-cat">
+            {row.category}
+            <em>{row.maker}</em>
+          </span>
+          <span class="col-var">{row.variants === 1 ? '1 вариант' : `${row.variants} вариантов`}</span>
+          <span class="col-status"><span class="mock-status">Уточняется</span></span>
+          <span class="mock-btn">В заявку</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</MockFrame>
+
+<style>
+  .scene {
+    display: grid;
+    grid-template-columns: 13em 1fr;
+  }
+
+  .side {
+    padding: 1.4em 1.2em 2em;
+    border-right: 1px solid var(--m-line-soft);
+    background: var(--m-soft);
+  }
+
+  .side-head {
+    margin: 0 0 1.2em;
+    font-weight: 600;
+  }
+
+  .side section + section {
+    margin-top: 1.4em;
+    padding-top: 1.2em;
+    border-top: 1px solid var(--m-line-soft);
+  }
+
+  .side .mock-label {
+    margin: 0 0 0.6em;
+  }
+
+  .side-more {
+    display: inline-block;
+    margin-top: 0.5em;
+    color: var(--m-accent);
+    font-size: 0.85em;
+  }
+
+  .main {
+    padding: 1.2em 1.4em 1.6em;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    padding-bottom: 1em;
+  }
+
+  .toolbar p {
+    margin: 0;
+    font-size: 0.95em;
+  }
+
+  .sort {
+    margin-left: auto;
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--m-line);
+    border-radius: 0.5em;
+    color: var(--m-muted);
+    font-size: 0.85em;
+  }
+
+  .view {
+    display: flex;
+    padding: 0.2em;
+    border: 1px solid var(--m-line);
+    border-radius: 0.5em;
+    font-size: 0.85em;
+  }
+
+  .view span {
+    padding: 0.25em 0.7em;
+    border-radius: 0.35em;
+    color: var(--m-muted);
+  }
+
+  .view .is-on {
+    background: var(--m-accent-soft);
+    color: var(--color-teal-dk);
+    font-weight: 600;
+  }
+
+  .thead,
+  .trow {
+    display: grid;
+    grid-template-columns: 2.1fr 1.5fr 0.8fr 0.9fr auto;
+    align-items: center;
+    gap: 1em;
+  }
+
+  .thead {
+    padding: 0.7em 0;
+    border-bottom: 1px solid var(--m-line);
+    color: var(--m-muted);
+    font-size: 0.75em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .trow {
+    padding: 0.85em 0;
+    border-bottom: 1px solid var(--m-line-soft);
+    font-size: 0.95em;
+  }
+
+  /* Группа с десятью исполнениями подсвечена: она объясняет колонку «Варианты». */
+  .trow.is-lit {
+    margin: 0 -0.6em;
+    padding-left: 0.6em;
+    padding-right: 0.6em;
+    background: color-mix(in srgb, var(--m-accent-soft) 55%, transparent);
+    box-shadow: inset 0.2em 0 0 var(--m-accent);
+  }
+
+  .trow.is-lit .col-var {
+    color: var(--m-accent);
+    font-weight: 600;
+  }
+
+  .cell-title {
+    display: grid;
+    gap: 0.25em;
+    font-weight: 600;
+    text-wrap: pretty;
+  }
+
+  .col-cat {
+    display: grid;
+    gap: 0.2em;
+    color: var(--m-text);
+    font-size: 0.95em;
+  }
+
+  .col-cat em {
+    color: var(--m-muted);
+    font-size: 0.9em;
+    font-style: normal;
+  }
+
+  .col-var {
+    color: var(--m-accent);
+  }
+
+  .trow .mock-btn {
+    padding: 0 0.9em;
+  }
+
+  .trow.is-lit .mock-btn {
+    background: var(--color-teal-dk);
+  }
+
+  @container (max-width: 560px) {
+    .sort {
+      display: none;
+    }
+  }
+
+  /* На узком экране остаются название, артикул и число исполнений. */
+  @media (max-width: 760px) {
+    .scene {
+      grid-template-columns: 1fr;
+    }
+
+    .side {
+      display: none;
+    }
+
+    .thead {
+      display: none;
+    }
+
+    .trow {
+      display: flex;
+      align-items: center;
+    }
+
+    .cell-title {
+      flex: 1;
+    }
+
+    .col-cat,
+    .col-status {
+      display: none;
+    }
+  }
+</style>

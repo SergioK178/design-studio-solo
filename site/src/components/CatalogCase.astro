@@ -1,5 +1,13 @@
 ---
 import AssetSlot from './AssetSlot.astro';
+import CaseIcon from './CaseIcon.astro';
+import MockCatalogGrid from './mock/MockCatalogGrid.astro';
+import MockCatalogTable from './mock/MockCatalogTable.astro';
+import MockGroupCard from './mock/MockGroupCard.astro';
+import MockVariantPicker from './mock/MockVariantPicker.astro';
+import MockQuoteDrawer from './mock/MockQuoteDrawer.astro';
+import MockInstitutions from './mock/MockInstitutions.astro';
+import MockMigration from './mock/MockMigration.astro';
 import { site } from '../data/site';
 import type { CatalogPresentation } from '../content.config';
 
@@ -30,11 +38,20 @@ const { slug, title, category, screens, presentation, productHref } = Astro.prop
 const p = presentation;
 
 const num = (i: number) => String(i + 1).padStart(2, '0');
-const screenById = (id: string) => screens.find((s) => s.id === id);
-const catalogShot = screenById('catalog-01');
-const cardShot = screenById('card-detail');
-const mobileShots = screens.filter((s) => s.id.startsWith('mobile'));
-const popularShot = screenById('popular');
+const mobileShots = screens.filter((s) => s.id.startsWith('mobile-'));
+
+/**
+ * Реестр нарисованных сцен. Интерфейс ИМЭКСа на странице кейса рисуется, а не вставляется
+ * скриншотом: слот шириной ~850 px ужимал настоящее окно 1200 px до нечитаемой ряби.
+ * Настоящие кадры остались там, где работают, — hero и телефоны.
+ */
+const MOCKS: Record<string, typeof MockCatalogTable> = {
+  'catalog-table': MockCatalogTable,
+  'group-card': MockGroupCard,
+  'variant-picker': MockVariantPicker,
+  'quote-drawer': MockQuoteDrawer,
+  institutions: MockInstitutions,
+};
 ---
 
 <main class="cc" data-bg="paper">
@@ -61,7 +78,15 @@ const popularShot = screenById('popular');
         <div class="cc-hero-visual">
           <span class="cc-hero-rail" aria-hidden="true">CATALOGUE / PROCUREMENT / REQUEST</span>
           <div class="cc-hero-frame">
-            <AssetSlot label={`works/${slug}/hero`} frame="browser" tone="dark" ratio="16 / 10" priority />
+            <AssetSlot
+              label={`works/${slug}/hero`}
+              src={`/assets/works/${slug}/screens/home-hero.webp`}
+              alt="Главная страница ИМЭКС — каталог медицинских изделий и запрос коммерческого предложения"
+              frame="browser"
+              tone="dark"
+              ratio="1200 / 860"
+              priority
+            />
           </div>
         </div>
       </div>
@@ -70,7 +95,7 @@ const popularShot = screenById('popular');
         {p.markers.map((item) => (
           <li>
             {item.icon
-              ? <img src={item.icon} alt="" width="46" height="46" loading="lazy" />
+              ? <CaseIcon name={item.icon} size={26} />
               : <span class="cc-icon-pending" aria-hidden="true"></span>}
             {item.title}
           </li>
@@ -104,10 +129,16 @@ const popularShot = screenById('popular');
       <!-- Mobile перекрывает desktop и выравнен с ним по нижней линии. -->
       <div class="cc-covers">
         <div class="cc-cover-desktop">
-          <AssetSlot label={`works/${slug}/cover-desktop`} frame="browser" ratio="16 / 10" />
+          <MockCatalogGrid />
         </div>
         <div class="cc-cover-mobile">
-          <AssetSlot label={`works/${slug}/cover-mobile`} frame="mobile" ratio="9 / 16" />
+          <AssetSlot
+            label={`works/${slug}/cover-mobile`}
+            src={`/assets/works/${slug}/screens/mobile-catalog.webp`}
+            alt="Каталог на телефоне — поиск по артикулу и популярные разделы"
+            frame="mobile"
+            ratio="390 / 844"
+          />
         </div>
       </div>
     </section>
@@ -126,7 +157,7 @@ const popularShot = screenById('popular');
             <li>
               <span class="cc-flow-icon">
                 {step.icon
-                  ? <img src={step.icon} alt="" width="44" height="44" loading="lazy" />
+                  ? <CaseIcon name={step.icon} size={24} />
                   : <span class="cc-icon-pending" aria-hidden="true"></span>}
               </span>
               <span class="cc-flow-num">{num(i)}</span>
@@ -139,6 +170,9 @@ const popularShot = screenById('popular');
       <ul class="cc-tags">
         {p.architecture.tags.map((tag) => <li>{tag}</li>)}
       </ul>
+
+      <h3 class="cc-mig-title">{p.architecture.migration.title}</h3>
+      <MockMigration sources={p.architecture.migration.sources} steps={p.architecture.migration.steps} />
     </section>
 
     <!-- 5. Как мы решили -->
@@ -155,7 +189,7 @@ const popularShot = screenById('popular');
           <article class="cc-solution">
             <span class="cc-solution-badge">
               {item.icon
-                ? <img src={item.icon} alt="" width="58" height="58" loading="lazy" />
+                ? <CaseIcon name={item.icon} size={28} />
                 : <span class="cc-icon-pending" aria-hidden="true"></span>}
             </span>
             <span class="cc-solution-num">{num(i)}</span>
@@ -176,8 +210,14 @@ const popularShot = screenById('popular');
         <h2 class="cc-request-title">{p.request.title}</h2>
         <p class="cc-request-note">{p.request.text}</p>
         <figure class="cc-request-object">
-          <AssetSlot label={`works/${slug}/request-object`} frame="plain" ratio="4 / 3" />
-          <figcaption>Позиции собираются в заявку без корзины и онлайн-оплаты.</figcaption>
+          <AssetSlot
+            label={`works/${slug}/request-object`}
+            src={`/assets/works/${slug}/screens/mobile-quote.webp`}
+            alt="Панель заявки на телефоне — позиция с артикулом, количеством и кнопкой «Запросить КП»"
+            frame="plain"
+            ratio="390 / 844"
+          />
+          <figcaption>Список живёт в браузере, пока закупщик ходит по каталогу, и уходит менеджеру одним запросом.</figcaption>
         </figure>
         <ul class="cc-badges">
           {p.request.badges.map((item) => <li>{item}</li>)}
@@ -204,11 +244,11 @@ const popularShot = screenById('popular');
           <article class="cc-track">
             <p class="cc-eyebrow">{track.kicker}</p>
             <h2 class="cc-track-title">{track.title}</h2>
-            <AssetSlot
-              label={`works/${slug}/tracks/${track.asset}`}
-              frame="browser"
-              ratio={track.action ? '4 / 3' : '16 / 10'}
-            />
+            <ul class="cc-track-docs">
+              {track.docs.map((doc) => (
+                <li><CaseIcon name="file-text" size={18} />{doc}</li>
+              ))}
+            </ul>
             <ul class="cc-track-points">
               {track.points.map((point) => <li>{point}</li>)}
             </ul>
@@ -228,35 +268,42 @@ const popularShot = screenById('popular');
         <p class="cc-sec-intro">{p.catalogDetail.text}</p>
       </header>
 
-      <div class="cc-detail-row cc-grid12">
-        {catalogShot && (
-          <div class="cc-shot-wide">
-            <AssetSlot label={`works/${slug}/screens/${catalogShot.id}`} caption={catalogShot.caption} ratio="16 / 10" />
+      {p.catalogDetail.plates.map((plate, i) => {
+        const Scene = MOCKS[plate.mock];
+        return (
+          <div class="cc-plate cc-grid12">
+            <div class="cc-plate-note">
+              <span class="cc-plate-num">{num(i)}</span>
+              <h3>{plate.title}</h3>
+              <p>{plate.note}</p>
+            </div>
+            <div class="cc-plate-shot">
+              {Scene ? <Scene /> : <span class="cc-icon-pending" aria-hidden="true"></span>}
+            </div>
           </div>
-        )}
-        {cardShot && (
-          <div class="cc-shot-detail">
-            <AssetSlot label={`works/${slug}/screens/${cardShot.id}`} caption={cardShot.caption} ratio="4 / 5" />
-          </div>
-        )}
-      </div>
+        );
+      })}
 
-      <div class="cc-detail-row cc-grid12">
-        {mobileShots.map((shot) => (
-          <div class="cc-shot-mobile">
-            <AssetSlot label={`works/${slug}/screens/${shot.id}`} caption={shot.caption} frame="mobile" ratio="9 / 16" />
-          </div>
-        ))}
-        <p class="cc-mobile-statement">{p.catalogDetail.mobileStatement}</p>
-      </div>
-
-      {popularShot && (
-        <div class="cc-detail-row">
-          <div class="cc-shot-popular">
-            <AssetSlot label={`works/${slug}/screens/${popularShot.id}`} caption={popularShot.caption} ratio="2.85 / 1" />
-          </div>
+      <div class="cc-plate cc-plate--mobile cc-grid12">
+        <div class="cc-plate-note">
+          <span class="cc-plate-num">{num(p.catalogDetail.plates.length)}</span>
+          <h3>Тот же каталог на телефоне</h3>
+          <p>{p.catalogDetail.mobileStatement}</p>
         </div>
-      )}
+        <div class="cc-plate-phones">
+          {mobileShots.map((shot) => (
+            <div class="cc-phone">
+              <AssetSlot
+                label={`works/${slug}/screens/${shot.id}`}
+                src={`/assets/works/${slug}/screens/${shot.id}.webp`}
+                alt={shot.caption}
+                frame="plain"
+                ratio="390 / 844"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
     </section>
 
     <!-- 9. Документы -->
@@ -269,7 +316,7 @@ const popularShot = screenById('popular');
         {p.documents.items.map((item) => (
           <article class="cc-doc">
             {item.icon
-              ? <img src={item.icon} alt="" width="46" height="46" loading="lazy" />
+              ? <CaseIcon name={item.icon} size={26} />
               : <span class="cc-icon-pending" aria-hidden="true"></span>}
             <h3>{item.title}</h3>
             <p>{item.note}</p>
@@ -314,6 +361,8 @@ const popularShot = screenById('popular');
   .cc {
     background: var(--color-paper);
     color: var(--color-ink);
+    /* Каталожная страница держится на числах — артикулы и количества набираем моноширинными цифрами. */
+    font-variant-numeric: tabular-nums;
   }
 
   /* Сетка страницы: 12 колонок, gap 24px (ТЗ §4.1). */
@@ -505,15 +554,11 @@ const popularShot = screenById('popular');
     padding-left: 24px;
   }
 
-  /* Комплект нарисован тёмной линией под светлый фон. На чёрном hero он тонет,
-     поэтому кладём его белым силуэтом: бирюзовый акцент теряется, но линия читается. */
-  .cc-markers img {
-    width: 46px;
-    height: 46px;
+  /* Один штриховой набор на всю страницу: цвет наследуется от секции,
+     на тёмном hero иконка сама становится светлой. */
+  .cc-markers :global(svg) {
     flex-shrink: 0;
-    object-fit: contain;
-    filter: brightness(0) invert(1);
-    opacity: 0.88;
+    color: rgb(244 242 236 / 0.8);
   }
 
   /* ── Body ────────────────────────────────────────── */
@@ -638,11 +683,9 @@ const popularShot = screenById('popular');
     background: rgb(14 107 134 / 0.5);
   }
 
-  .cc-flow-icon img {
+  .cc-flow-icon :global(svg) {
     display: block;
-    width: 44px;
-    height: 44px;
-    object-fit: contain;
+    color: var(--color-teal);
   }
 
   .cc-flow-num {
@@ -667,6 +710,14 @@ const popularShot = screenById('popular');
     color: rgb(23 21 15 / 0.58);
     font-size: 14px;
     line-height: 1.4;
+  }
+
+  /* Заголовок над схемой миграции: единственная часть работы, которую нечем показать кадром. */
+  .cc-mig-title {
+    margin: 72px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(20px, 2vw, 26px);
+    letter-spacing: -0.02em;
   }
 
   .cc-tags {
@@ -710,24 +761,39 @@ const popularShot = screenById('popular');
 
   .cc-solutions-grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 24px;
+  }
+
+  .cc-solution {
+    grid-column: span 2;
+  }
+
+
+  .cc-solutions-grid .cc-solution:nth-child(n + 4) {
+    grid-column: span 3;
   }
 
   .cc-solution {
     display: flex;
     flex-direction: column;
-    min-height: 280px;
-    border: 1px solid rgb(23 21 15 / 0.16);
-    background: white;
+    min-height: 260px;
+    border: 1px solid rgb(23 21 15 / 0.14);
+    background: var(--color-mist);
     padding: 26px;
   }
 
-  .cc-solution-badge img {
+  .cc-solution-badge {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    background: white;
+    color: var(--color-teal);
+  }
+
+  .cc-solution-badge :global(svg) {
     display: block;
-    width: 58px;
-    height: 58px;
-    object-fit: contain;
   }
 
   .cc-solution-num {
@@ -740,8 +806,9 @@ const popularShot = screenById('popular');
 
   .cc-solution h3 {
     margin: 10px 0 0;
+    max-width: 18ch;
     font-family: var(--font-display);
-    font-size: 18px;
+    font-size: 19px;
     line-height: 1.16;
   }
 
@@ -762,8 +829,8 @@ const popularShot = screenById('popular');
   }
 
   .cc-features li {
-    border: 1px solid rgb(23 21 15 / 0.16);
-    background: white;
+    border: 1px solid rgb(23 21 15 / 0.14);
+    background: var(--color-mist);
     padding: 11px 18px;
     color: rgb(23 21 15 / 0.72);
     font-size: 14px;
@@ -774,7 +841,7 @@ const popularShot = screenById('popular');
     align-items: start;
     min-height: 520px;
     margin-top: 120px;
-    background: linear-gradient(150deg, var(--color-teal), var(--color-teal-dk));
+    background: var(--color-teal);
     color: var(--color-paper);
     padding: 56px;
   }
@@ -922,6 +989,30 @@ const popularShot = screenById('popular');
     line-height: 1.1;
   }
 
+  /* Что уходит клиенту по маршруту. Скриншота здесь нет намеренно: у обоих сценариев
+     речь про процедуру и документы, а не про отдельный экран. */
+  .cc-track-docs {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 24px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cc-track-docs li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+
+  .cc-track-docs li :global(svg) {
+    flex: none;
+    color: var(--color-teal);
+  }
+
   .cc-track-points {
     display: flex;
     flex-wrap: wrap;
@@ -969,30 +1060,67 @@ const popularShot = screenById('popular');
     margin-top: 120px;
   }
 
-  .cc-detail-row {
+  /* Кадр как экспонат: слева номер и аннотация, справа сам интерфейс в рамке.
+     Кейс объясняет каждый экран, а не выкладывает сайт полотном. */
+  .cc-plate {
     align-items: start;
+    row-gap: 24px;
   }
 
-  .cc-detail-row + .cc-detail-row {
-    margin-top: 24px;
+  .cc-plate + .cc-plate {
+    margin-top: 72px;
   }
 
-  .cc-shot-wide { grid-column: span 8; }
-  .cc-shot-detail { grid-column: span 4; }
-  .cc-shot-mobile { grid-column: span 3; }
+  .cc-plate-note {
+    grid-column: 1 / span 3;
+    position: sticky;
+    top: 96px;
+  }
 
-  .cc-mobile-statement {
-    grid-column: span 6;
-    align-self: center;
-    max-width: 22ch;
-    margin: 0;
+  .cc-plate-num {
+    display: block;
+    color: var(--color-teal);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+
+  .cc-plate-note h3 {
+    margin: 14px 0 0;
     font-family: var(--font-display);
-    font-size: clamp(22px, 2.2vw, 28px);
+    font-size: 21px;
     line-height: 1.14;
+    letter-spacing: -0.02em;
   }
 
-  .cc-shot-popular {
-    margin-top: 24px;
+  .cc-plate-note p {
+    margin: 14px 0 0;
+    color: rgb(23 21 15 / 0.62);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .cc-plate-shot {
+    grid-column: 4 / -1;
+  }
+
+  .cc-plate-phones {
+    grid-column: 4 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 260px));
+    gap: 32px;
+  }
+
+  .cc-phone {
+    border: 7px solid var(--color-ink);
+    border-radius: 30px;
+    background: var(--color-ink);
+    box-shadow: 0 22px 46px rgb(23 21 15 / 0.16);
+  }
+
+  .cc-phone :global(.asset-slot) {
+    border: 0;
+    border-radius: 22px;
   }
 
   /* ── Документы ───────────────────────────────────── */
@@ -1016,11 +1144,9 @@ const popularShot = screenById('popular');
     padding: 22px 24px;
   }
 
-  .cc-doc img {
+  .cc-doc :global(svg) {
     display: block;
-    width: 46px;
-    height: 46px;
-    object-fit: contain;
+    color: var(--color-teal);
   }
 
   .cc-doc h3 {
@@ -1058,7 +1184,7 @@ const popularShot = screenById('popular');
   .cc-out-label {
     display: block;
     margin-bottom: 18px;
-    color: var(--color-gold);
+    color: color-mix(in srgb, var(--color-teal) 55%, white);
     font-family: var(--font-text);
     font-size: 11.5px;
     font-weight: 600;
@@ -1097,7 +1223,7 @@ const popularShot = screenById('popular');
     content: '—';
     position: absolute;
     left: 0;
-    color: var(--color-gold);
+    color: color-mix(in srgb, var(--color-teal) 55%, white);
   }
 
   .cc-outcome-summary {
@@ -1203,8 +1329,9 @@ const popularShot = screenById('popular');
     .cc-track:last-child,
     .cc-outcome-plan,
     .cc-outcome-result,
-    .cc-shot-wide,
-    .cc-shot-detail {
+    .cc-plate-note,
+    .cc-plate-shot,
+    .cc-plate-phones {
       grid-column: 1 / -1;
     }
 
@@ -1223,14 +1350,6 @@ const popularShot = screenById('popular');
 
     .cc-statement {
       row-gap: 48px;
-    }
-
-    .cc-shot-mobile {
-      grid-column: span 4;
-    }
-
-    .cc-mobile-statement {
-      grid-column: span 4;
     }
 
     .cc-request,
@@ -1329,15 +1448,6 @@ const popularShot = screenById('popular');
     .cc-cover-mobile {
       margin: 24px auto 0;
       max-width: 240px;
-    }
-
-    .cc-shot-mobile,
-    .cc-mobile-statement {
-      grid-column: 1 / -1;
-    }
-
-    .cc-shot-mobile :global(.asset-slot) {
-      max-width: 260px;
     }
 
     .cc-request,

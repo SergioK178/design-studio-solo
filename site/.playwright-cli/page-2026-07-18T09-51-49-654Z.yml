@@ -1,0 +1,246 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "3K Studio на главную" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - text: 3K Studio.
+      - navigation "Главная навигация" [ref=e5]:
+        - link "Продукты Продукты" [ref=e6] [cursor=pointer]:
+          - /url: /products/
+        - link "Работы Работы" [ref=e8] [cursor=pointer]:
+          - /url: /cases/
+        - link "Прайс Прайс" [ref=e10] [cursor=pointer]:
+          - /url: /price/
+        - link "Лаборатория Лаборатория" [ref=e12] [cursor=pointer]:
+          - /url: /lab/
+      - generic [ref=e14]:
+        - link "Telegram ↗ Telegram ↗" [ref=e15] [cursor=pointer]:
+          - /url: https://t.me/camicie_nere
+        - link "Разобрать задачу →" [ref=e17] [cursor=pointer]:
+          - /url: /brief/
+  - main [ref=e18]:
+    - generic [ref=e20]:
+      - generic [ref=e21]:
+        - paragraph [ref=e22]: Премиальный лендинг · недвижимость
+        - heading "Премиальный лендинг для продажи дома у моря" [level=1] [ref=e23]: Премиальный лендингдля продажи дома у моря
+        - paragraph [ref=e24]: Ольгинка, Краснодарский край
+        - paragraph [ref=e25]: Один макет с переключателем «Владелец / Инвестор», который меняет весь текстовый слой — заголовки, эмоциональные врезки, экономическое обоснование цены и даже график сезонности — вместо двух отдельных версий сайта.
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - term [ref=e28]: Тип проекта
+          - definition [ref=e29]: Премиальный лендинг
+        - generic [ref=e30]:
+          - term [ref=e31]: Роль
+          - definition [ref=e32]: Арт-дирекшн, фронтенд,инфраструктура
+        - generic [ref=e33]:
+          - term [ref=e34]: Год
+          - definition [ref=e35]: "2026"
+        - generic [ref=e36]:
+          - term [ref=e37]: Стек
+          - definition [ref=e38]: Next.js · TypeScript · VPS
+        - link "Смотреть сайт" [ref=e39] [cursor=pointer]:
+          - /url: https://olginka-residence.online
+          - text: Смотреть сайт
+          - generic [ref=e40]: ↗
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - figure [ref=e43]:
+          - img "Hero страницы «Приморская 22А» с переключателем «Владелец / Инвестор»" [ref=e45]
+        - paragraph [ref=e46]: "Главный экран проекта: архитектура и факты об объекте в одном спокойном сценарии."
+      - generic [ref=e47]:
+        - article [ref=e48]:
+          - text: Задача
+          - heading "Убедительно представить дорогой частный объект без агентства." [level=2] [ref=e50]
+          - paragraph [ref=e51]: Объект дорогой и штучный — покупатель придирчив. Нужен сайт, который выглядит как премиум-продукт, а не шаблонный лендинг, одинаково убедительно говорит с обеими аудиториями и приводит заявки в мессенджеры и на почту.
+        - complementary [ref=e52]:
+          - text: О проекте
+          - generic [ref=e53]:
+            - generic [ref=e54]: Объект
+            - strong [ref=e55]: Частный дом с участком
+          - generic [ref=e56]:
+            - generic [ref=e57]: Площадь
+            - strong [ref=e58]: 1 082 м²
+          - generic [ref=e59]:
+            - generic [ref=e60]: Формат продажи
+            - strong [ref=e61]: Прямая продажа от собственника
+          - generic [ref=e62]:
+            - generic [ref=e63]: Аудитории
+            - strong [ref=e64]: Владелец / инвестор
+      - region "Ключевые результаты" [ref=e65]:
+        - article [ref=e66]:
+          - strong [ref=e67]: 1 082 м²
+          - generic [ref=e69]: Площадь объекта
+        - article [ref=e70]:
+          - strong [ref=e71]: 2 сценария
+          - generic [ref=e73]: Владелец и инвестор
+        - article [ref=e74]:
+          - strong [ref=e75]: ≈126 кБ
+          - generic [ref=e77]: First Load JS
+        - article [ref=e78]:
+          - strong [ref=e79]: 0 секунд
+          - generic [ref=e81]: простоя при релизе
+      - generic [ref=e82]:
+        - generic [ref=e83]:
+          - generic [ref=e84]: Ключевая идея
+          - heading "Один объект — два сценария покупки" [level=2] [ref=e86]
+          - paragraph [ref=e87]: Семье — пространство, приватность и жизнь у моря. Инвестору — доходность, сезонность и потенциал объекта.
+        - tablist "Сценарии покупки" [ref=e88]:
+          - tab "Владелец" [selected] [ref=e89] [cursor=pointer]
+          - tab "Инвестор" [ref=e90] [cursor=pointer]
+        - generic "Сравнение сценариев" [ref=e91]:
+          - article "Владелец" [ref=e92]:
+            - figure [ref=e93]:
+              - 'img "Экран сценария «Владелец»: Дом для семьи и гостей" [ref=e95]'
+            - generic [ref=e96]:
+              - heading "Дом для семьи и гостей" [level=3] [ref=e97]
+              - paragraph [ref=e98]: Для будущего владельца сайт говорит о пространстве, приватности и жизни у моря — без давления и рекламного шума.
+              - text: Эмоциональный сценарий
+          - article "Инвестор" [ref=e99]:
+            - figure [ref=e100]:
+              - 'img "Экран сценария «Инвестор»: Объект как актив" [ref=e102]'
+            - generic [ref=e103]:
+              - heading "Объект как актив" [level=3] [ref=e104]
+              - paragraph [ref=e105]: Инвестор получает экономическое обоснование цены, сезонность и потенциал объекта в том же цельном интерфейсе.
+              - text: Рациональный сценарий
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - generic [ref=e108]: Арт-дирекшн
+          - heading "Спокойная уверенность вместо шаблонного премиума" [level=2] [ref=e109]
+          - paragraph [ref=e110]: Визуальный язык построен вокруг архитектуры, воздуха и прямого голоса собственника — без журнальных индексов и декоративной роскоши.
+        - generic "Пример визуального языка" [ref=e111]:
+          - generic [ref=e112]: Дом у моряв Ольгинке
+          - paragraph [ref=e113]: Частный объект площадью 1 082 м² для жизни, отдыха и инвестиций.
+          - button "Оставить заявку" [ref=e114] [cursor=pointer]:
+            - text: Оставить заявку
+            - generic [ref=e115]: →
+          - generic [ref=e116]: «Факты и архитектура — вместо обещаний»
+        - generic [ref=e117]:
+          - article [ref=e118]:
+            - text: "01"
+            - generic [ref=e119]: Типографика
+            - strong [ref=e120]: Unbounded + Golos Text
+          - article [ref=e121]:
+            - text: "02"
+            - generic [ref=e122]: Палитра
+          - article [ref=e129]:
+            - text: "03"
+            - generic [ref=e130]: Голос
+            - strong [ref=e131]: Факты вместо клише
+      - generic [ref=e132]:
+        - generic [ref=e133]:
+          - generic [ref=e134]: Интерфейс
+          - heading "Подача объекта без визуального шума" [level=2] [ref=e135]
+        - figure [ref=e137]:
+          - 'img "Блок «Стоимость»: цена объекта без наценки и что в неё входит" [ref=e139]'
+        - generic [ref=e140]:
+          - figure "Экономическое обоснование цены и сезонность — только там, где это нужно инвестору." [ref=e141]:
+            - figure [ref=e142]:
+              - 'img "Инвестиционный блок: график сезонности с серией «зимние локации»" [ref=e144]'
+          - figure "Характеристики остаются частью спокойного визуального рассказа об объекте." [ref=e146]:
+            - figure [ref=e147]:
+              - 'img "Блок «Локация»: Ольгинка между Туапсе и Джубгой" [ref=e149]'
+        - generic [ref=e151]:
+          - figure [ref=e152]:
+            - 'generic "Мобильный экран: hero" [ref=e154]'
+          - paragraph [ref=e159]: На мобильном сохранены крупная типографика, быстрое переключение сценария и прямой переход к мессенджерам.
+          - figure [ref=e160]:
+            - 'generic "Мобильный экран: заявка" [ref=e162]'
+      - generic [ref=e167]:
+        - generic [ref=e168]:
+          - generic [ref=e169]: Инженерная часть
+          - heading "Готов к трафику, индексации и стабильной работе" [level=2] [ref=e170]
+        - generic [ref=e171]:
+          - article [ref=e172]:
+            - heading "Производительность" [level=3] [ref=e173]
+            - generic [ref=e174]:
+              - generic [ref=e175]:
+                - strong [ref=e176]: ≈126 кБ
+                - text: First Load JS
+              - generic [ref=e177]:
+                - strong [ref=e178]: woff2
+                - text: Self-hosted шрифты
+              - generic [ref=e179]:
+                - strong [ref=e180]: WebP
+                - text: Оптимизированные изображения
+          - article [ref=e181]:
+            - heading "Поиск и разметка" [level=3] [ref=e182]
+            - list [ref=e183]:
+              - listitem [ref=e184]: Schema.org / RealEstateListing
+              - listitem [ref=e185]: Open Graph, sitemap и robots
+          - article [ref=e186]:
+            - heading "Надёжность релизов" [level=3] [ref=e187]
+            - list [ref=e188]:
+              - listitem [ref=e189]: Healthcheck перед переключением
+              - listitem [ref=e190]: Atomic release на собственном VPS
+              - listitem [ref=e191]: Автоматический rollback
+        - generic "Пайплайн релиза" [ref=e192]:
+          - text: Пайплайн релиза
+          - list [ref=e193]:
+            - listitem [ref=e194]:
+              - generic [ref=e196]: "01"
+              - strong [ref=e197]: Исходный код
+              - generic [ref=e198]: GitHub
+            - listitem [ref=e199]:
+              - generic [ref=e201]: "02"
+              - strong [ref=e202]: CI/CD
+              - generic [ref=e203]: Actions
+            - listitem [ref=e204]:
+              - generic [ref=e206]: "03"
+              - strong [ref=e207]: Сборка
+              - generic [ref=e208]: Standalone
+            - listitem [ref=e209]:
+              - generic [ref=e211]: "04"
+              - strong [ref=e212]: Деплой
+              - generic [ref=e213]: VPS / systemd
+            - listitem [ref=e214]:
+              - generic [ref=e216]: "05"
+              - strong [ref=e217]: Healthcheck
+              - generic [ref=e218]: Проверка
+      - generic [ref=e219]:
+        - article [ref=e220]:
+          - text: Результат
+          - list [ref=e221]:
+            - listitem [ref=e222]: — First Load JS главной ≈ 126 кБ — шрифты и изображения self-hosted и оптимизированы.
+            - listitem [ref=e223]: "— Полный SEO-слой: динамическая OG-картинка, JSON-LD `schema.org/RealEstateListing`, sitemap и robots."
+            - listitem [ref=e224]: — Zero-downtime деплой на собственном VPS через GitHub Actions → systemd, с healthcheck и автоматическим откатом на предыдущий релиз при сбое.
+            - listitem [ref=e225]: — Заявки идут напрямую в WhatsApp, Telegram и на почту, без сторонней прослойки.
+          - generic [ref=e226]:
+            - generic [ref=e227]: Next.js 15
+            - generic [ref=e228]: React 19
+            - generic [ref=e229]: TypeScript
+            - generic [ref=e230]: Tailwind CSS
+            - generic [ref=e231]: Node.js
+            - generic [ref=e232]: GitHub Actions
+        - article [ref=e233]:
+          - text: Роль 3K Studio
+          - 'heading "Дизайн, фронтенд, инфраструктура и деплой — под ключ: от арт-дирекшна и копирайта до systemd, nginx и TLS на собственном VPS, без привлечения дополнительных подрядчиков." [level=2] [ref=e234]'
+      - generic [ref=e235]:
+        - generic [ref=e236]:
+          - text: Обсудить проект
+          - heading "Есть объект или продукт, которому нужна собственная логика продажи?" [level=2] [ref=e237]
+          - paragraph [ref=e238]: Разберём задачу, аудиторию и подходящий формат сайта.
+        - generic [ref=e239]:
+          - link "Обсудить проект" [ref=e240] [cursor=pointer]:
+            - /url: https://t.me/camicie_nere
+            - text: Обсудить проект
+            - generic [ref=e241]: →
+          - link "Написать в Telegram ↗" [ref=e242] [cursor=pointer]:
+            - /url: https://t.me/camicie_nere
+  - contentinfo [ref=e243]:
+    - generic [ref=e244]:
+      - link "3K Studio." [ref=e245] [cursor=pointer]:
+        - /url: /
+      - navigation "Нижняя навигация" [ref=e246]:
+        - link "Все продукты" [ref=e247] [cursor=pointer]:
+          - /url: /products/
+        - link "Прайс расширений" [ref=e248] [cursor=pointer]:
+          - /url: /price/
+        - link "Работы" [ref=e249] [cursor=pointer]:
+          - /url: /cases/
+        - link "Лаборатория" [ref=e250] [cursor=pointer]:
+          - /url: /lab/
+        - link "Legal" [ref=e251] [cursor=pointer]:
+          - /url: /legal/
+        - link "Telegram ↗" [ref=e252] [cursor=pointer]:
+          - /url: https://t.me/camicie_nere
+    - generic [ref=e253]: 3K Studio.

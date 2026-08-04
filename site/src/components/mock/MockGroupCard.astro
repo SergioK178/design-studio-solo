@@ -1,0 +1,189 @@
+---
+/**
+ * Сцена 02 — товарная группа: одна карточка вместо десяти отдельных товаров.
+ * Три метаполя (производитель, категория, число исполнений) — то же, что на настоящей странице.
+ */
+import MockFrame from './MockFrame.astro';
+import MockBar from './MockBar.astro';
+import CaseIcon from '../CaseIcon.astro';
+import { group } from '../../data/mocks/imex';
+---
+
+<MockFrame url="imex-med.ru/product/pean-zazhim-pryamoy">
+  <MockBar active="Каталог" />
+
+  <div class="scene">
+    <p class="crumbs">{group.breadcrumb.join(' / ')}</p>
+
+    <div class="cols">
+      <div>
+        <p class="kicker">— {group.kicker}</p>
+        <h3>{group.title}</h3>
+        <p class="lead">{group.lead}</p>
+
+        <dl class="meta">
+          <div>
+            <dt><CaseIcon name="buildings" size={16} />Производитель</dt>
+            <dd>{group.maker}</dd>
+          </div>
+          <div>
+            <dt><CaseIcon name="squares-four" size={16} />Категория</dt>
+            <dd>{group.category}</dd>
+          </div>
+          <div class="meta-var">
+            <dt><CaseIcon name="list-checks" size={16} />Варианты</dt>
+            <dd>{group.variants}</dd>
+          </div>
+        </dl>
+
+        <div class="actions">
+          <span class="mock-btn">Выбрать вариант</span>
+          <span class="mock-btn mock-btn--ghost">Связаться с менеджером</span>
+        </div>
+      </div>
+
+      <div class="shot">
+        <div class="mock-thumb"><CaseIcon name="first-aid-kit" size={64} /></div>
+        <div class="docs">
+          <CaseIcon name="file-text" size={18} />
+          <p><b>Документы</b><em>Предоставляются по запросу</em></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</MockFrame>
+
+<style>
+  .scene {
+    padding: 1.4em 1.6em 1.8em;
+  }
+
+  .crumbs {
+    margin: 0 0 1.4em;
+    color: var(--m-muted);
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+  }
+
+  .cols {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 2em;
+    align-items: start;
+  }
+
+  .kicker {
+    margin: 0 0 0.6em;
+    color: var(--m-accent);
+    font-size: 0.78em;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0;
+    font-family: var(--m-display);
+    font-size: 2.1em;
+    font-weight: 600;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+
+  .lead {
+    margin: 0.7em 0 0;
+    color: var(--m-muted);
+    font-size: 0.95em;
+  }
+
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1em;
+    margin: 1.4em 0 0;
+    padding: 1.1em 0;
+    border-top: 1px solid var(--m-line-soft);
+    border-bottom: 1px solid var(--m-line-soft);
+  }
+
+  .meta div {
+    display: grid;
+    align-content: start;
+    gap: 0.4em;
+  }
+
+  .meta dt {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--m-muted);
+    font-size: 0.85em;
+  }
+
+  .meta dd {
+    margin: 0;
+    font-size: 0.95em;
+    font-weight: 600;
+    text-wrap: pretty;
+  }
+
+  /* Число исполнений — то, ради чего группа и существует. */
+  .meta-var dd {
+    color: var(--m-accent);
+    font-family: var(--m-display);
+    font-size: 1.6em;
+    line-height: 1;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7em;
+    margin-top: 1.2em;
+  }
+
+  .shot {
+    display: grid;
+    gap: 0.8em;
+  }
+
+  .mock-thumb {
+    aspect-ratio: 4 / 3;
+    border-radius: 0.8em;
+  }
+
+  .docs {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    padding: 0.8em 1em;
+    border: 1px solid var(--m-line-soft);
+    border-radius: 0.6em;
+    background: var(--m-soft);
+    color: var(--m-accent);
+  }
+
+  .docs p {
+    display: grid;
+    margin: 0;
+    color: var(--m-text);
+    font-size: 0.9em;
+  }
+
+  .docs em {
+    color: var(--m-muted);
+    font-size: 0.9em;
+    font-style: normal;
+  }
+
+  @media (max-width: 760px) {
+    .cols {
+      grid-template-columns: 1fr;
+      gap: 1.4em;
+    }
+
+    .meta {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

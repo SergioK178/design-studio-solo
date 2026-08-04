@@ -15,6 +15,7 @@ const editorialPresentation = z.object({
   variant: z.literal('editorial'),
   projectUrl: z.string().url(),
   location: z.string(),
+  year: z.string(),
   facts: z.array(z.object({ label: z.string(), value: z.string() })),
   metrics: z.array(z.object({ value: z.string(), label: z.string() })),
   scenarios: z.array(z.object({
@@ -31,10 +32,12 @@ const editorialPresentation = z.object({
     palette: z.array(z.string()).min(2).max(5),
     voice: z.string(),
   }),
+  /** Инженерная часть на языке клиента: четыре показателя, три пояснения и одна строка технологий. */
   engineering: z.object({
-    performance: z.array(z.object({ value: z.string(), label: z.string() })),
-    conversion: z.array(z.string()),
-    pipeline: z.array(z.string()).min(3),
+    title: z.string(),
+    stats: z.array(z.object({ value: z.string(), label: z.string() })).min(3).max(4),
+    points: z.array(z.object({ title: z.string(), text: z.string() })).min(2).max(3),
+    techNote: z.string(),
   }),
   cta: z.object({
     title: z.string(),
@@ -130,6 +133,12 @@ const catalogPresentation = z.object({
     categories: z.array(z.string()).min(4).max(8),
     flow: z.array(z.object({ title: z.string(), note: z.string(), icon: z.string().optional() })).min(3).max(6),
     tags: z.array(z.string()).max(6),
+    /** Схема миграции каталога: источники слева, шаги конвейера, итоговые цифры справа. */
+    migration: z.object({
+      title: z.string(),
+      sources: z.array(z.string()).min(2).max(3),
+      steps: z.array(z.object({ title: z.string(), note: z.string() })).min(3).max(3),
+    }),
   }),
   solutionsIntro: z.string().optional(),
   solutions: z.array(z.object({ title: z.string(), note: z.string(), icon: z.string().optional() })).min(3).max(6),
@@ -146,8 +155,8 @@ const catalogPresentation = z.object({
       kicker: z.string(),
       title: z.string(),
       points: z.array(z.string()).min(2).max(4),
-      /** Хвост id ассета: works/<slug>/tracks/<asset>. */
-      asset: z.string(),
+      /** Что уходит клиенту по этому маршруту — рисуется карточками, без скриншота. */
+      docs: z.array(z.string()).min(2).max(4),
       action: z.string().optional(),
     }))
     .min(2)
@@ -158,6 +167,14 @@ const catalogPresentation = z.object({
     text: z.string(),
     /** Тезис между мобильными экранами во втором ряду раскладки. */
     mobileStatement: z.string(),
+    /**
+     * Экраны как экспонаты: номер и аннотация слева, нарисованная сцена справа.
+     * mock — идентификатор сцены из реестра в CatalogCase.astro.
+     */
+    plates: z
+      .array(z.object({ title: z.string(), note: z.string(), mock: z.string() }))
+      .min(3)
+      .max(6),
   }),
   documents: z.object({
     kicker: z.string(),

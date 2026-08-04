@@ -1,0 +1,171 @@
+---
+/**
+ * Сцена 05 — отдельный маршрут для медицинских учреждений: четыре шага и две боковые карточки
+ * (договор и подбор аналогов), как на настоящей странице.
+ */
+import MockFrame from './MockFrame.astro';
+import MockBar from './MockBar.astro';
+import CaseIcon from '../CaseIcon.astro';
+import { institutionHeading, institutionLead, institutionSteps } from '../../data/mocks/imex';
+---
+
+<MockFrame url="imex-med.ru/for-institutions">
+  <MockBar active="Для учреждений" count={2} />
+
+  <div class="scene">
+    <div class="copy">
+      <p class="kicker">— Для медицинских учреждений</p>
+      <h3>{institutionHeading}</h3>
+      <p class="lead">{institutionLead}</p>
+      <div class="actions">
+        <span class="mock-btn">Получить КП</span>
+        <span class="mock-btn mock-btn--ghost">Открыть каталог</span>
+      </div>
+    </div>
+
+    <ol class="steps">
+      {institutionSteps.map((step, i) => (
+        <li>
+          <div class="step">
+            <span class="step-num">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <b>{step.title}</b>
+              <em>{step.note}</em>
+            </div>
+          </div>
+          {step.aside && (
+            <div class="aside">
+              <CaseIcon name="certificate" size={16} />
+              <div>
+                <b>{step.aside.title}</b>
+                <em>{step.aside.note}</em>
+              </div>
+            </div>
+          )}
+        </li>
+      ))}
+    </ol>
+  </div>
+</MockFrame>
+
+<style>
+  .scene {
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap: 2em;
+    align-items: center;
+    padding: 2em 1.8em 2.2em;
+    background: linear-gradient(140deg, #f7fbfc, #eaf3f6);
+  }
+
+  .kicker {
+    margin: 0 0 0.7em;
+    color: var(--m-accent);
+    font-size: 0.78em;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0;
+    font-family: var(--m-display);
+    font-size: 2.2em;
+    font-weight: 600;
+    line-height: 1.06;
+    text-wrap: balance;
+  }
+
+  .lead {
+    margin: 0.9em 0 0;
+    color: var(--m-muted);
+    font-size: 0.95em;
+    max-width: 26em;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7em;
+    margin-top: 1.3em;
+  }
+
+  .steps {
+    display: grid;
+    gap: 0.8em;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .steps li {
+    position: relative;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.9em;
+    padding: 0.9em 1.1em;
+    border-radius: 0.7em;
+    background: #fff;
+    box-shadow: 0 10px 26px rgb(20 34 38 / 0.07);
+  }
+
+  .step-num {
+    display: grid;
+    place-items: center;
+    width: 2.4em;
+    height: 2.4em;
+    flex: none;
+    border-radius: 50%;
+    background: var(--m-accent);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+  }
+
+  .step b,
+  .aside b {
+    display: block;
+    font-size: 1em;
+  }
+
+  .step em,
+  .aside em {
+    color: var(--m-muted);
+    font-size: 0.88em;
+    font-style: normal;
+  }
+
+  /* Боковые карточки — то, что учреждению нужно помимо самих позиций. */
+  .aside {
+    position: absolute;
+    right: -1.2em;
+    bottom: -1.1em;
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    padding: 0.6em 0.9em;
+    border: 1px dashed rgb(14 107 134 / 0.35);
+    border-radius: 0.6em;
+    background: rgb(255 255 255 / 0.9);
+    color: var(--m-accent);
+  }
+
+  .aside div {
+    color: var(--m-text);
+  }
+
+  @media (max-width: 760px) {
+    .scene {
+      grid-template-columns: 1fr;
+      gap: 1.6em;
+    }
+
+    .aside {
+      position: static;
+      margin-top: 0.5em;
+    }
+  }
+</style>

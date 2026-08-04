@@ -1,0 +1,205 @@
+/**
+ * Примитивы нарисованного интерфейса для страниц кейсов.
+ *
+ * Сцены рисуются, а не вставляются скриншотом: слот на странице шириной ~850 px,
+ * а реальное окно 1200 px, и настоящий кадр ужимается до нечитаемой ряби.
+ *
+ * Масштаб задаётся размером шрифта в cqi, а не transform: scale — сцена ужимается
+ * пропорционально вместе с контейнером и не рассыпается на планшете. Всё внутри
+ * считается в em от этой базы, поэтому отдельных брейкпоинтов у сцен почти нет.
+ */
+
+.mock {
+  container-type: inline-size;
+}
+
+.mock-ui {
+  --m-bg: #ffffff;
+  --m-soft: #f4f8f9;
+  --m-line: rgb(23 21 15 / 0.1);
+  --m-line-soft: rgb(23 21 15 / 0.06);
+  --m-text: #16232a;
+  --m-muted: #6b7a80;
+  --m-accent: var(--color-teal);
+  --m-accent-soft: #dceff3;
+  /* В самом ИМЭКСе заголовки набраны антиквой — системный serif передаёт характер
+     интерфейса, не таща в кейс ещё один шрифтовой файл. */
+  --m-display: Georgia, 'Times New Roman', serif;
+
+  background: var(--m-bg);
+  color: var(--m-text);
+  font-family: var(--font-text);
+  /* 15 px в полную ширину плиты, ниже — пропорционально ширине контейнера. */
+  font-size: clamp(10px, 1.6cqi, 15px);
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+/* ── Рамки ─────────────────────────────────────────── */
+.mock-frame {
+  overflow: hidden;
+  border: 1px solid var(--m-line);
+  border-radius: 0.9em;
+  background: var(--m-bg);
+  box-shadow: 0 24px 60px rgb(20 34 38 / 0.14), 0 4px 14px rgb(20 34 38 / 0.06);
+}
+
+.mock-chrome {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.7em 1em;
+  border-bottom: 1px solid var(--m-line-soft);
+  background: #f7f9f9;
+}
+
+.mock-chrome i {
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  background: #c8cecf;
+}
+
+.mock-chrome span {
+  margin-left: 0.8em;
+  padding: 0.25em 0.9em;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--m-line-soft);
+  color: var(--m-muted);
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+}
+
+/* ── Шапка сайта внутри сцены ──────────────────────── */
+.mock-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.6em;
+  padding: 0.9em 1.4em;
+  border-bottom: 1px solid var(--m-line-soft);
+}
+
+.mock-bar b {
+  color: var(--m-accent);
+  font-family: var(--font-display);
+  font-size: 1.05em;
+  letter-spacing: 0.02em;
+}
+
+.mock-bar nav {
+  display: flex;
+  gap: 1.2em;
+  color: var(--m-muted);
+  font-size: 0.9em;
+}
+
+.mock-bar nav em {
+  color: var(--m-accent);
+  font-style: normal;
+}
+
+.mock-bar .mock-btn {
+  margin-left: auto;
+}
+
+/* ── Кнопки, чипы, отметки ─────────────────────────── */
+.mock-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.3em;
+  padding: 0 1.1em;
+  border-radius: 0.5em;
+  background: var(--m-accent);
+  color: #fff;
+  font-size: 0.9em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mock-btn--ghost {
+  background: #fff;
+  box-shadow: inset 0 0 0 1px var(--m-line);
+  color: var(--m-text);
+}
+
+.mock-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25em 0.7em;
+  border-radius: 999px;
+  background: var(--m-accent-soft);
+  color: var(--color-teal-dk);
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.mock-check {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.4em 0;
+  color: var(--m-text);
+  font-size: 0.9em;
+}
+
+.mock-check i {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  border: 1px solid rgb(23 21 15 / 0.25);
+  border-radius: 0.2em;
+}
+
+.mock-check b {
+  margin-left: auto;
+  color: var(--m-muted);
+  font-weight: 400;
+}
+
+.mock-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  color: var(--m-muted);
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.mock-status::before {
+  content: '';
+  width: 0.4em;
+  height: 0.4em;
+  border-radius: 50%;
+  background: #9fb0b6;
+}
+
+.mock-sku {
+  color: var(--m-muted);
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+}
+
+.mock-label {
+  color: var(--m-muted);
+  font-size: 0.78em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Условное изображение товара: серый бланк вместо фотографии,
+   в кейсе важна структура карточки, а не сам инструмент. */
+.mock-thumb {
+  display: grid;
+  place-items: center;
+  border-radius: 0.5em;
+  background: linear-gradient(160deg, #eef4f6, #dfe9ec);
+  color: rgb(22 35 42 / 0.28);
+}
+
+.mock-thumb svg {
+  width: 42%;
+  height: 42%;
+}

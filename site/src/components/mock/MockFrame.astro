@@ -1,0 +1,39 @@
+---
+/** Рамка нарисованной сцены: окно браузера с адресом или корпус телефона. */
+import '../../styles/mock-ui.css';
+
+interface Props {
+  variant?: 'browser' | 'phone';
+  url?: string;
+  class?: string;
+}
+
+const { variant = 'browser', url = 'imex-med.ru', class: className } = Astro.props;
+---
+
+<div class:list={['mock', className]}>
+  <div class:list={['mock-frame', variant === 'phone' && 'mock-frame--phone']}>
+    {variant === 'browser' && (
+      <div class="mock-chrome">
+        <i></i><i></i><i></i>
+        <span>{url}</span>
+      </div>
+    )}
+    <div class="mock-ui">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .mock-frame--phone {
+    border: 0.5em solid var(--color-ink);
+    border-radius: 2em;
+    background: var(--color-ink);
+  }
+
+  .mock-frame--phone .mock-ui {
+    border-radius: 1.5em;
+    overflow: hidden;
+  }
+</style>

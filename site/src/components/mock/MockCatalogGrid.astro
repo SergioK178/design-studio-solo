@@ -1,0 +1,147 @@
+---
+/**
+ * Каталог плиткой — второй вид того же списка, переключатель «Плитка / Таблица».
+ * Стоит в тезисе: показывает объём ассортимента раньше, чем начинается разбор экранов.
+ */
+import MockFrame from './MockFrame.astro';
+import MockBar from './MockBar.astro';
+import CaseIcon from '../CaseIcon.astro';
+import { catalogTiles, catalogTotals } from '../../data/mocks/imex';
+---
+
+<MockFrame url="imex-med.ru/catalog">
+  <MockBar active="Каталог" />
+
+  <div class="scene">
+    <div class="toolbar">
+      <p>Найдено <b>{catalogTotals.groups}</b> товарных групп</p>
+      <div class="view">
+        <span class="is-on">Плитка</span>
+        <span>Таблица</span>
+      </div>
+    </div>
+
+    <div class="tiles">
+      {catalogTiles.map((tile) => (
+        <article class="tile">
+          <div class="mock-thumb"><CaseIcon name="image-square" size={44} /></div>
+          <p class="tile-cat">{tile.category}</p>
+          <h4>{tile.title}</h4>
+          <p class="tile-maker">{tile.maker}</p>
+          <footer>
+            <span class="tile-var">{tile.variants === 1 ? '1 вариант' : `${tile.variants} вариантов`}</span>
+            <span class="mock-status">Уточняется</span>
+          </footer>
+        </article>
+      ))}
+    </div>
+  </div>
+</MockFrame>
+
+<style>
+  .scene {
+    padding: 1.2em 1.4em 1.6em;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    padding-bottom: 1.1em;
+  }
+
+  .toolbar p {
+    margin: 0;
+    font-size: 0.95em;
+  }
+
+  .view {
+    display: flex;
+    margin-left: auto;
+    padding: 0.2em;
+    border: 1px solid var(--m-line);
+    border-radius: 0.5em;
+    font-size: 0.85em;
+  }
+
+  .view span {
+    padding: 0.25em 0.7em;
+    border-radius: 0.35em;
+    color: var(--m-muted);
+  }
+
+  .view .is-on {
+    background: var(--m-accent-soft);
+    color: var(--color-teal-dk);
+    font-weight: 600;
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1em;
+  }
+
+  .tile {
+    display: grid;
+    gap: 0.4em;
+    padding: 0.9em;
+    border: 1px solid var(--m-line-soft);
+    border-radius: 0.6em;
+    background: #fff;
+  }
+
+  .mock-thumb {
+    aspect-ratio: 4 / 3;
+    margin-bottom: 0.4em;
+  }
+
+  .tile-cat {
+    margin: 0;
+    color: var(--m-accent);
+    font-size: 0.78em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .tile h4 {
+    margin: 0;
+    font-family: var(--m-display);
+    font-size: 1.05em;
+    font-weight: 600;
+    line-height: 1.2;
+    text-wrap: pretty;
+  }
+
+  .tile-maker {
+    margin: 0;
+    color: var(--m-muted);
+    font-size: 0.85em;
+  }
+
+  .tile footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6em;
+    margin-top: 0.3em;
+    padding-top: 0.6em;
+    border-top: 1px solid var(--m-line-soft);
+  }
+
+  .tile-var {
+    color: var(--m-accent);
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+
+  @media (max-width: 760px) {
+    .tiles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .tiles .tile:nth-child(n + 5) {
+      display: none;
+    }
+  }
+</style>

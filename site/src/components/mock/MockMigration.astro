@@ -1,0 +1,214 @@
+---
+/**
+ * Схема миграции каталога — единственная часть работы, которую нечем показать кадром.
+ * Цифры настоящие: на выходе 53 категории, 50 товарных групп и 139 вариантов.
+ */
+import '../../styles/mock-ui.css';
+import CaseIcon from '../CaseIcon.astro';
+import { catalogTotals } from '../../data/mocks/imex';
+
+interface Props {
+  sources: string[];
+  steps: { title: string; note: string }[];
+}
+
+const { sources, steps } = Astro.props;
+
+const outputs = [
+  { value: catalogTotals.categories, label: 'категории' },
+  { value: catalogTotals.groups, label: 'товарных групп' },
+  { value: catalogTotals.variants, label: 'вариантов' },
+];
+---
+
+<div class="mock mig">
+  <div class="mig-col mig-in">
+    <p class="mock-label">Было</p>
+    {sources.map((s) => (
+      <div class="src"><CaseIcon name="files" size={18} />{s}</div>
+    ))}
+  </div>
+
+  <ol class="mig-steps">
+    {steps.map((step, i) => (
+      <li>
+        <span class="s-num">{String(i + 1).padStart(2, '0')}</span>
+        <b>{step.title}</b>
+        <em>{step.note}</em>
+      </li>
+    ))}
+  </ol>
+
+  <div class="mig-col mig-out">
+    <p class="mock-label">Стало</p>
+    {outputs.map((o) => (
+      <div class="out"><b>{o.value}</b><span>{o.label}</span></div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .mig {
+    display: grid;
+    grid-template-columns: 0.9fr 1.9fr 0.8fr;
+    gap: 24px;
+    align-items: center;
+    margin-top: 40px;
+    padding: 32px;
+    background: var(--color-mist);
+  }
+
+  .mig-col {
+    position: relative;
+    display: grid;
+    gap: 10px;
+  }
+
+  /* Стрелки на стыках колонок: слева источники, справа результат. */
+  .mig-in::after,
+  .mig-steps::after {
+    content: '→';
+    position: absolute;
+    right: -18px;
+    top: 50%;
+    translate: 0 -50%;
+    color: var(--color-teal);
+    font-size: 14px;
+  }
+
+  .mig .mock-label {
+    margin: 0 0 4px;
+    color: rgb(23 21 15 / 0.5);
+    font-size: 12px;
+  }
+
+  .src {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: #fff;
+    color: var(--color-teal);
+    font-size: 14px;
+  }
+
+  .src :global(svg) {
+    flex: none;
+  }
+
+  .mig-steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Стрелки между шагами рисуем связками, а не картинкой. */
+  .mig-steps li {
+    position: relative;
+    padding: 14px 16px;
+    background: #fff;
+  }
+
+  .mig-steps li + li::before {
+    content: '→';
+    position: absolute;
+    left: -13px;
+    top: 50%;
+    translate: -50% -50%;
+    color: var(--color-teal);
+    font-size: 14px;
+  }
+
+  .s-num {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--color-teal);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .mig-steps b {
+    display: block;
+    font-size: 15px;
+  }
+
+  .mig-steps em {
+    display: block;
+    margin-top: 6px;
+    color: rgb(23 21 15 / 0.6);
+    font-size: 13px;
+    font-style: normal;
+    line-height: 1.4;
+  }
+
+  .out {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  .out b {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: -0.03em;
+  }
+
+  .out span {
+    color: rgb(244 242 236 / 0.62);
+    font-size: 13px;
+  }
+
+  @media (max-width: 1080px) {
+    .mig {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .mig-steps {
+      grid-template-columns: 1fr;
+    }
+
+    .mig-in::after,
+    .mig-steps::after {
+      content: '↓';
+      right: auto;
+      left: 20px;
+      top: auto;
+      bottom: -18px;
+      translate: 0 0;
+    }
+
+    .mig-steps li + li::before {
+      content: '↓';
+      left: 20px;
+      top: -8px;
+      translate: 0 -50%;
+    }
+
+    .mig-out {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: stretch;
+    }
+
+    .mig-out .mock-label {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .mig {
+      padding: 24px 20px;
+    }
+
+    .mig-out {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,205 @@
+---
+/**
+ * Сцена 03 — выбор исполнения: модалка поверх приглушённой страницы.
+ * Шесть строк из десяти и честная строка «ещё 4 исполнения» — в кейсе важна логика таблицы,
+ * а не полный перечень длин.
+ */
+import MockFrame from './MockFrame.astro';
+import MockBar from './MockBar.astro';
+import { group, groupVariants, groupVariantsRest } from '../../data/mocks/imex';
+---
+
+<MockFrame url="imex-med.ru/product/pean-zazhim-pryamoy">
+  <MockBar active="Каталог" />
+
+  <div class="scene">
+    <div class="scrim" aria-hidden="true"></div>
+    <div class="behind" aria-hidden="true">
+      <p class="b-kicker">— Исполнения</p>
+      <p class="b-title">Выберите позицию</p>
+      <span class="b-line" style="width: 82%"></span>
+      <span class="b-line" style="width: 64%"></span>
+      <span class="b-line" style="width: 74%"></span>
+      <span class="b-line" style="width: 55%"></span>
+    </div>
+
+    <div class="modal">
+      <header>
+        <div>
+          <p class="m-kicker">Исполнения группы</p>
+          <h4>{group.title}</h4>
+        </div>
+        <span class="close">×</span>
+      </header>
+
+      <div class="thead">
+        <span>Артикул</span>
+        <span>Длина</span>
+        <span>Статус</span>
+        <span></span>
+      </div>
+
+      {groupVariants.map((v) => (
+        <div class:list={['vrow', v.picked && 'is-picked']}>
+          <span class="v-sku">{v.sku}</span>
+          <span>{v.length}</span>
+          <span class="mock-status">Уточняется</span>
+          <span class:list={['mock-btn', !v.picked && 'mock-btn--ghost']}>
+            {v.picked ? 'В заявке' : 'В заявку'}
+          </span>
+        </div>
+      ))}
+
+      <p class="rest">ещё {groupVariantsRest} исполнения — всего {group.variants} в группе</p>
+    </div>
+  </div>
+</MockFrame>
+
+<style>
+  .scene {
+    position: relative;
+    padding: 1.6em;
+    background: var(--m-soft);
+  }
+
+  .behind {
+    display: grid;
+    align-content: start;
+    /* Держит высоту сцены: модалка позиционирована абсолютно, а рамка обрезает всё лишнее. */
+    min-height: 33em;
+    gap: 0.7em;
+    padding: 1.4em;
+    border-radius: 0.6em;
+    background: #fff;
+    filter: blur(1px);
+  }
+
+  .b-kicker {
+    margin: 0;
+    color: var(--m-accent);
+    font-size: 0.78em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .b-title {
+    margin: 0 0 0.4em;
+    font-family: var(--m-display);
+    font-size: 1.8em;
+  }
+
+  .b-line {
+    height: 0.85em;
+    border-radius: 0.2em;
+    background: var(--m-line-soft);
+  }
+
+  /* Затемнение под модалкой: без него сцена читается как отдельная карточка, а не окно поверх страницы. */
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background: rgb(16 32 38 / 0.42);
+    z-index: 1;
+  }
+
+  .modal {
+    position: absolute;
+    z-index: 2;
+    inset: 3.4em 3.4em auto;
+    padding: 1.3em 1.5em 1.4em;
+    border-radius: 0.8em;
+    background: #fff;
+    box-shadow: 0 30px 70px rgb(20 34 38 / 0.22);
+  }
+
+  .modal header {
+    display: flex;
+    align-items: start;
+    gap: 1em;
+    padding-bottom: 1em;
+    border-bottom: 1px solid var(--m-line-soft);
+  }
+
+  .m-kicker {
+    margin: 0 0 0.3em;
+    color: var(--m-muted);
+    font-size: 0.78em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .modal h4 {
+    margin: 0;
+    font-family: var(--m-display);
+    font-size: 1.35em;
+    font-weight: 600;
+    line-height: 1.15;
+  }
+
+  .close {
+    margin-left: auto;
+    color: var(--m-muted);
+    font-size: 1.4em;
+    line-height: 1;
+  }
+
+  .thead,
+  .vrow {
+    display: grid;
+    grid-template-columns: 1.2fr 0.9fr 1fr auto;
+    align-items: center;
+    gap: 1em;
+  }
+
+  .thead {
+    padding: 0.8em 0 0.6em;
+    color: var(--m-muted);
+    font-size: 0.75em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .vrow {
+    padding: 0.65em 0.6em;
+    border-radius: 0.4em;
+    font-size: 0.95em;
+  }
+
+  .vrow + .vrow {
+    border-top: 1px solid var(--m-line-soft);
+  }
+
+  .v-sku {
+    color: var(--m-accent);
+    font-family: var(--font-mono);
+    font-weight: 600;
+  }
+
+  /* Выбранное исполнение — то самое, что дальше окажется в заявке. */
+  .vrow.is-picked {
+    background: var(--m-accent-soft);
+  }
+
+  .rest {
+    margin: 0.9em 0 0;
+    color: var(--m-muted);
+    font-size: 0.85em;
+  }
+
+  @media (max-width: 760px) {
+    .modal {
+      inset: 1.2em 1.2em auto;
+      padding: 1em 1.1em 1.2em;
+    }
+
+    .thead,
+    .vrow {
+      grid-template-columns: 1fr 0.8fr auto;
+    }
+
+    .thead span:nth-child(3),
+    .vrow .mock-status {
+      display: none;
+    }
+  }
+</style>
