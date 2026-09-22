@@ -27,8 +27,9 @@ const { tone = 'paper' } = Astro.props;
     color: var(--color-paper);
   }
 
+  /* Reading measure (§8.2): ~760px текста; .wrap — border-box, поэтому добавляем гаттеры. */
   .prose {
-    max-width: 860px;
+    max-width: calc(var(--measure-reading) + 2 * var(--page-gutter));
   }
 
   .prose :global(h2) {
@@ -56,8 +57,17 @@ const { tone = 'paper' } = Astro.props;
     padding-left: 22px;
   }
 
+  /* Inline-ссылка в чтении (DESIGN-SYSTEM-V1 §18.6): canonical blue + постоянное подчёркивание. */
   .prose :global(a) {
     color: var(--color-blue);
     font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: var(--border-width);
+    text-underline-offset: 3px;
+    transition: text-decoration-thickness var(--dur-feedback) var(--ease-site);
+  }
+
+  .prose :global(a:hover) {
+    text-decoration-thickness: var(--border-width-major);
   }
 </style>

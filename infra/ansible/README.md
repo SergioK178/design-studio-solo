@@ -1,4 +1,4 @@
-# 3K Studio infrastructure
+# 3D Studio infrastructure
 
 Ansible provisions one Ubuntu VPS:
 

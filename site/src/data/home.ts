@@ -73,12 +73,12 @@ export const team = [
   },
   {
     name: 'Ульяна',
-    role: 'Дизайн · айдентика',
+    role: 'Дизайн · айдентика · код',
     fact: 'Архитектор (СПбГАСУ): проектирует жилые дома и вручную сверстала каталог на 154 страницы. Планировки в наших кейсах — настоящие.',
   },
   {
     name: 'Фёдор',
-    role: 'Продукт · интеграции',
+    role: 'Продукт · интеграции · код',
     fact: '150–200 клиентских встреч в месяц в банке — знает, как звучит задача бизнеса, до того как она станет ТЗ.',
   },
 ];
@@ -86,9 +86,13 @@ export const team = [
 export const wallColA = [
   { logo: 'Приморская 22А', assetKey: 'works/guest-house/hero', assetSrc: '/assets/works/guest-house/cover.webp', accent: 'ink', nav: 'Владелец · Инвестор', title: 'Дом у моря — два сценария покупки', cta: 'Смотреть' },
   { logo: 'Loft Rent', assetKey: 'works/car-rental/hero', assetSrc: '/assets/works/car-rental/cover.webp', accent: 'ochre', nav: 'Парк · Заявка', title: 'Сайт услуг с каталогом авто', cta: 'Смотреть' },
-  { logo: 'ИМЭКС', assetKey: 'works/catalog-med/hero', accent: 'blue', nav: 'Каталог · КП', title: 'Сайт-каталог для оптовика', cta: 'Смотреть' },
+  { logo: 'ИМЭКС', assetKey: 'works/catalog-med/hero', assetSrc: '/assets/works/catalog-med/cover.webp', accent: 'blue', nav: 'Каталог · КП', title: 'Сайт-каталог для оптовика', cta: 'Смотреть' },
 ];
 
+/**
+ * Резерв под будущие карточки hero: кейс, продукт студии или тип системы, которую мы реально делаем.
+ * Карточка без assetSrc в проде не рендерится (см. HeroWall.astro) и появится сама, когда ассет будет готов.
+ */
 export const wallColB = [
   { logo: 'ИМЭКС', assetKey: 'works/catalog-med/hero-dark-usp', accent: 'ink', nav: 'USP · Ряд преимуществ', title: 'Тёмная версия: акцент на надёжности', cta: 'Материал позже' },
   { logo: 'Квиз', assetKey: 'works/quiz-landing/hero', accent: 'ochre', nav: 'Опросник · CRM', title: 'Квиз-лендинг — заявка после 5 шагов', cta: 'Скоро' },

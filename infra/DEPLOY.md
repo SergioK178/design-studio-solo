@@ -53,18 +53,12 @@ systemctl --user restart 3k-api.service
 
 Дальше CI подхватывает автоматически: джоба `deploy` в `.github/workflows/deploy.yml` на каждый пуш в `main` собирает и паблишит `ghcr.io/<owner>/design-studio-api:<sha>` и `:latest`. Шаг `Deploy API image` в этом воркфлоу помечен `if: false` — включить (`if: true`) только после того, как выполнены шаги 1–3 этого раннбука.
 
-### Сброс базы для админки заявок v1
+### Схема SQLite
 
-Эта версия меняет схему `leads` без миграции данных. Перед её первым запуском
-остановить API, удалить SQLite-файлы и запустить сервис снова:
-
-```bash
-systemctl --user stop 3k-api.service
-rm -f {{ app_root }}/shared/app.db {{ app_root }}/shared/app.db-shm {{ app_root }}/shared/app.db-wal
-systemctl --user start 3k-api.service
-```
-
-Все ранее сохранённые заявки будут удалены.
+API применяет версионные SQL-миграции при старте и отмечает их в таблице
+`schema_migrations`. Для обычного обновления не удаляйте production-базу:
+данные заявок и WAL остаются на persistent volume `shared/`. Перед обновлением
+достаточно выполнить резервную копию и перезапустить `3k-api.service`.
 
 ## 5. TG-релей (Cloudflare Worker)
 

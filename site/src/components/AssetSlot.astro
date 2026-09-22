@@ -14,6 +14,8 @@ interface Props {
   /** Browser/device frame contract (design-system.md §4): browser chrome, slim device strap, или без рамки для full-bleed медиа. */
   frame?: 'browser' | 'mobile' | 'telegram' | 'plain';
   caption?: string;
+  /** Домен в адресной строке browser-рамки. Без него полоса остаётся пустой. */
+  url?: string;
   /** Нейтральный preview для editorial-кейса до поставки реального ассета. */
   schematic?: boolean;
   /** Ассет первого экрана: грузим сразу, без lazy. */
@@ -43,27 +45,39 @@ function resolveAsset(key: string): string | undefined {
   return url;
 }
 
-const { label, src, alt, tone = 'light', ratio, frame = 'browser', caption, schematic = false, priority = false } = Astro.props;
+const { label, src, alt, tone = 'light', ratio, frame = 'browser', caption, url, schematic = false, priority = false } = Astro.props;
 const manifestEntry = assetManifestById[label];
 const resolvedRatio = ratio ?? manifestEntry?.ratio ?? '16 / 10';
 const resolvedSrc = src || resolveAsset(label) || '';
 const resolvedAlt = alt ?? caption ?? label;
+// Посетителю не показываем «asset pending» и сырые ключи: без файла слот исчезает.
+// В dev заглушка остаётся как диагностика.
+const hidden = !resolvedSrc && !schematic && !import.meta.env.DEV;
 
 if (import.meta.env.DEV && src && !alt) {
   console.warn(`[AssetSlot] "${label}": передан src без содержательного alt.`);
 }
 ---
 
-<figure class="asset-slot-figure">
+{!hidden && <figure class="asset-slot-figure">
   <div class:list={['asset-slot', `tone-${tone}`, `frame-${frame}`, resolvedSrc && 'has-src', schematic && 'is-schematic']} style={`--asset-ratio: ${resolvedRatio}`}>
-    {resolvedSrc ? <img src={resolvedSrc} alt={resolvedAlt} loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined} /> : (
+    {/* Шапка браузера — разметкой, а не псевдоэлементом: в ней живёт адресная
+        строка, и три точки в пустой полосе перестают быть единственным
+        признаком окна. */}
+    {frame === 'browser' && (
+      <div class="chrome" aria-hidden="true">
+        <span class="chrome-dots"><i></i><i></i><i></i></span>
+        <span class="chrome-bar">{url}</span>
+      </div>
+    )}
+    {resolvedSrc ?<img src={resolvedSrc} alt={resolvedAlt} loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : undefined} /> : (
       <div class="pending" aria-label={schematic ? label : `${label}: asset pending`}>
         {schematic ? <div class="schematic" aria-hidden="true"><i></i><i></i><i></i><i></i></div> : <><span class="mono">asset pending</span><strong>{label}</strong></>}
       </div>
     )}
   </div>
   {caption && <figcaption>{caption}</figcaption>}
-</figure>
+</figure>}
 
 <style>
   .asset-slot-figure {
@@ -74,9 +88,14 @@ if (import.meta.env.DEV && src && !alt) {
     position: relative;
     aspect-ratio: var(--asset-ratio);
     overflow: hidden;
-    border: 1.5px solid rgb(23 21 15 / 0.22);
+    border: 1px solid rgb(23 21 15 / 0.16);
     background: white;
-    --chrome-h: 30px;
+    --chrome-h: 34px;
+  }
+
+  /* Окно чуть отделено от бумаги: мягкая тень вместо толстой рамки. */
+  .frame-browser {
+    box-shadow: 0 16px 36px rgb(23 21 15 / 0.08);
   }
 
   .frame-plain {
@@ -88,16 +107,56 @@ if (import.meta.env.DEV && src && !alt) {
     --chrome-h: 18px;
   }
 
-  .asset-slot.frame-browser::before {
-    content: '';
-    display: block;
+  /* Шапка окна: точки слева, адресная строка по центру-слева. Пропорции сняты
+     с настоящего браузера — точка 8px, пилюля на 4px ниже полосы. */
+  .chrome {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
     height: var(--chrome-h);
-    border-bottom: 1.5px solid rgb(23 21 15 / 0.18);
-    background:
-      radial-gradient(circle at 14px 50%, rgb(23 21 15 / 0.35) 0 4px, transparent 4.5px),
-      radial-gradient(circle at 28px 50%, rgb(23 21 15 / 0.25) 0 4px, transparent 4.5px),
-      radial-gradient(circle at 42px 50%, rgb(23 21 15 / 0.18) 0 4px, transparent 4.5px),
-      var(--color-paper);
+    border-bottom: 1px solid rgb(23 21 15 / 0.14);
+    padding-inline: 12px;
+    background: linear-gradient(180deg, #fff 0%, color-mix(in srgb, var(--color-paper) 88%, white) 100%);
+  }
+
+  .chrome-dots {
+    display: flex;
+    flex: none;
+    gap: 6px;
+  }
+
+  .chrome-dots i {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgb(23 21 15 / 0.16);
+  }
+
+  .chrome-dots i:first-child {
+    background: rgb(23 21 15 / 0.24);
+  }
+
+  .chrome-dots i:last-child {
+    background: rgb(23 21 15 / 0.11);
+  }
+
+  .chrome-bar {
+    box-sizing: border-box;
+    flex: 1;
+    max-width: 44%;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 999px;
+    padding: 4px 12px;
+    background: rgb(23 21 15 / 0.055);
+    color: rgb(23 21 15 / 0.46);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: calc(var(--chrome-h) - 16px);
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
   .asset-slot.frame-mobile::before,
@@ -127,13 +186,26 @@ if (import.meta.env.DEV && src && !alt) {
     color: var(--color-paper);
   }
 
-  .tone-dark.frame-browser::before {
-    border-bottom-color: rgb(244 242 236 / 0.18);
-    background:
-      radial-gradient(circle at 14px 50%, rgb(244 242 236 / 0.45) 0 4px, transparent 4.5px),
-      radial-gradient(circle at 28px 50%, rgb(244 242 236 / 0.32) 0 4px, transparent 4.5px),
-      radial-gradient(circle at 42px 50%, rgb(244 242 236 / 0.2) 0 4px, transparent 4.5px),
-      var(--color-ink);
+  .tone-dark .chrome {
+    border-bottom-color: rgb(244 242 236 / 0.14);
+    background: linear-gradient(180deg, var(--color-ink-soft) 0%, var(--color-ink) 100%);
+  }
+
+  .tone-dark .chrome-dots i {
+    background: rgb(244 242 236 / 0.26);
+  }
+
+  .tone-dark .chrome-dots i:first-child {
+    background: rgb(244 242 236 / 0.38);
+  }
+
+  .tone-dark .chrome-dots i:last-child {
+    background: rgb(244 242 236 / 0.16);
+  }
+
+  .tone-dark .chrome-bar {
+    background: rgb(244 242 236 / 0.08);
+    color: rgb(244 242 236 / 0.5);
   }
 
   .tone-dark.frame-mobile::before,
@@ -179,7 +251,7 @@ if (import.meta.env.DEV && src && !alt) {
   }
 
   .pending .mono {
-    color: var(--color-blue);
+    color: var(--color-blue-legacy);
     font-size: 10px;
   }
 

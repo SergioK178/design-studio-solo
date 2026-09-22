@@ -1,32 +1,23 @@
 ---
-import { wallColA, wallColB } from '../data/home';
+import { works } from '../data/works';
 import { site } from '../data/site';
 
-const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
+// Стена — только реальные опубликованные работы с готовой обложкой (16:10).
+// Вторая колонка — та же лента, сдвинутая на половину, чтобы соседние карточки не повторялись.
+// Каждая колонка — две одинаковые половины: цикл -50% бесшовный.
+const covers = works.filter((work) => work.status === 'published' && work.assetSrc);
+const shift = Math.ceil(covers.length / 2);
+const columns = [covers, [...covers.slice(shift), ...covers.slice(0, shift)]].map((col) => [...col, ...col]);
 ---
 
 <section class="hero" data-bg="ink">
   <div class="wall" aria-hidden="true">
-    {wall.map((col, index) => (
+    {columns.map((col, index) => (
       <div class:list={['wall-col', index === 1 && 'reverse']}>
-        {col.map((card) => (
-          <div class:list={['wall-card', `accent-${card.accent}`]}>
-            <div class="wall-top">
-              <b>{card.logo}</b>
-              <span>{card.nav}</span>
-            </div>
-            <div class="slot">
-              {card.assetSrc ? (
-                <img src={card.assetSrc} alt={card.title} loading="lazy" />
-              ) : (
-                <>
-                  <span class="mono">asset pending</span>
-                  <em>{card.assetKey}</em>
-                </>
-              )}
-            </div>
-            <strong>{card.title}</strong>
-            <span class="wall-cta">{card.cta}</span>
+        {col.map((work) => (
+          <div class="wall-card">
+            <img src={work.assetSrc} alt="" width="1600" height="1000" loading="lazy" />
+            <span>{work.title}</span>
           </div>
         ))}
       </div>
@@ -40,11 +31,11 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
       <p class="lead">Делаем лендинги, корпоративные сайты, каталоги и интернет-магазины. Подключаем управление контентом, приём заявок, оплату и нужные сервисы.</p>
       <p class="secondary">Также создаём приложения внутри Telegram, личные кабинеты и внутренние рабочие системы.</p>
       <div class="actions">
-        <a class="btn-gold" href="#brief" data-magnetic>Разобрать задачу →</a>
-        <a class="btn-outline" href={site.telegramUrl} target="_blank" rel="noopener" data-magnetic>Написать в Telegram</a>
+        <a class="btn-gold btn-lg" href="#brief" data-magnetic>Пройти бриф →</a>
+        <a class="btn-outline btn-lg" href={site.telegramUrl} target="_blank" rel="noopener" data-magnetic>Обсудить проект</a>
       </div>
       <div class="proof">
-        <span><b>сайты под задачу бизнеса</b></span>
+        <span><b>сайты для вашего бизнеса</b></span>
         <span><b>фиксированная смета</b></span>
         <span><b>весь код и данные — ваши</b></span>
       </div>
@@ -53,6 +44,8 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
 </section>
 
 <style>
+  /* Hero (DESIGN-SYSTEM-V1 §25.1): слева тезис, справа пассивный диагональный конвейер
+     реальных работ. IDLE = спокойное заявление + фоновое доказательство. */
   .hero {
     position: relative;
     min-height: 800px;
@@ -67,8 +60,8 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
     flex: 1;
     display: flex;
     align-items: center;
-    padding-top: 96px;
-    padding-bottom: 70px;
+    padding-top: var(--scene-opening-top);
+    padding-bottom: var(--scene-opening-bottom);
   }
 
   .copy {
@@ -78,10 +71,11 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
   h1 {
     margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(44px, 5.2vw, 66px);
-    line-height: 1.08;
-    letter-spacing: -0.015em;
-    font-weight: 800;
+    font-size: var(--type-display-size);
+    font-weight: var(--type-display-weight);
+    line-height: var(--type-display-lh);
+    letter-spacing: var(--type-display-tracking);
+    overflow-wrap: break-word;
   }
 
   h1 span {
@@ -89,58 +83,62 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
   }
 
   .lead {
-    margin: 26px 0 0;
-    max-width: 420px;
-    color: rgb(244 242 236 / 0.7);
-    font-size: 18px;
-    line-height: 1.5;
+    margin: var(--space-6) 0 0;
+    max-width: 440px;
+    color: var(--text-on-ink-secondary);
+    font-size: var(--type-lead-size);
+    font-weight: var(--type-lead-weight);
+    line-height: var(--type-lead-lh);
   }
 
   .secondary {
-    margin: 12px 0 0;
+    margin: var(--space-3) 0 0;
     max-width: 460px;
-    color: rgb(244 242 236 / 0.52);
-    font-size: 15px;
-    line-height: 1.5;
+    color: var(--text-on-ink-muted);
+    font-size: var(--type-body-size);
+    line-height: var(--type-body-lh);
   }
 
   .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
-    margin-top: 36px;
+    gap: var(--space-4);
+    margin-top: var(--space-8);
   }
 
   .proof {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px 22px;
-    margin-top: 40px;
-    color: rgb(244 242 236 / 0.6);
-    font-size: 13px;
+    gap: var(--space-2) var(--space-6);
+    margin-top: var(--space-10);
+    color: var(--text-on-ink-muted);
+    font-size: var(--type-body-sm-size);
+    line-height: var(--type-body-sm-lh);
   }
 
   .proof b {
-    color: var(--color-paper);
+    color: var(--text-on-ink-primary);
+    font-weight: 600;
   }
 
+  /* Стена — один объект: две колонки, наклон -8°, по центру сцены по вертикали.
+     Высота = ровно один цикл ленты (4 карточки), поэтому на краях цикла нет пустот. */
   .wall {
+    --card-w: 272px;
+    --card-gap: 20px;
     position: absolute;
-    top: -120px;
+    top: 50%;
     right: -40px;
     z-index: 1;
     display: flex;
-    gap: 20px;
-    width: 620px;
-    height: 1140px;
-    transform: rotate(-8deg);
-    opacity: 0.92;
+    gap: var(--card-gap);
+    width: calc(var(--card-w) * 2 + var(--card-gap));
+    height: 890px;
+    translate: 0 -50%;
+    rotate: -8deg;
   }
 
   .wall-col {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
     animation: wallScroll 26s linear infinite;
   }
 
@@ -149,124 +147,87 @@ const wall = [wallColA, wallColB].map((col) => [...col, ...col]);
     animation-direction: reverse;
   }
 
+  /* Отступ (а не gap): половина ленты = ровно N карточек, без скачка на петле. */
   .wall-card {
-    width: 250px;
-    flex: none;
     box-sizing: border-box;
+    width: var(--card-w);
+    margin-bottom: var(--card-gap);
     background: var(--color-paper);
     color: var(--color-ink);
-    padding: 14px;
+    padding: var(--space-2);
   }
 
-  .wall-top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-
-  .wall-top b {
-    font-size: 12px;
-  }
-
-  .wall-top span {
-    color: rgb(23 21 15 / 0.5);
-    font-size: 9.5px;
-  }
-
-  .slot {
-    display: grid;
-    place-content: center;
-    gap: 6px;
-    height: 140px;
-    margin-bottom: 10px;
-    overflow: hidden;
-    border: 1px solid rgb(23 21 15 / 0.16);
-    background:
-      linear-gradient(135deg, rgb(229 164 59 / 0.12) 25%, transparent 25%) 0 0 / 14px 14px,
-      color-mix(in srgb, var(--color-paper) 82%, white);
-    text-align: center;
-  }
-
-  .slot img {
+  .wall-card img {
     display: block;
     width: 100%;
-    height: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
     object-fit: cover;
   }
 
-  .slot .mono {
-    color: var(--color-blue);
-    font-size: 8px;
-  }
-
-  .slot em {
-    max-width: 20ch;
-    color: rgb(23 21 15 / 0.48);
-    font-size: 9px;
-    font-style: normal;
-    line-height: 1.25;
-  }
-
-  .wall-card strong {
+  .wall-card span {
     display: block;
-    font-size: 11.5px;
-    line-height: 1.3;
-  }
-
-  .wall-cta {
-    display: inline-block;
-    margin-top: 8px;
-    background: var(--color-gold);
-    color: var(--color-ink);
-    padding: 5px 9px;
-    font-size: 9.5px;
+    padding: 10px var(--space-1) 2px;
+    overflow: hidden;
+    font-size: 12px;
     font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 
-  .accent-blue .wall-top b,
-  .accent-blue .wall-cta {
-    color: var(--color-blue);
-  }
-
-  .accent-ochre .wall-top b,
-  .accent-ochre .wall-cta {
-    color: var(--color-ochre);
-  }
-
-  .accent-ink .wall-top b,
-  .accent-ink .wall-cta {
-    color: var(--color-ink);
-  }
-
+  /* Затухание: слева чистый ink под текст, сверху — под Nav, снизу — мягкий край сцены. */
   .fade {
     position: absolute;
     inset: 0;
     z-index: 1;
-    background: linear-gradient(90deg, var(--color-ink) 0%, var(--color-ink) 44%, rgb(23 21 15 / 0.55) 62%, rgb(23 21 15 / 0.15) 100%);
+    background:
+      linear-gradient(180deg, var(--color-ink) 0, transparent 140px),
+      linear-gradient(0deg, var(--color-ink) 0, transparent 96px),
+      linear-gradient(90deg, var(--color-ink) 0%, var(--color-ink) 46%, rgb(23 21 15 / 0.5) 60%, transparent 100%);
   }
 
-  @media (max-width: 820px) {
+  /* ≤1120: стена уходит правее, а текст держится в ink-зоне слева — без наезда на карточки. */
+  @media (max-width: 1120px) {
+    .wall {
+      right: -230px;
+    }
+
+    .copy {
+      max-width: min(640px, 58vw);
+    }
+  }
+
+  /* ≤768: стена — фоновая атмосфера за текстом; читаемость держит вертикальное затухание. */
+  @media (max-width: 768px) {
     .hero {
       min-height: 720px;
     }
 
+    .hero-inner {
+      padding-top: 96px; /* под Nav: toggle 44px + воздух */
+      padding-bottom: var(--scene-opening-bottom);
+    }
+
+    .copy {
+      max-width: 640px;
+    }
+
     .wall {
-      right: -260px;
-      opacity: 0.5;
+      top: 0;
+      right: -150px;
+      translate: none;
+      opacity: 0.6;
+    }
+
+    .fade {
+      background:
+        linear-gradient(180deg, var(--color-ink) 0, transparent 96px),
+        linear-gradient(180deg, rgb(23 21 15 / 0.45) 0, rgb(23 21 15 / 0.72) 40%, var(--color-ink) 68%);
     }
   }
 
-  @media (max-width: 520px) {
-    h1 {
-      font-size: 40px;
-    }
-
-    .hero-inner {
-      padding-top: 116px;
-    }
-
+  @media (max-width: 640px) {
     .actions a {
       width: 100%;
       box-sizing: border-box;

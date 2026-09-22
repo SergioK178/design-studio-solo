@@ -19,8 +19,9 @@ const bg = tone === 'dark' ? 'ink' : tone;
 </section>
 
 <style>
+  /* Opening scene (§7.2): desktop 120/80, mobile 80/56. Nav лежит поверх верхней полосы. */
   .page-header {
-    padding: 120px 0 70px;
+    padding: 120px 0 80px;
   }
 
   .dark {
@@ -50,25 +51,44 @@ const bg = tone === 'dark' ? 'ink' : tone;
 
   .gold .mono,
   .paper .mono {
-    color: var(--color-blue);
+    color: var(--color-blue-legacy);
   }
 
+  /* H1 / Page title (§6.2). Длинные слова Unbounded переносятся, а не расширяют вьюпорт (§11.3). */
   h1 {
-    max-width: 920px;
+    min-width: 0;
     margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(42px, 6vw, 72px);
-    font-weight: 800;
-    line-height: 1.06;
-    letter-spacing: -0.015em;
+    font-size: var(--type-h1-size);
+    font-weight: var(--type-h1-weight);
+    line-height: var(--type-h1-lh);
+    letter-spacing: var(--type-h1-tracking);
+    overflow-wrap: break-word;
   }
 
   .lead {
-    max-width: 720px;
+    max-width: var(--measure-lead);
     margin: 24px 0 0;
-    color: currentColor;
-    font-size: 18px;
-    line-height: 1.55;
-    opacity: 0.72;
+    color: var(--text-on-ink-secondary);
+    font-size: var(--type-lead-size);
+    font-weight: var(--type-lead-weight);
+    line-height: var(--type-lead-lh);
+    overflow-wrap: break-word;
+  }
+
+  .paper .lead,
+  .gold .lead {
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 640px) {
+    .page-header {
+      padding: 80px 0 56px;
+    }
+
+    /* Авто-перенос слогов только на узких экранах: длинные слова Unbounded в 280px. */
+    h1 {
+      hyphens: auto;
+    }
   }
 </style>

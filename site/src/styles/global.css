@@ -1,14 +1,26 @@
 @import 'tailwindcss';
 
-/* Токены — макет 2026-07-04, spec.md §10. Хексы в компонентах запрещены. */
-@theme {
+/* Токены — DESIGN-SYSTEM-V1.md. Хексы в компонентах запрещены.
+   Canonical foundation: цвета (@theme), затем :root (текст, тип, spacing,
+   layout, форма/глубина, движение, z-index). Страницы на них ещё не
+   мигрированы — новые задачи используют только canonical-токены. */
+@theme static {
+  /* Canonical core (DESIGN-SYSTEM-V1 §5.1) */
   --color-paper: #f4f2ec;
   --color-ink: #17150f;
+  --color-surface: #ffffff;
   --color-gold: #e5a43b;
-  --color-blue: #2743e0;
+  --color-blue: #3552c7;
+
+  /* LEGACY — migrate in later adoption pass. Do not use in new core UI.
+     --color-blue-legacy (#2743e0) — прежний оттенок; текущие потребители
+     оставлены на нём, чтобы не перекрасить сайт. Мигрировать на --color-blue. */
+  --color-blue-legacy: #2743e0;
   --color-blue-dk: #1f35b8;
+  /* LEGACY — ochre выходит из core-идентичности (§5.1). */
   --color-ochre: #c24a12;
   --color-ochre-dk: #a83d0c;
+  /* LEGACY — не входят в core-палитру; используются страницами/кейсами. */
   --color-ink-soft: #26231a;
   --color-teal: #0e6b86;
   --color-teal-dk: #0a5468;
@@ -22,11 +34,174 @@
   --shadow-*: initial;
 }
 
-/* Система движения: одна кривая на весь сайт (Exo Ape-подход). */
 :root {
+  /* Система движения: одна кривая на весь сайт (Exo Ape-подход). */
   --ease-site: cubic-bezier(0.16, 1, 0.3, 1);
-  --reveal-dur: 0.9s;
+  /* Роли длительности (§23.1). Ambient (conveyor 26s/34s) — не глобальная
+     шкала, остаётся локальным значением компонента. */
+  --dur-feedback: 0.2s;
+  --dur-standard: 0.4s;
+  --dur-editorial: 0.9s;
+  --reveal-dur: var(--dur-editorial);
   --page-bg: var(--color-ink);
+
+  /* Текст (§5.2). На paper — производные от ink, на ink — от paper.
+     faint — только неважное, не для обязательного текста. */
+  --text-primary: var(--color-ink);
+  --text-secondary: color-mix(in srgb, var(--color-ink) 72%, transparent);
+  --text-muted: color-mix(in srgb, var(--color-ink) 60%, transparent);
+  --text-faint: color-mix(in srgb, var(--color-ink) 52%, transparent);
+  --text-on-ink-primary: var(--color-paper);
+  --text-on-ink-secondary: color-mix(in srgb, var(--color-paper) 72%, transparent);
+  --text-on-ink-muted: color-mix(in srgb, var(--color-paper) 60%, transparent);
+  --text-on-ink-faint: color-mix(in srgb, var(--color-paper) 52%, transparent);
+
+  /* Границы (§5.3). Major-линии — полный ink/paper. */
+  --border-subtle: color-mix(in srgb, var(--color-ink) 16%, transparent);
+  --border-default: color-mix(in srgb, var(--color-ink) 24%, transparent);
+  --border-strong: color-mix(in srgb, var(--color-ink) 40%, transparent);
+  --border-on-ink-subtle: color-mix(in srgb, var(--color-paper) 16%, transparent);
+  --border-on-ink-default: color-mix(in srgb, var(--color-paper) 24%, transparent);
+  --border-on-ink-strong: color-mix(in srgb, var(--color-paper) 40%, transparent);
+
+  /* Типографика (§6.2): роль → size / line-height / weight / tracking.
+     Семейство берётся из --font-display / --font-text / --font-mono.
+     Крупные роли — clamp, линейно между 640 и 1120px (min = mobile, max = desktop);
+     мелкий UI-текст стабилен и не масштабируется. */
+  --type-display-size: clamp(40px, 8px + 5vw, 64px); /* Unbounded */
+  --type-display-lh: 1.06;
+  --type-display-weight: 800;
+  --type-display-tracking: -0.02em;
+
+  --type-h1-size: clamp(36px, 9.33px + 4.17vw, 56px); /* Unbounded */
+  --type-h1-lh: 1.08;
+  --type-h1-weight: 800;
+  --type-h1-tracking: -0.015em;
+
+  --type-section-size: clamp(30px, 16.67px + 2.08vw, 40px); /* Unbounded */
+  --type-section-lh: 1.1;
+  --type-section-weight: 700;
+  --type-section-tracking: -0.01em;
+
+  --type-row-title-size: clamp(18px, 15.33px + 0.42vw, 20px); /* Unbounded */
+  --type-row-title-lh: 1.2;
+  --type-row-title-weight: 700;
+  --type-row-title-tracking: -0.01em;
+
+  --type-content-heading-size: clamp(22px, 19.33px + 0.42vw, 24px); /* Golos */
+  --type-content-heading-lh: 1.25;
+  --type-content-heading-weight: 600;
+  --type-content-heading-tracking: 0;
+
+  --type-content-subheading-size: 18px; /* Golos */
+  --type-content-subheading-lh: 1.35;
+  --type-content-subheading-weight: 600;
+  --type-content-subheading-tracking: 0;
+
+  --type-lead-size: clamp(17px, 15.67px + 0.21vw, 18px); /* Golos */
+  --type-lead-lh: 1.5;
+  --type-lead-weight: 400;
+  --type-lead-tracking: 0;
+
+  --type-body-lg-size: 17px; /* Golos, reading */
+  --type-body-lg-lh: 1.65;
+  --type-body-lg-weight: 400;
+  --type-body-lg-tracking: 0;
+
+  --type-body-size: 16px; /* Golos, body / UI */
+  --type-body-lh: 1.55;
+  --type-body-weight: 400;
+  --type-body-tracking: 0;
+
+  --type-body-sm-size: 14px; /* Golos */
+  --type-body-sm-lh: 1.5;
+  --type-body-sm-weight: 400;
+  --type-body-sm-tracking: 0;
+
+  --type-label-size: 12px; /* Golos, label / eyebrow */
+  --type-label-lh: 1.25;
+  --type-label-weight: 600;
+  --type-label-tracking: 0.04em;
+
+  --type-mono-size: 12px; /* JetBrains Mono, только реальные данные */
+  --type-mono-lh: 1.35;
+  --type-mono-weight: 400;
+  --type-mono-tracking: 0.04em;
+
+  --type-mono-small-size: 11px; /* JetBrains Mono, term */
+  --type-mono-small-lh: 1.35;
+  --type-mono-small-weight: 400;
+  --type-mono-small-tracking: 0.05em;
+
+  --type-action-size: 15px; /* Golos, button / action */
+  --type-action-lh: 1.2;
+  --type-action-weight: 600;
+  --type-action-tracking: 0;
+
+  /* Spacing компонента (§7.1). Рабочие: 8/12/16/24/32/48; 4/20/40 — промежуточные. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Ритм сцен (§7.2): отдельно от компонентного spacing. Mobile — ≤640px. */
+  --scene-compact-top: 48px;
+  --scene-compact-bottom: 48px;
+  --scene-standard-top: 72px;
+  --scene-standard-bottom: 80px;
+  --scene-spacious-top: 96px;
+  --scene-spacious-bottom: 112px;
+  --scene-opening-top: 120px;
+  --scene-opening-bottom: 80px;
+
+  /* Layout (§8). */
+  --container-max: 1240px;
+  --content-max: 1144px;
+  --measure-reading: 760px;
+  --measure-lead: 720px;
+  --page-gutter: clamp(20px, 4vw, 48px);
+
+  /* Форма и глубина (§12–13). Только значения; компонентам не применены. */
+  --radius-core: 0;
+  --border-width: 1px;
+  --border-width-major: 2px;
+  --depth-proof-offset: 6px;
+  --depth-proof-shift: -2px;
+  --depth-work-offset: 10px;
+  --depth-work-shift: -3px;
+
+  /* z-index: только реально существующие роли. Зерно (80) — локально в body::after. */
+  --z-content: 1;
+  --z-nav: 40;
+  --z-overlay: 50;
+  --z-special: 90;
+}
+
+/* Breakpoints (§10): CSS-переменные в media query не работают, поэтому это
+   политика, а не токены. Использовать только эти значения в новом коде:
+     wide   1120px — плотные layout'ы упрощаются, Proof Window вкл/выкл
+     layout  960px — nav → drawer, sticky/sidebar-сплиты упрощаются, Brief в 1 колонку
+     tablet  768px — 2-колоночные раскладки сворачиваются
+     mobile  640px — mobile-spacing, gutter 20px, компактные rule-row
+   Локальные исключения допустимы только с комментарием у компонента.
+   Существующие media query (чаще всего 900/860/760/1000/620/520) — legacy,
+   мигрируют в отдельном responsive adoption pass. */
+@media (max-width: 640px) {
+  :root {
+    --scene-compact-top: 40px;
+    --scene-compact-bottom: 40px;
+    --scene-standard-top: 48px;
+    --scene-standard-bottom: 52px;
+    --scene-spacious-top: 64px;
+    --scene-spacious-bottom: 72px;
+    --scene-opening-top: 80px;
+    --scene-opening-bottom: 56px;
+  }
 }
 
 html {
@@ -62,10 +237,38 @@ a {
 }
 
 .wrap {
-  max-width: 1240px;
+  width: 100%;
+  max-width: var(--container-max);
   margin: 0 auto;
   box-sizing: border-box;
-  padding: 0 48px;
+  padding: 0 var(--page-gutter);
+}
+
+/* Rule (DESIGN-SYSTEM-V1 §12.2): прямая линия 1px, семантический цвет, без декора.
+   Цвет берётся из ближайшего контекста: :root и [data-bg='paper'] — paper (безопасный default),
+   [data-bg='ink'] — ink.
+   .rule — линия сверху, .rule-end — снизу, .rule-major — 2px верхняя major-линия. */
+:root,
+[data-bg='paper'] {
+  --rule-color: var(--border-default);
+  --rule-color-major: var(--color-ink);
+}
+
+[data-bg='ink'] {
+  --rule-color: var(--border-on-ink-default);
+  --rule-color-major: var(--color-paper);
+}
+
+.rule {
+  border-top: var(--border-width) solid var(--rule-color);
+}
+
+.rule-end {
+  border-bottom: var(--border-width) solid var(--rule-color);
+}
+
+.rule-major {
+  border-top: var(--border-width-major) solid var(--rule-color-major);
 }
 
 .mono {
@@ -76,32 +279,107 @@ a {
   text-transform: none;
 }
 
-.btn-gold {
-  display: inline-block;
-  background: var(--color-gold);
-  color: var(--color-ink);
-  padding: 19px 28px;
-  font-weight: 600;
-  font-size: 15.5px;
+/* Действия (DESIGN-SYSTEM-V1 §18). Два размера: стандарт 52px и .btn-lg 56px.
+   Контекст по умолчанию — ink (hover: gold → paper); внутри [data-bg='paper']
+   hover инвертируется в ink. Магнитный эффект включает атрибут data-magnetic. */
+.btn-gold,
+.btn-outline {
+  --btn-h: 52px;
+  --btn-px: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: var(--btn-h);
+  padding: 0 var(--btn-px);
+  border-radius: var(--radius-core);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--type-action-size);
+  font-weight: var(--type-action-weight);
+  line-height: var(--type-action-lh);
+  letter-spacing: var(--type-action-tracking);
+  text-align: center;
   text-decoration: none;
+  transition:
+    background-color var(--dur-feedback) var(--ease-site),
+    border-color var(--dur-feedback) var(--ease-site),
+    color var(--dur-feedback) var(--ease-site);
 }
 
-.btn-gold:hover {
+.btn-lg {
+  --btn-h: 56px;
+  --btn-px: 28px;
+}
+
+.btn-gold {
+  border: 0;
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+.btn-gold:hover:not(:disabled) {
   background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.btn-gold:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-bg='paper'] .btn-gold:hover:not(:disabled) {
+  background: var(--color-ink);
+  color: var(--color-paper);
 }
 
 .btn-outline {
-  display: inline-block;
-  border: 1.5px solid rgb(244 242 236 / 0.4);
-  padding: 17.5px 26px;
-  font-weight: 600;
-  font-size: 15.5px;
-  color: rgb(244 242 236 / 0.9);
-  text-decoration: none;
+  border: var(--border-width) solid var(--border-on-ink-default);
+  color: var(--text-on-ink-primary);
 }
 
 .btn-outline:hover {
   border-color: var(--color-paper);
+}
+
+[data-bg='paper'] .btn-outline {
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+[data-bg='paper'] .btn-outline:hover {
+  border-color: var(--color-ink);
+}
+
+/* Текстовое действие: текст + стрелка (→ внутренняя, ↗ внешняя). Стрелка
+   вынесена в .arrow и сдвигается transform-ом — вёрстка вокруг не двигается. */
+.text-action {
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--color-gold);
+  text-decoration-thickness: var(--border-width-major);
+  text-underline-offset: 6px;
+  transition: color var(--dur-feedback) var(--ease-site);
+}
+
+.text-action:hover {
+  color: var(--text-primary);
+}
+
+.text-action .arrow {
+  display: inline-block;
+  transition: transform var(--dur-feedback) var(--ease-site);
+}
+
+.text-action:hover .arrow {
+  transform: translateX(4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-action .arrow {
+    transition: none;
+  }
 }
 
 a:focus-visible,
@@ -177,10 +455,10 @@ button:focus-visible {
 /* Магнитные CTA: смещение считает motion.ts, кривая — общая. */
 [data-magnetic] {
   transition:
-    transform 0.4s var(--ease-site),
-    background-color 0.2s,
-    border-color 0.2s,
-    color 0.2s;
+    transform var(--dur-standard) var(--ease-site),
+    background-color var(--dur-feedback) var(--ease-site),
+    border-color var(--dur-feedback) var(--ease-site),
+    color var(--dur-feedback) var(--ease-site);
   will-change: transform;
 }
 
@@ -213,6 +491,14 @@ button:focus-visible {
   transform: scale(1);
 }
 
+/* Тихий вариант для крупных proof-карточек: меньше пятно поверх обложки. */
+.cursor-label[data-size='sm'] b {
+  width: 76px;
+  height: 76px;
+  margin: -38px 0 0 -38px;
+  font-size: 12.5px;
+}
+
 @keyframes wallScroll {
   from {
     transform: translateY(0);
@@ -228,12 +514,6 @@ button:focus-visible {
   }
   to {
     transform: translateX(-50%);
-  }
-}
-
-@media (max-width: 640px) {
-  .wrap {
-    padding: 0 20px;
   }
 }
 

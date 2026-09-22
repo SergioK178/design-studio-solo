@@ -7,35 +7,38 @@ import { site } from '../data/site';
     <a class="brand" href="/">{site.name}<b>.</b></a>
     <nav aria-label="Нижняя навигация">
       <a href="/products/">Все продукты</a>
-      <a href="/price/">Прайс расширений</a>
+      <a href="/price/">Дополнения</a>
       <a href="/cases/">Работы</a>
-      <a href="/lab/">Лаборатория</a>
       <a href="/legal/">Legal</a>
       <a href={site.telegramUrl}>Telegram ↗</a>
     </nav>
   </div>
-  <div class="wrap wordmark-row" aria-hidden="true">
-    <span class="wordmark" data-reveal>{site.name}.</span>
+  <div class="wrap wordmark-row" aria-hidden="true" data-reveal>
+    <span class="wordmark">{site.name}.</span>
   </div>
 </footer>
 
 <style>
   .footer {
     background: var(--color-ink);
-    color: rgb(244 242 236 / 0.55);
+    color: var(--text-on-ink-secondary);
     overflow: hidden;
   }
 
   .wordmark-row {
-    padding-top: 64px;
+    padding-top: var(--space-12);
+    /* Нижний отступ нужен reveal: без него вордмарк прижат к краю страницы
+       и на мобильных не попадает в зону IntersectionObserver (остаётся opacity:0). */
+    padding-bottom: var(--space-6);
   }
 
   /* Финальная сцена (Exo Ape/Snellenberg): вордмарк во всю ширину,
-     заливается золотом слева направо при наведении. */
+     заливается золотом слева направо при наведении. Размер fluid,
+     чтобы вписываться в рельсу .wrap до 320px; footer клипует остаток. */
   .wordmark {
     display: block;
     font-family: var(--font-display);
-    font-size: clamp(40px, 10.2vw, 148px);
+    font-size: clamp(44px, 13.5vw, 148px);
     font-weight: 800;
     line-height: 0.95;
     letter-spacing: -0.02em;
@@ -56,15 +59,26 @@ import { site } from '../data/site';
   .inner {
     display: flex;
     justify-content: space-between;
-    gap: 24px;
+    align-items: center;
     flex-wrap: wrap;
-    padding-top: 44px;
-    padding-bottom: 26px;
-    font-size: 12.5px;
+    column-gap: var(--space-6);
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-4);
+    font-size: var(--type-body-sm-size);
+    line-height: var(--type-body-sm-lh);
+  }
+
+  /* Touch-цель ≥44px (§30.2): высота набирается min-height, а не padding-ом,
+     поэтому плотность ряда почти не меняется. */
+  .brand,
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
 
   .brand {
-    color: var(--color-paper);
+    color: var(--text-on-ink-primary);
     font-family: var(--font-display);
     font-size: 13px;
     font-weight: 700;
@@ -77,14 +91,22 @@ import { site } from '../data/site';
   nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 16px 22px;
+    column-gap: var(--space-6);
   }
 
   nav a {
     text-decoration: none;
+    transition: color 0.2s var(--ease-site);
   }
 
   nav a:hover {
     color: var(--color-gold);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wordmark,
+    nav a {
+      transition: none;
+    }
   }
 </style>

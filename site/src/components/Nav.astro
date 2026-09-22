@@ -4,17 +4,18 @@ import { site } from '../data/site';
 const links = [
   { label: 'Продукты', href: '/products/' },
   { label: 'Работы', href: '/cases/' },
-  { label: 'Прайс', href: '/price/' },
-  { label: 'Лаборатория', href: '/lab/' },
+  { label: 'Дополнения', href: '/price/' },
 ];
 
 const currentPath = Astro.url.pathname;
+// На самой странице брифа кнопка «Пройти бриф» ведёт в никуда.
+const onBrief = currentPath.startsWith('/brief');
 const isCurrent = (href: string) => currentPath === href || currentPath.startsWith(href);
 ---
 
 <header class="nav">
   <div class="wrap nav-inner">
-    <a class="brand" href="/" aria-label="3K Studio на главную">{site.name}<span>.</span></a>
+    <a class="brand" href="/" aria-label="3D Studio на главную">{site.name}<span>.</span></a>
 
     <nav class="nav-links" aria-label="Главная навигация">
       {links.map((link) => (
@@ -28,7 +29,7 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
       <a class="tg roll" href={site.telegramUrl}>
         <span data-text="Telegram ↗">Telegram ↗</span>
       </a>
-      <a class="btn-gold nav-cta" href="/brief/" data-magnetic>Разобрать задачу →</a>
+      {!onBrief && <a class="btn-gold nav-cta" href="/brief/" data-magnetic>Пройти бриф →</a>}
     </div>
 
     <button id="nav-toggle" class="menu-toggle" type="button" aria-expanded="false" aria-controls="nav-panel">
@@ -49,7 +50,7 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
         ))}
         <a href={site.telegramUrl}>Telegram ↗</a>
       </nav>
-      <a class="btn-gold nav-panel-cta" href="/brief/">Разобрать задачу →</a>
+      {!onBrief && <a class="btn-gold nav-panel-cta" href="/brief/">Пройти бриф →</a>}
     </div>
   </div>
 </header>
@@ -65,7 +66,7 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 32px;
+    gap: var(--space-8);
     padding-top: 26px;
   }
 
@@ -86,11 +87,12 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
     display: flex;
     align-items: center;
     gap: 28px;
+    min-width: 0;
     margin-right: auto;
-    margin-left: 44px;
-    font-size: 13.5px;
+    margin-left: var(--space-10);
+    font-size: var(--type-body-sm-size);
     font-weight: 500;
-    color: rgb(244 242 236 / 0.7);
+    color: var(--text-on-ink-secondary);
   }
 
   .nav-links a {
@@ -112,38 +114,75 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
     left: 0;
     right: 0;
     bottom: -6px;
-    height: 2px;
+    height: var(--border-width-major);
     background: var(--color-gold);
   }
 
+  /* Действия не сжимаются: пространство отдаёт зазор между links и actions (margin-right: auto). */
   .nav-actions {
     display: flex;
+    flex: none;
     align-items: center;
-    gap: 24px;
+    gap: var(--space-6);
   }
 
   .tg {
-    font-size: 13.5px;
+    font-size: var(--type-body-sm-size);
     font-weight: 600;
     text-decoration: none;
   }
 
-  .nav-cta {
-    box-sizing: border-box;
-    min-height: 52px;
-    padding: 12px 22px;
-    font-size: 14px;
+  /* .nav-cta — стандартный .btn-gold (52px); локальных override нет. */
+
+  /* Контекст gold-шапки (карточки продуктов): ink-элементы на gold, иначе Telegram, CTA и
+     wordmark сливаются с фоном. Контекст задаёт PageHeader tone="gold". */
+  :global(body:has(.page-header.gold)) .nav {
+    color: var(--color-ink);
+  }
+
+  :global(body:has(.page-header.gold)) .brand span,
+  :global(body:has(.page-header.gold)) .tg {
+    color: var(--color-ink);
+  }
+
+  :global(body:has(.page-header.gold)) .nav-links {
+    color: var(--text-secondary);
+  }
+
+  :global(body:has(.page-header.gold)) .nav-links a:hover,
+  :global(body:has(.page-header.gold)) .nav-links a[aria-current='page'] {
+    color: var(--color-ink);
+  }
+
+  :global(body:has(.page-header.gold)) .nav-links a[aria-current='page']::after {
+    background: var(--color-ink);
+  }
+
+  :global(body:has(.page-header.gold)) .nav-cta {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  :global(body:has(.page-header.gold)) .nav-cta:hover {
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  :global(body:has(.page-header.gold)) .menu-toggle {
+    border-color: var(--border-strong);
+    color: var(--color-ink);
   }
 
   .menu-toggle {
     display: none;
+    box-sizing: border-box;
     min-height: 44px;
-    border: 1.5px solid rgb(244 242 236 / 0.4);
+    border: var(--border-width) solid var(--border-on-ink-strong);
     background: transparent;
-    padding: 9px 18px;
+    padding: 0 var(--space-5);
     color: var(--color-paper);
     font-family: inherit;
-    font-size: 13px;
+    font-size: var(--type-body-sm-size);
     font-weight: 600;
     cursor: pointer;
   }
@@ -168,14 +207,15 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
     position: relative;
     display: flex;
     height: 100%;
-    max-width: 360px;
+    width: 100%;
+    max-width: min(360px, 100%);
     margin-left: auto;
     flex-direction: column;
     gap: 28px;
     box-sizing: border-box;
     background: var(--color-ink);
     color: var(--color-paper);
-    padding: 22px 28px 32px;
+    padding: 22px var(--page-gutter) 32px;
     overflow-y: auto;
   }
 
@@ -188,7 +228,7 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
   .nav-panel-close {
     display: grid;
     place-items: center;
-    border: 1.5px solid rgb(244 242 236 / 0.35);
+    border: var(--border-width) solid var(--border-on-ink-strong);
     background: transparent;
     width: 44px;
     height: 44px;
@@ -205,10 +245,12 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
 
   .nav-panel nav a {
     padding: 14px 4px;
-    border-bottom: 1px solid rgb(244 242 236 / 0.14);
+    border-bottom: var(--border-width) solid var(--border-on-ink-subtle);
     color: var(--color-paper);
     font-family: var(--font-display);
-    font-size: 20px;
+    font-size: var(--type-row-title-size);
+    font-weight: var(--type-row-title-weight);
+    line-height: var(--type-row-title-lh);
     text-decoration: none;
   }
 
@@ -221,7 +263,8 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
     text-align: center;
   }
 
-  @media (max-width: 900px) {
+  /* Canonical 960: desktop-навигация → drawer (§10.1, §21.2). */
+  @media (max-width: 960px) {
     .nav-links,
     .nav-actions {
       display: none;
@@ -282,6 +325,16 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
     toggle.addEventListener('click', () => {
       if (panel.hidden) openPanel();
       else closePanel();
+    });
+
+    // Выход из drawer-режима (>960) с открытой панелью: закрываем без возврата фокуса.
+    matchMedia('(min-width: 961px)').addEventListener('change', (event) => {
+      if (event.matches && !panel.hidden) {
+        panel.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', onKeydown);
+      }
     });
 
     for (const closer of panel.querySelectorAll('[data-nav-close]')) {

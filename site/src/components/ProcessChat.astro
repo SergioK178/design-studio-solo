@@ -11,26 +11,30 @@ import { steps } from '../data/home';
       <p class="soft">Можно отвечать в удобное время. Если проще голосом — созвонимся на старте.</p>
     </header>
 
-    <ol class="chat" aria-label="Этапы работы" data-chat>
+    <ol class="chat" aria-label="Этапы работы" data-reveal-group>
       {steps.map((step, index) => (
         <>
-          <li class:list={['message', `message-${index + 1}`]} data-message>
+          <li class:list={['message', `message-${index + 1}`]}>
             <div class="stage-divider">
               <span class="number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
               <span class="time">{step.time}</span>
             </div>
             <div class="incoming">
-              <span class="avatar" aria-hidden="true">3К</span>
+              <span class="avatar" aria-hidden="true">3D</span>
               <div class="bubble">
-                <span class="sender">3К Студия</span>
+                <span class="sender">3D Studio</span>
                 <h3>{step.name}</h3>
                 <p>{step.desc}</p>
+                <svg class="bubble-tail" width="14" height="15" viewBox="0 0 14 15" aria-hidden="true">
+                  <path d="M14 0 L14 15 L0 15 Z" fill="white" />
+                  <path d="M14 0 L0 15 L14 15" fill="none" stroke="rgba(23,21,15,0.16)" stroke-width="1" stroke-linejoin="round" />
+                </svg>
               </div>
             </div>
           </li>
 
           {index === 2 && (
-            <li class="reply" data-message>
+            <li class="reply">
               <span class="reply-author">Вы · в любое время</span>
               <blockquote>
                 <p>«Посмотрел превью с телефона. Правки соберу списком и пришлю вечером».</p>
@@ -55,7 +59,7 @@ import { steps } from '../data/home';
     grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
     gap: clamp(56px, 8vw, 112px);
     align-items: start;
-    padding-top: 104px;
+    padding-top: 96px;
     padding-bottom: 112px;
   }
 
@@ -67,17 +71,18 @@ import { steps } from '../data/home';
   .section-label {
     color: var(--color-blue);
     font-size: 12px;
-    font-weight: 650;
+    font-weight: 600;
+    letter-spacing: 0.04em;
   }
 
   h2 {
     max-width: 350px;
     margin: 16px 0 0;
     font-family: var(--font-display);
-    font-size: clamp(34px, 3.3vw, 46px);
+    font-size: clamp(30px, 3.6vw, 40px);
     font-weight: 700;
-    line-height: 1.08;
-    letter-spacing: -0.025em;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
     text-wrap: balance;
   }
 
@@ -85,8 +90,8 @@ import { steps } from '../data/home';
     max-width: 34ch;
     margin: 28px 0 0;
     color: rgb(23 21 15 / 0.72);
-    font-size: 16px;
-    line-height: 1.55;
+    font-size: 18px;
+    line-height: 1.5;
     text-wrap: pretty;
   }
 
@@ -125,7 +130,7 @@ import { steps } from '../data/home';
     content: '';
     height: 1px;
     flex: 1;
-    background: rgb(23 21 15 / 0.13);
+    background: rgb(23 21 15 / 0.16);
   }
 
   .stage-divider::before {
@@ -134,8 +139,9 @@ import { steps } from '../data/home';
 
   .number {
     color: var(--color-blue);
-    font-size: 11.5px;
-    font-weight: 650;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     font-variant-numeric: tabular-nums;
   }
 
@@ -143,7 +149,7 @@ import { steps } from '../data/home';
     display: block;
     color: rgb(23 21 15 / 0.5);
     font-size: 12px;
-    font-weight: 550;
+    font-weight: 500;
   }
 
   .incoming {
@@ -159,7 +165,7 @@ import { steps } from '../data/home';
     width: 34px;
     height: 34px;
     place-items: center;
-    background: var(--color-blue);
+    background: var(--color-blue-legacy);
     color: white;
     font-size: 10px;
     font-weight: 700;
@@ -171,21 +177,16 @@ import { steps } from '../data/home';
     width: min(calc(100% - 44px), 560px);
     box-sizing: border-box;
     background: white;
-    border: 1px solid rgb(23 21 15 / 0.15);
+    border: 1px solid rgb(23 21 15 / 0.16);
     padding: 15px 18px 17px;
-    border-radius: 4px 14px 14px 14px;
-    box-shadow: 0 8px 24px rgb(61 54 35 / 0.055);
+    border-radius: 0 14px 14px 14px;
   }
 
-  .bubble::before {
-    content: '';
+  .bubble-tail {
     position: absolute;
-    left: -7px;
-    bottom: 0;
-    width: 12px;
-    height: 13px;
-    background: white;
-    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    left: -9px;
+    bottom: -1px;
+    display: block;
   }
 
   .message-1 .bubble {
@@ -208,23 +209,23 @@ import { steps } from '../data/home';
     display: block;
     margin-bottom: 5px;
     color: var(--color-blue);
-    font-size: 11.5px;
-    font-weight: 650;
+    font-size: 12px;
+    font-weight: 600;
   }
 
   h3 {
     margin: 0;
-    font-size: 17px;
-    font-weight: 650;
-    line-height: 1.25;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.35;
   }
 
   .bubble p {
     max-width: 56ch;
     margin: 6px 0 0;
-    color: rgb(23 21 15 / 0.64);
-    font-size: 14.5px;
-    line-height: 1.52;
+    color: rgb(23 21 15 / 0.6);
+    font-size: 14px;
+    line-height: 1.5;
     text-wrap: pretty;
   }
 
@@ -240,7 +241,7 @@ import { steps } from '../data/home';
     padding-right: 3px;
     color: rgb(23 21 15 / 0.48);
     font-size: 12px;
-    font-weight: 550;
+    font-weight: 500;
   }
 
   blockquote {
@@ -267,8 +268,8 @@ import { steps } from '../data/home';
 
   blockquote p {
     margin: 0;
-    font-size: 14.5px;
-    line-height: 1.52;
+    font-size: 14px;
+    line-height: 1.5;
   }
 
   .delivered {
@@ -280,12 +281,12 @@ import { steps } from '../data/home';
     letter-spacing: -0.18em;
   }
 
-  @media (max-width: 860px) {
+  @media (max-width: 768px) {
     .grid {
       grid-template-columns: 1fr;
       gap: 42px;
-      padding-top: 80px;
-      padding-bottom: 88px;
+      padding-top: 64px;
+      padding-bottom: 72px;
     }
 
     .sticky {
@@ -294,10 +295,11 @@ import { steps } from '../data/home';
 
     .sticky p {
       max-width: 52ch;
+      font-size: 17px;
     }
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 640px) {
     .grid {
       gap: 34px;
     }
@@ -319,77 +321,4 @@ import { steps } from '../data/home';
     }
   }
 
-  :global(.chat.chat-armed [data-message]) {
-    opacity: 0;
-    transform: translateY(12px);
-    transition:
-      opacity 0.45s var(--ease-site),
-      transform 0.45s var(--ease-site);
-  }
-
-  :global(.chat.chat-armed [data-message].msg-in) {
-    opacity: 1;
-    transform: none;
-  }
-
-  :global(.chat .chat-typing) {
-    display: flex;
-    gap: 5px;
-    width: max-content;
-    background: rgb(255 255 255 / 0.86);
-    border: 1.5px solid rgb(23 21 15 / 0.24);
-    padding: 13px 17px;
-  }
-
-  :global(.chat .chat-typing i) {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: rgb(23 21 15 / 0.5);
-    animation: chat-dot 0.9s infinite;
-  }
-
-  :global(.chat .chat-typing i:nth-child(2)) { animation-delay: 0.15s; }
-  :global(.chat .chat-typing i:nth-child(3)) { animation-delay: 0.3s; }
-
-  @keyframes chat-dot {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
-    30% { transform: translateY(-3px); opacity: 1; }
-  }
 </style>
-
-<script>
-  const chat = document.querySelector<HTMLElement>('[data-chat]');
-  const motionOK = window.matchMedia('(prefers-reduced-motion: no-preference)').matches;
-
-  if (chat && motionOK && 'IntersectionObserver' in window) {
-    const messages = Array.from(chat.querySelectorAll<HTMLElement>('[data-message]'));
-    chat.classList.add('chat-armed');
-
-    const typing = document.createElement('li');
-    typing.className = 'chat-typing';
-    typing.setAttribute('aria-hidden', 'true');
-    typing.append(...[0, 1, 2].map(() => document.createElement('i')));
-
-    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-    const play = async () => {
-      for (const message of messages) {
-        chat.insertBefore(typing, message);
-        await wait(480);
-        typing.remove();
-        message.classList.add('msg-in');
-        await wait(260);
-      }
-    };
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        observer.disconnect();
-        void play();
-      },
-      { threshold: 0.18 },
-    );
-    observer.observe(chat);
-  }
-</script>

@@ -9,7 +9,7 @@ const posts = (await getCollection('lab')).filter((entry) => entry.data.status =
 const slugFor = (id: string) => id.replace(/\.md$/, '');
 ---
 
-<Base title="Лаборатория · 3K Studio">
+<Base title="Лаборатория · 3D Studio">
   <Nav />
   <PageHeader eyebrow="лаборатория" title="Разборы решений, которые стоят за сайтом" lead="Пишем о технических и продуктовых решениях на языке пользы для клиента." />
   <main class="lab-list" data-bg="paper">
@@ -41,7 +41,7 @@ const slugFor = (id: string) => id.replace(/\.md$/, '');
   }
 
   .mono {
-    color: var(--color-blue);
+    color: var(--color-blue-legacy);
   }
 
   h2 {

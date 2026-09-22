@@ -5,7 +5,6 @@ import Nav from '../../components/Nav.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import ContentShell from '../../components/ContentShell.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
-import Metrics from '../../components/Metrics.svelte';
 
 export async function getStaticPaths() {
   const posts = await getCollection('lab');
@@ -16,12 +15,11 @@ const { entry } = Astro.props;
 const { Content } = await render(entry);
 ---
 
-<Base title={`${entry.data.title} · 3K Studio`}>
+<Base title={`${entry.data.title} · 3D Studio`}>
   <Nav />
   <PageHeader eyebrow={entry.data.date} title={entry.data.title} lead={entry.data.summary} />
   <ContentShell>
     <Content />
-    <Metrics client:load />
   </ContentShell>
   <SiteFooter />
 </Base>

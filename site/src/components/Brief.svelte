@@ -6,10 +6,14 @@
     documentLines,
     emptyAnswers,
     estimateV3,
+    groupOfTask,
     payloadV3,
     questionById,
+    stepSequence,
     studioSummary,
+    tasksOfGroup,
   } from '../data/brief-v3';
+  import { products } from '../data/products';
   import { site } from '../data/site';
 
   /* Экраны: intro → вопросы → result → contact → sent. */
@@ -25,26 +29,19 @@
   let sending = false;
   let sendError = false;
   let leadId = null;
+  let draftId = '';
+  let submissionId = '';
 
   const mountedAt = Date.now();
   let reduced = false;
 
-  /* Последовательность шагов зависит от первой развилки. */
-  $: steps = [
-    'task',
-    ...(answers.task === 'update' ? ['updateGoal'] : []),
-    ...(answers.task === 'other' ? ['otherText'] : []),
-    'actions',
-    'content',
-    'manage',
-    'dataflow',
-    'have',
-    'deadline',
-    'budget',
-  ];
+  /* Последовательность шагов зависит от группы и задачи. */
+  $: steps = stepSequence(answers);
 
   $: stepId = steps[Math.min(stepIndex, steps.length - 1)];
   $: question = stepId === 'otherText' ? null : questionById[stepId];
+  /* На шаге уточнения показываем только задачи выбранной группы. */
+  $: choices = stepId === 'task' ? tasksOfGroup(answers.group) : (question?.choices ?? []);
   $: stage = question?.stage ?? 1;
   $: stageName = question?.stageName ?? 'Задача';
   $: lines = documentLines(answers);
@@ -85,8 +82,15 @@
 
   let advanceTimer;
   function pickSingle(id, value) {
+    const groupChanged = id === 'group' && value !== answers.group;
     answers = { ...answers, [id]: value };
-    if (id === 'task') {
+    if (id === 'group') {
+      // Группа с одной задачей выбирает её сама; иначе задачу уточнит следующий шаг.
+      const tasks = tasksOfGroup(value);
+      if (tasks.length === 1) answers = { ...answers, task: tasks[0].id };
+      else if (groupChanged) answers = { ...answers, task: '' };
+    }
+    if (id === 'task' || groupChanged) {
       // Смена задачи меняет маршрут — уточнения сбрасываем.
       answers = { ...answers, updateGoal: '', otherText: '' };
     }
@@ -120,21 +124,19 @@
     stepIndex = 0;
   }
 
-  /* Черновик: ссылка восстанавливает ответы, POST — для сводки студии. */
-  let draftSaved = false;
+  /* Один UUID живёт с конкретным разбором: POST обновляет его, а не плодит строки. */
   function saveDraft() {
-    if (draftSaved) return;
-    draftSaved = true;
+    if (!draftId) draftId = crypto.randomUUID();
     fetch('/api/draft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers: payloadV3(answers) }),
+      body: JSON.stringify({ id: draftId, answers: payloadV3(answers) }),
     }).catch(() => {});
   }
 
   function syncUrl() {
     if (typeof window === 'undefined') return;
-    const params = new URLSearchParams({ ...payloadV3(answers), stage: 'result' });
+    const params = new URLSearchParams({ ...payloadV3(answers), ...(draftId ? { draft: draftId } : {}), stage: 'result' });
     history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
   }
 
@@ -142,8 +144,19 @@
     const params = new URLSearchParams(window.location.search);
     if (params.get('version') !== 'v3') return;
     const list = (key) => (params.get(key) ?? '').split(',').filter(Boolean);
+    const task = params.get('task') ?? '';
+    const productParam = params.get('product') ?? '';
+    const draftParam = params.get('draft') ?? '';
+    draftId = /^[a-z0-9-]{16,80}$/i.test(draftParam) ? draftParam : '';
+    const product = products.find((item) => item.slug === productParam)?.slug ?? '';
+    // `?group=` — группа каталога (ссылка с продукта); без неё группа выводится из задачи.
+    const paramGroup = questionById.group.choices.some((c) => c.id === params.get('group')) ? params.get('group') : '';
+    const group = paramGroup || groupOfTask(task);
+    const onlyTask = tasksOfGroup(group).length === 1 ? tasksOfGroup(group)[0].id : '';
     answers = {
-      task: params.get('task') ?? '',
+      product,
+      group,
+      task: task || onlyTask,
       updateGoal: params.get('update_goal') ?? '',
       otherText: params.get('other_text') ?? '',
       actions: list('actions'),
@@ -156,28 +169,17 @@
       budget: params.get('budget') ?? '',
     };
     if (params.get('stage') === 'result' && answers.task) {
-      draftSaved = true; // черновик по ссылке не дублируем
       screen = 'result';
-    } else if (answers.task) {
-      // Переход с карточки продукта: задача предзаполнена, начинаем со следующего шага.
+    } else if (answers.group) {
+      // Переход с карточки продукта: группа (и задача, если известна) предзаполнены —
+      // начинаем с первого неотвеченного шага.
       screen = 'question';
       stepIndex = firstIncompleteStep();
     }
   }
 
   function firstIncompleteStep() {
-    const sequence = [
-      'task',
-      ...(answers.task === 'update' ? ['updateGoal'] : []),
-      ...(answers.task === 'other' ? ['otherText'] : []),
-      'actions',
-      'content',
-      'manage',
-      'dataflow',
-      'have',
-      'deadline',
-      'budget',
-    ];
+    const sequence = stepSequence(answers);
     const done = (id) =>
       id === 'otherText'
         ? answers.otherText.trim().length > 0
@@ -195,7 +197,7 @@
 
   function draftUrl() {
     if (typeof window === 'undefined') return '';
-    const params = new URLSearchParams({ ...payloadV3(answers), stage: 'result' });
+    const params = new URLSearchParams({ ...payloadV3(answers), ...(draftId ? { draft: draftId } : {}), stage: 'result' });
     return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
   }
 
@@ -206,6 +208,7 @@
   async function submitLead(event) {
     event.preventDefault();
     if (!contactReady || sending) return;
+    if (!submissionId) submissionId = crypto.randomUUID();
     sending = true;
     sendError = false;
     try {
@@ -216,6 +219,8 @@
           answers: payloadV3(answers),
           contact: { name: contactName.trim(), phone: contactPhone.trim(), comment: contactComment.trim() },
           summary: studioSummary(answers, result),
+          draftId: draftId || undefined,
+          submissionId,
           hp,
           ts: mountedAt,
         }),
@@ -259,8 +264,8 @@
         <li>Расчёт предварительный</li>
       </ul>
       <div class="intro-actions">
-        <button type="button" class="btn-gold" on:click={start}>Начать</button>
-        <a class="btn-outline" href={site.telegramUrl}>Написать в Telegram</a>
+        <button type="button" class="btn-gold btn-lg" on:click={start}>Начать</button>
+        <a class="btn-outline btn-lg" href={site.telegramUrl}>Обсудить проект</a>
       </div>
     </section>
   {:else if screen === 'question'}
@@ -287,7 +292,7 @@
               {#if question.hint}<p class="hint">{question.hint}</p>{/if}
 
               <div class="options" role={question.multi ? 'group' : 'radiogroup'} aria-label={question.title}>
-                {#each question.choices as choice (choice.id)}
+                {#each choices as choice (choice.id)}
                   {#if question.multi}
                     <button
                       type="button"
@@ -318,7 +323,7 @@
 
               {#if stepId === 'dataflow' && needSystems}
                 <label class="systems" in:lineIn>
-                  <span class="mono">Какие системы уже используются?</span>
+                  <span class="field-label">Какие системы уже используются?</span>
                   <input
                     type="text"
                     placeholder="Например: Битрикс24, amoCRM, МойСклад, 1С"
@@ -338,7 +343,7 @@
           <div class="foot-actions">
             <button type="button" class="ghost" on:click={back}>Назад</button>
             {#if question?.multi || stepId === 'otherText'}
-              <button type="button" class="btn-gold small" disabled={!stepDone} on:click={next}>Дальше</button>
+              <button type="button" class="btn-gold" disabled={!stepDone} on:click={next}>Дальше</button>
             {/if}
           </div>
         </footer>
@@ -381,20 +386,20 @@
           фиксированную цену и срок.
         </p>
         <div class="sheet-actions">
-          <a class="btn-dark" href={telegramHref()}>Открыть чат в Telegram</a>
+          <a class="btn-gold" href={telegramHref()}>Открыть чат в Telegram</a>
         </div>
       {:else}
-        <p class="mono sheet-label">заключение студии</p>
+        <p class="mono sheet-label">предварительная оценка</p>
         <h2>{result.title}</h2>
         <p class="sheet-lead">{result.lead}</p>
 
         <dl class="sheet-rows">
           <div class="row">
-            <dt>Первый запуск</dt>
-            <dd>{result.weeksLabel}</dd>
+            <dt>Срок</dt>
+            <dd>{result.deliveryLabel}</dd>
           </div>
           <div class="row">
-            <dt>Ориентир</dt>
+            <dt>{result.productSlug ? 'Публичная цена' : 'Предварительная оценка выбранного состава работ'}</dt>
             <dd>{result.priceLabel}</dd>
           </div>
           <div class="row">
@@ -424,28 +429,33 @@
           </div>
         {/if}
 
+        {#if result.link}
+          <p class="sheet-note"><a href={result.link.href} data-testid="brief-result-link">{result.link.label} →</a></p>
+        {/if}
+
         <p class="sheet-note">Расчёт предварительный — точную цену и срок фиксируем в договоре.</p>
 
         {#if screen === 'contact'}
           <form class="contact" on:submit={submitLead}>
             <label>
-              <span class="mono">Имя</span>
-              <input type="text" name="name" autocomplete="name" bind:value={contactName} />
+              <span class="field-label">Имя</span>
+              <input type="text" name="name" autocomplete="name" required maxlength="200" bind:value={contactName} />
             </label>
             <label>
-              <span class="mono">Телефон или Telegram</span>
-              <input type="text" name="phone" autocomplete="tel" bind:value={contactPhone} />
+              <span class="field-label">Телефон или Telegram</span>
+              <input type="text" name="phone" autocomplete="tel" required maxlength="200" bind:value={contactPhone} />
             </label>
             <label>
-              <span class="mono">Комментарий — по желанию</span>
-              <textarea name="comment" rows="3" bind:value={contactComment}></textarea>
+              <span class="field-label">Комментарий — по желанию</span>
+              <textarea name="comment" rows="3" maxlength="2000" bind:value={contactComment}></textarea>
             </label>
             <input type="text" name="hp" bind:value={hp} class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
             {#if sendError}
-              <p class="send-error">Не получилось отправить. Попробуйте ещё раз или напишите в Telegram.</p>
+              <p class="send-error" role="alert">Не получилось отправить. Попробуйте ещё раз или <a href={telegramHref()}>напишите в Telegram</a>.</p>
             {/if}
+            <p class="consent">Отправляя проект, вы соглашаетесь на обработку контактных данных — <a href="/legal/">подробнее</a>.</p>
             <div class="sheet-actions">
-              <button type="submit" class="btn-dark" disabled={!contactReady || sending}>
+              <button type="submit" class="btn-gold btn-submit" disabled={!contactReady || sending}>
                 {sending ? 'Отправляем…' : 'Отправить проект'}
               </button>
               <button type="button" class="ghost-dark" on:click={() => (screen = 'result')}>Назад</button>
@@ -453,7 +463,7 @@
           </form>
         {:else}
           <div class="sheet-actions">
-            <button type="button" class="btn-dark" on:click={() => (screen = 'contact')}>Отправить проект в студию</button>
+            <button type="button" class="btn-gold" on:click={() => (screen = 'contact')}>Отправить проект в студию</button>
             <a class="ghost-dark" href={telegramHref()}>Обсудить в Telegram</a>
             <button type="button" class="ghost-dark" on:click={editAnswers}>Изменить ответы</button>
           </div>
@@ -524,40 +534,7 @@
     margin-top: 40px;
   }
 
-  .btn-gold {
-    border: 0;
-    cursor: pointer;
-    background: var(--color-gold);
-    color: var(--color-ink);
-    padding: 19px 34px;
-    font: 600 15.5px / 1.2 var(--font-text);
-  }
-
-  .btn-gold:hover {
-    background: var(--color-paper);
-  }
-
-  .btn-gold:disabled {
-    cursor: not-allowed;
-    opacity: 0.4;
-  }
-
-  .btn-gold.small {
-    padding: 14px 26px;
-  }
-
-  .btn-outline {
-    display: inline-block;
-    border: 1.5px solid rgb(244 242 236 / 0.4);
-    padding: 17.5px 30px;
-    font: 600 15.5px / 1.2 var(--font-text);
-    color: rgb(244 242 236 / 0.9);
-    text-decoration: none;
-  }
-
-  .btn-outline:hover {
-    border-color: var(--color-paper);
-  }
+  /* Кнопки — общие .btn-gold / .btn-outline из global.css. */
 
   /* ---------- Интервью ---------- */
 
@@ -611,9 +588,17 @@
 
   .hint {
     margin: 12px 0 0;
-    color: rgb(244 242 236 / 0.55);
-    font-size: 14.5px;
-    line-height: 1.5;
+    color: var(--text-on-ink-muted);
+    font-size: var(--type-body-sm-size);
+    line-height: var(--type-body-sm-lh);
+  }
+
+  /* Подпись поля: Golos 600, не Mono. */
+  .field-label {
+    font-family: var(--font-text);
+    font-size: var(--type-body-sm-size);
+    font-weight: 600;
+    line-height: 1.3;
   }
 
   .options {
@@ -624,41 +609,54 @@
   .option {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 16px;
+    box-sizing: border-box;
     width: 100%;
+    min-height: 48px;
     border: 0;
     border-bottom: 1px solid rgb(244 242 236 / 0.16);
     background: none;
     padding: 13px 4px;
-    color: rgb(244 242 236 / 0.82);
+    color: var(--text-on-ink-secondary);
     font: 500 16px / 1.35 var(--font-text);
     text-align: left;
     cursor: pointer;
-    transition:
-      color 0.25s,
-      padding-left 0.35s var(--ease-site),
-      box-shadow 0.35s var(--ease-site);
+    transition: color var(--dur-feedback) var(--ease-site);
   }
 
   .option:hover {
     color: var(--color-paper);
   }
 
+  /* Data-entry фокус на ink: два слоя. Синий (#3552C7) на ink ≈2.8:1, поэтому внутри кольцо
+     paper (≈15:1 к ink), снаружи синее — semantic-сигнал. */
+  .option:focus-visible {
+    outline: 2px solid var(--color-paper);
+    outline-offset: 0;
+    box-shadow: 0 0 0 4px var(--color-blue);
+    color: var(--color-paper);
+  }
+
+  .option:focus-visible .mark {
+    border-color: var(--color-paper);
+  }
+
+  /* Выбор = два сигнала: синий маркер + акцент текста. */
   .option.selected {
-    color: var(--color-gold);
-    font-weight: 650;
-    padding-left: 14px;
-    box-shadow: inset 3px 0 0 var(--color-gold);
+    color: var(--color-paper);
+    font-weight: 600;
   }
 
   .mark {
+    position: relative;
     flex: none;
-    width: 12px;
-    height: 12px;
-    border: 1.5px solid rgb(244 242 236 / 0.45);
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    border: var(--border-width) solid var(--text-on-ink-muted);
     transition:
-      background 0.25s,
-      border-color 0.25s;
+      background-color var(--dur-feedback) var(--ease-site),
+      border-color var(--dur-feedback) var(--ease-site);
   }
 
   .mark-dot {
@@ -666,26 +664,52 @@
   }
 
   .option.selected .mark {
-    border-color: var(--color-gold);
-    background: var(--color-gold);
+    border-color: var(--color-blue);
+    background: var(--color-blue);
+  }
+
+  .option.selected .mark-dot {
+    background: var(--color-paper);
+    box-shadow: inset 0 0 0 5px var(--color-blue);
+  }
+
+  .option.selected .mark-square::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--color-paper);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
   }
 
   .free-text,
   .systems input {
     box-sizing: border-box;
     width: 100%;
-    border: 1px solid rgb(244 242 236 / 0.28);
-    background: rgb(244 242 236 / 0.04);
+    min-height: 52px;
+    border: var(--border-width) solid var(--border-on-ink-strong);
+    border-radius: var(--radius-core);
+    background: color-mix(in srgb, var(--color-paper) 4%, transparent);
     color: var(--color-paper);
-    padding: 16px;
-    font: 500 16px / 1.5 var(--font-text);
+    padding: 0 16px;
+    font: var(--type-body-weight) var(--type-body-size) / var(--type-body-lh) var(--font-text);
+  }
+
+  .free-text {
+    padding-block: 14px;
     resize: vertical;
   }
 
-  .free-text:focus,
-  .systems input:focus {
-    outline: 2px solid var(--color-gold);
-    outline-offset: 2px;
+  /* Data-entry фокус на ink: paper-кольцо (≈15:1 к ink) + внешнее синее (≈2.8:1 к ink). */
+  .free-text:focus-visible,
+  .systems input:focus-visible {
+    outline: 2px solid var(--color-paper);
+    outline-offset: 0;
+    border-color: var(--color-paper);
+    box-shadow: 0 0 0 4px var(--color-blue);
   }
 
   .free-text {
@@ -694,12 +718,16 @@
 
   .free-text::placeholder,
   .systems input::placeholder {
-    color: rgb(244 242 236 / 0.4);
+    color: var(--text-on-ink-faint);
+  }
+
+  .systems .field-label {
+    color: var(--text-on-ink-secondary);
   }
 
   .systems {
     display: grid;
-    gap: 10px;
+    gap: 8px;
     margin-top: 26px;
     max-width: 480px;
   }
@@ -754,7 +782,7 @@
     background: none;
     color: rgb(244 242 236 / 0.6);
     font: 600 14.5px / 1 var(--font-text);
-    padding: 14px 6px;
+    padding: 15px 6px;
     cursor: pointer;
   }
 
@@ -906,6 +934,12 @@
     font-size: 13px;
   }
 
+  .sheet-note a {
+    color: rgb(23 21 15 / 0.75);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
   .sheet-actions {
     display: flex;
     flex-wrap: wrap;
@@ -914,24 +948,15 @@
     margin-top: 30px;
   }
 
-  .btn-dark {
-    display: inline-block;
-    border: 0;
-    cursor: pointer;
+  /* Лист — бумажная поверхность внутри ink-страницы: hover primary инвертируется в ink. */
+  .sheet .btn-gold:hover:not(:disabled) {
     background: var(--color-ink);
     color: var(--color-paper);
-    padding: 18px 30px;
-    font: 600 15.5px / 1.2 var(--font-text);
-    text-decoration: none;
   }
 
-  .btn-dark:hover {
-    background: var(--color-blue);
-  }
-
-  .btn-dark:disabled {
-    cursor: not-allowed;
-    opacity: 0.45;
+  /* Подпись кнопки меняется («Отправить проект» → «Отправляем…») — ширина остаётся. */
+  .btn-submit {
+    min-width: 220px;
   }
 
   .ghost-dark {
@@ -963,27 +988,32 @@
     gap: 8px;
   }
 
-  .contact .mono {
-    color: rgb(23 21 15 / 0.6);
-    font-size: 12px;
+  .contact .field-label {
+    color: var(--text-secondary);
   }
 
   .contact input,
   .contact textarea {
     box-sizing: border-box;
     width: 100%;
-    border: 1px solid rgb(23 21 15 / 0.3);
-    background: white;
+    min-height: 52px;
+    border: var(--border-width) solid var(--border-strong);
+    border-radius: var(--radius-core);
+    background: var(--color-surface);
     color: var(--color-ink);
-    padding: 13px 14px;
-    font: 500 15px / 1.4 var(--font-text);
+    padding: 0 16px;
+    font: var(--type-body-weight) var(--type-body-size) / var(--type-body-lh) var(--font-text);
+  }
+
+  .contact textarea {
+    padding-block: 14px;
     resize: vertical;
   }
 
-  .contact input:focus,
-  .contact textarea:focus {
+  .contact input:focus-visible,
+  .contact textarea:focus-visible {
     outline: 2px solid var(--color-blue);
-    outline-offset: 1px;
+    outline-offset: 4px;
   }
 
   .hp {
@@ -994,7 +1024,25 @@
   .send-error {
     margin: 0;
     color: var(--color-ochre-dk);
-    font-size: 14px;
+    font-size: var(--type-body-sm-size);
+    line-height: var(--type-body-sm-lh);
+  }
+
+  .send-error a {
+    color: inherit;
+    text-decoration: underline;
+  }
+
+  .consent {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--type-body-sm-size);
+    line-height: var(--type-body-sm-lh);
+  }
+
+  .consent a {
+    color: var(--color-blue);
+    text-decoration: underline;
   }
 
   /* ---------- Адаптив ---------- */
@@ -1076,9 +1124,8 @@
       justify-content: space-between;
     }
 
-    .btn-gold.small {
+    .foot-actions .btn-gold {
       flex: 1;
-      text-align: center;
     }
 
     .row {

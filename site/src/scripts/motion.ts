@@ -88,6 +88,7 @@ if (motionOK && finePointer && cursorTargets.length > 0) {
   for (const target of cursorTargets) {
     target.addEventListener('mouseenter', () => {
       text.textContent = target.dataset.cursor ?? '';
+      label.dataset.size = target.dataset.cursorSize ?? '';
       label.classList.add('on');
     });
     target.addEventListener('mouseleave', () => label.classList.remove('on'));
