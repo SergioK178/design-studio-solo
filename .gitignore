@@ -34,8 +34,20 @@ Thumbs.db
 *.swp
 .vercel
 
+# SQLite sidecar-файлы
+*.db-wal
+*.db-shm
+*.db-journal
+
+# Сгенерированные скриншоты (воспроизводимы)
+site/current-screens/
+site/output/
+
 # Внутренняя модель расчёта PRICING_REVIEW.md: исходники храним, результаты — нет.
 scripts/pricing-model/output.txt
 scripts/pricing-model/output-sanity.txt
 scripts/pricing-model/data.json
 scripts/pricing-model/__pycache__/
+
+# Артефакты Playwright MCP (скриншоты, снапшоты).
+.playwright-mcp/
