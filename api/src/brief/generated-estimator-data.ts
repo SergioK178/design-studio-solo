@@ -15,6 +15,7 @@ interface Range {
 export interface PublicProduct extends Range {
   name: string;
   priceKind: 'fixed' | 'range' | 'monthly-range';
+  deliveryKind: 'workdays-range' | 'weeks-range' | 'ongoing';
   termLow: number;
   termHigh: number;
   priceLabel: string;
@@ -27,6 +28,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "fixed",
     "min": 49000,
     "max": 49000,
+    "deliveryKind": "workdays-range",
     "termLow": 5,
     "termHigh": 7,
     "priceLabel": "49 000 ₽ фикс",
@@ -37,6 +39,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 100000,
     "max": 200000,
+    "deliveryKind": "weeks-range",
     "termLow": 2,
     "termHigh": 3,
     "priceLabel": "100 тыс.–200 тыс. ₽",
@@ -47,6 +50,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 120000,
     "max": 190000,
+    "deliveryKind": "weeks-range",
     "termLow": 2,
     "termHigh": 3,
     "priceLabel": "120 тыс.–190 тыс. ₽",
@@ -57,6 +61,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 220000,
     "max": 450000,
+    "deliveryKind": "weeks-range",
     "termLow": 4,
     "termHigh": 6,
     "priceLabel": "220 тыс.–450 тыс. ₽",
@@ -67,6 +72,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 300000,
     "max": 650000,
+    "deliveryKind": "weeks-range",
     "termLow": 5,
     "termHigh": 8,
     "priceLabel": "300 тыс.–650 тыс. ₽",
@@ -77,6 +83,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 450000,
     "max": 900000,
+    "deliveryKind": "weeks-range",
     "termLow": 8,
     "termHigh": 12,
     "priceLabel": "450 тыс.–900 тыс. ₽",
@@ -87,6 +94,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 300000,
     "max": 600000,
+    "deliveryKind": "weeks-range",
     "termLow": 5,
     "termHigh": 8,
     "priceLabel": "300 тыс.–600 тыс. ₽",
@@ -97,6 +105,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 100000,
     "max": 250000,
+    "deliveryKind": "weeks-range",
     "termLow": 2,
     "termHigh": 4,
     "priceLabel": "100 тыс.–250 тыс. ₽",
@@ -107,6 +116,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 110000,
     "max": 220000,
+    "deliveryKind": "weeks-range",
     "termLow": 2,
     "termHigh": 3,
     "priceLabel": "110 тыс.–220 тыс. ₽",
@@ -117,6 +127,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 150000,
     "max": 350000,
+    "deliveryKind": "weeks-range",
     "termLow": 3,
     "termHigh": 5,
     "priceLabel": "150 тыс.–350 тыс. ₽",
@@ -127,6 +138,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 240000,
     "max": 480000,
+    "deliveryKind": "weeks-range",
     "termLow": 4,
     "termHigh": 6,
     "priceLabel": "240 тыс.–480 тыс. ₽",
@@ -137,6 +149,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 200000,
     "max": 400000,
+    "deliveryKind": "weeks-range",
     "termLow": 3,
     "termHigh": 5,
     "priceLabel": "200 тыс.–400 тыс. ₽",
@@ -147,6 +160,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 180000,
     "max": 400000,
+    "deliveryKind": "weeks-range",
     "termLow": 4,
     "termHigh": 6,
     "priceLabel": "180 тыс.–400 тыс. ₽",
@@ -157,6 +171,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 220000,
     "max": 450000,
+    "deliveryKind": "weeks-range",
     "termLow": 4,
     "termHigh": 6,
     "priceLabel": "220 тыс.–450 тыс. ₽",
@@ -167,6 +182,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 90000,
     "max": 240000,
+    "deliveryKind": "weeks-range",
     "termLow": 2,
     "termHigh": 4,
     "priceLabel": "90 тыс.–240 тыс. ₽",
@@ -177,6 +193,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 650000,
     "max": 1300000,
+    "deliveryKind": "weeks-range",
     "termLow": 8,
     "termHigh": 14,
     "priceLabel": "650 тыс.–1,3 млн ₽",
@@ -187,6 +204,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 800000,
     "max": 1700000,
+    "deliveryKind": "weeks-range",
     "termLow": 10,
     "termHigh": 16,
     "priceLabel": "800 тыс.–1,7 млн ₽",
@@ -197,6 +215,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 80000,
     "max": 190000,
+    "deliveryKind": "weeks-range",
     "termLow": 2,
     "termHigh": 3,
     "priceLabel": "80 тыс.–190 тыс. ₽",
@@ -207,6 +226,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 180000,
     "max": 480000,
+    "deliveryKind": "weeks-range",
     "termLow": 3,
     "termHigh": 6,
     "priceLabel": "180 тыс.–480 тыс. ₽",
@@ -217,6 +237,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "range",
     "min": 120000,
     "max": 300000,
+    "deliveryKind": "weeks-range",
     "termLow": 2,
     "termHigh": 4,
     "priceLabel": "120 тыс.–300 тыс. ₽",
@@ -227,6 +248,7 @@ export const publicProducts: Record<ProductSlug, PublicProduct> = {
     "priceKind": "monthly-range",
     "min": 40000,
     "max": 120000,
+    "deliveryKind": "ongoing",
     "termLow": 0,
     "termHigh": 0,
     "priceLabel": "40 тыс.–120 тыс. ₽/мес.",
@@ -468,17 +490,7 @@ export const actionAdders: Record<string, Adder> = {
   "book": {
     "price": {
       "min": 30000,
-      "max": 60000
-    }
-  },
-  "buy": {
-    "price": {
-      "min": 60000,
-      "max": 120000
-    },
-    "weeks": {
-      "min": 1,
-      "max": 1
+      "max": 70000
     }
   },
   "login": {
@@ -544,7 +556,7 @@ export const dataflowAdders: Record<string, Adder> = {
   "crm": {
     "price": {
       "min": 25000,
-      "max": 50000
+      "max": 80000
     }
   },
   "sheet": {
@@ -568,7 +580,7 @@ export const dataflowAdders: Record<string, Adder> = {
   "onec": {
     "price": {
       "min": 60000,
-      "max": 120000
+      "max": 140000
     },
     "weeks": {
       "min": 1,
@@ -616,4 +628,23 @@ export const productTaskExpectation: Partial<Record<ProductSlug, string>> = {
   "leads-inbox": "manual",
   "data-exchange": "manual",
   "documents": "manual"
+};
+
+export interface Baseline {
+  actions: string[];
+  manage: string[];
+  dataflow: string[];
+}
+
+export const productBaselineOverride: Partial<Record<ProductSlug, Partial<Baseline>>> = {
+  "documents": {
+    "dataflow": [
+      "doc"
+    ]
+  },
+  "booking": {
+    "actions": [
+      "book"
+    ]
+  }
 };

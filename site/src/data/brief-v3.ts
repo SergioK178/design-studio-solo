@@ -14,12 +14,14 @@
 
 import { productGroups, productPriceLabel, productTermLabel, products, type Product, type ProductSlug } from './products';
 import {
+  computeDirectOverflow,
   computeEstimate,
   contextStillMatches as contextStillMatchesTask,
   formatBase,
   formatGroup,
   formatProduct,
   recommendFormat as recommendFormatCore,
+  type DirectOverflow,
   type FormatId,
   type Range,
 } from './brief-estimator';
@@ -398,6 +400,24 @@ const dataflowLabels: Record<string, string> = {
   doc: 'формирование документов и отчётов',
 };
 
+const actionLabels: Record<string, string> = Object.fromEntries(
+  questionById.actions.choices.filter((c) => c.doc).map((c) => [c.id, c.doc as string]),
+);
+const manageLabels: Record<string, string> = Object.fromEntries(
+  questionById.manage.choices.filter((c) => c.doc).map((c) => [c.id, c.doc as string]),
+);
+
+/** Meaningful-flag текст для прямого SKU, у которого выбор вышел за baseline. Не отменяет оценку. */
+function overflowFlags(overflow: DirectOverflow): string[] {
+  const items = [
+    ...overflow.actions.map((id) => actionLabels[id]).filter(Boolean),
+    ...overflow.manage.map((id) => manageLabels[id]).filter(Boolean),
+    ...overflow.dataflow.map((id) => dataflowLabels[id]).filter(Boolean),
+  ];
+  if (!items.length) return [];
+  return [`сверх базовой комплектации: ${humanList(items)}`];
+}
+
 export interface BriefResultV3 {
   format: FormatId;
   formatName: string;
@@ -540,9 +560,24 @@ export function estimateV3(a: AnswersV3): BriefResultV3 {
 function productContextResult(a: AnswersV3, product: Product, direct = true): BriefResultV3 {
   const price = product.pricing;
   const delivery = product.delivery;
-  const weeksLow = delivery.kind === 'weeks-range' ? delivery.min! : 0;
-  const weeksHigh = delivery.kind === 'weeks-range' ? delivery.max! : 0;
+  const isWeeksRange = delivery.kind === 'weeks-range';
+  const weeksLow = isWeeksRange ? delivery.min! : 0;
+  const weeksHigh = isWeeksRange ? delivery.max! : 0;
   const format = recommendFormat(a);
+
+  // SKU остаётся base: canonical price/term не меняются от того, что выбрали доп. actions/
+  // manage/dataflow. Считаем только то, что выходит за baseline самого SKU — как обычную
+  // надбавку брифа. Выбор в рамках baseline даёт дельту 0 (без double counting).
+  const overflow = direct
+    ? computeDirectOverflow(product.slug, { task: a.task, actions: a.actions, manage: a.manage, dataflow: a.dataflow }, isWeeksRange)
+    : { priceMin: 0, priceMax: 0, weeksMin: 0, weeksMax: 0, actions: [], manage: [], dataflow: [] };
+  const hasOverflow = overflow.priceMin > 0 || overflow.priceMax > 0;
+
+  const priceLow = price.min + overflow.priceMin;
+  const priceHigh = price.max + overflow.priceMax;
+  const weeksLowFinal = weeksLow + overflow.weeksMin;
+  const weeksHighFinal = weeksHigh + overflow.weeksMax;
+
   return {
     format,
     formatName: product.name,
@@ -550,22 +585,25 @@ function productContextResult(a: AnswersV3, product: Product, direct = true): Br
     lead: product.slug === 'web-service'
       ? 'Публичная вилка относится к v1 одной ключевой бизнес-цепочки. Более сложную систему оценим отдельно, ориентир — от 1,7 млн ₽.'
       : 'Покажем состав работ и уточним границы scope до договора.',
-    priceLow: price.min,
-    priceHigh: price.max,
-    weeksLow,
-    weeksHigh,
-    priceLabel: productPriceLabel(product),
-    weeksLabel: productTermLabel(product),
-    deliveryLabel: productTermLabel(product),
+    priceLow,
+    priceHigh,
+    weeksLow: weeksLowFinal,
+    weeksHigh: weeksHighFinal,
+    priceLabel: hasOverflow ? priceLabelV3(priceLow, priceHigh) : productPriceLabel(product),
+    weeksLabel: hasOverflow && isWeeksRange ? weeksLabelV3(weeksLowFinal, weeksHighFinal) : productTermLabel(product),
+    deliveryLabel: hasOverflow && isWeeksRange ? weeksLabelV3(weeksLowFinal, weeksHighFinal) : productTermLabel(product),
     productSlug: product.slug,
     core: product.detail?.includes ?? [],
     later: [],
     reason: direct
       ? 'Вы пришли из конкретного формата — сохраняем его публичную цену и срок, пока задача остаётся в его рамках.'
       : 'По выбранной цели это конкретный публичный формат, поэтому показываем его цену и срок.',
-    manual: product.slug === 'data-exchange'
-      ? ['обследование: API, 1С, legacy-системы и качество данных']
-      : ['scope и материалы уточним до договора'],
+    manual: [
+      ...(product.slug === 'data-exchange'
+        ? ['обследование: API, 1С, legacy-системы и качество данных']
+        : ['scope и материалы уточним до договора']),
+      ...overflowFlags(overflow),
+    ],
     plan: 'open',
     link: { href: `/products/${product.slug}/`, label: `Страница продукта «${product.name}»` },
   };

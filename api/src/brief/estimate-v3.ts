@@ -10,9 +10,11 @@ import {
   dataflowAdders,
   formats,
   manageAdders,
+  productBaselineOverride,
   productTaskExpectation,
   publicProducts,
   updateGoalPrice,
+  type Baseline,
   type FormatId,
   type ProductSlug,
 } from './generated-estimator-data.ts';
@@ -60,6 +62,52 @@ export function recommendFormatV3(a: AnswersV3Flat): FormatId {
   return 'custom';
 }
 
+/** Идентично site/src/data/brief-estimator.ts::productBaseline() — control-flow, не данные. */
+function productBaseline(product: ProductSlug, format: FormatId): Baseline {
+  const base = formats[format];
+  const extra = productBaselineOverride[product];
+  return {
+    actions: extra?.actions ? [...base.includesActions, ...extra.actions] : base.includesActions,
+    manage: extra?.manage ? [...base.includesManage, ...extra.manage] : base.includesManage,
+    dataflow: extra?.dataflow ? [...base.includesDataflow, ...extra.dataflow] : base.includesDataflow,
+  };
+}
+
+/** Идентично site/src/data/brief-estimator.ts::computeDirectOverflow() — control-flow, не данные. */
+function computeDirectOverflow(
+  product: ProductSlug,
+  a: AnswersV3Flat,
+  applyWeeks: boolean,
+): { priceMin: number; priceMax: number; weeksMin: number; weeksMax: number } {
+  const format = recommendFormatV3(a);
+  const baseline = productBaseline(product, format);
+
+  let priceMin = 0;
+  let priceMax = 0;
+  let weeksMin = 0;
+  let weeksMax = 0;
+
+  const collect = (ids: string[], included: string[], adders: Record<string, Adder>) => {
+    for (const id of ids) {
+      if (included.includes(id)) continue;
+      const adder = adders[id];
+      if (!adder) continue;
+      priceMin += adder.price.min;
+      priceMax += adder.price.max;
+      if (applyWeeks) {
+        weeksMin += adder.weeks?.min ?? 0;
+        weeksMax += adder.weeks?.max ?? 0;
+      }
+    }
+  };
+
+  collect(list(a.actions), baseline.actions, actionAdders);
+  collect(list(a.manage), baseline.manage, manageAdders);
+  collect(list(a.dataflow), baseline.dataflow, dataflowAdders);
+
+  return { priceMin, priceMax, weeksMin, weeksMax };
+}
+
 export function estimateV3Flat(a: AnswersV3Flat): {
   kind: string;
   priceLow: number;
@@ -74,14 +122,19 @@ export function estimateV3Flat(a: AnswersV3Flat): {
     if (!isProductSlug(a.product)) throw new Error(`Unknown product slug: ${a.product}`);
     const product = publicProducts[a.product];
     if (contextStillMatches(a, a.product)) {
+      // SKU остаётся base: canonical price/term не меняются, но actions/manage/dataflow
+      // сверх его baseline добавляют дельту (как обычные надбавки). В рамках baseline — 0.
+      const applyWeeks = product.deliveryKind === 'weeks-range';
+      const overflow = computeDirectOverflow(a.product, a, applyWeeks);
+      const hasOverflow = overflow.priceMin > 0 || overflow.priceMax > 0;
       return {
         kind: recommendFormatV3(a),
-        priceLow: product.min,
-        priceHigh: product.max,
-        termLow: product.termLow,
-        termHigh: product.termHigh,
-        priceLabel: product.priceLabel,
-        deliveryLabel: product.deliveryLabel,
+        priceLow: product.min + overflow.priceMin,
+        priceHigh: product.max + overflow.priceMax,
+        termLow: applyWeeks ? product.termLow + overflow.weeksMin : product.termLow,
+        termHigh: applyWeeks ? product.termHigh + overflow.weeksMax : product.termHigh,
+        priceLabel: hasOverflow ? undefined : product.priceLabel,
+        deliveryLabel: hasOverflow && applyWeeks ? undefined : product.deliveryLabel,
         product: a.product,
       };
     }

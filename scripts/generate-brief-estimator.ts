@@ -18,6 +18,7 @@ import {
   dataflowAdders,
   formatBase,
   manageAdders,
+  productBaselineOverride,
   productTaskExpectation,
   updateGoalPrice,
   type FormatId,
@@ -38,6 +39,7 @@ const publicProducts = Object.fromEntries(
         priceKind: product.pricing.kind,
         min: product.pricing.min,
         max: product.pricing.max,
+        deliveryKind: product.delivery.kind,
         termLow: ongoing ? 0 : product.delivery.min ?? 0,
         termHigh: ongoing ? 0 : product.delivery.max ?? 0,
         priceLabel: productPriceLabel(product),
@@ -67,6 +69,7 @@ interface Range {
 export interface PublicProduct extends Range {
   name: string;
   priceKind: 'fixed' | 'range' | 'monthly-range';
+  deliveryKind: 'workdays-range' | 'weeks-range' | 'ongoing';
   termLow: number;
   termHigh: number;
   priceLabel: string;
@@ -101,6 +104,14 @@ export const dataflowAdders: Record<string, Adder> = ${json(dataflowAdders)};
 export const updateGoalPrice: Record<string, Range> = ${json(updateGoalPrice)};
 
 export const productTaskExpectation: Partial<Record<ProductSlug, string>> = ${json(productTaskExpectation)};
+
+export interface Baseline {
+  actions: string[];
+  manage: string[];
+  dataflow: string[];
+}
+
+export const productBaselineOverride: Partial<Record<ProductSlug, Partial<Baseline>>> = ${json(productBaselineOverride)};
 `;
 
 const outPath = fileURLToPath(new URL('../api/src/brief/generated-estimator-data.ts', import.meta.url));

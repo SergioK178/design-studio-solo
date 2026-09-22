@@ -9,7 +9,7 @@
  * собирается отдельно, см. отчёт фазы deploy-feasibility).
  */
 
-import { productPriceRange, productWeeks, type ProductSlug } from './products';
+import { extensionPrices, productPriceRange, productWeeks, type ProductSlug } from './products';
 
 export interface Range {
   min: number;
@@ -127,11 +127,27 @@ export const formatBase: Record<FormatId, FormatBase> = {
   },
 };
 
+/**
+ * Числовой диапазон канонической строки цены дополнения из products.ts (`'25–80 тыс. ₽'`).
+ * Не изобретает числа — только парсит уже согласованный текст, чтобы бриф не держал
+ * расходящуюся ручную копию (book/crm/onec ниже используют канонические вилки).
+ */
+function canonicalExtensionPrice(id: string): Range {
+  const entry = extensionPrices.find((item) => item.id === id);
+  if (!entry) throw new Error(`products.ts: нет extensionPrices "${id}"`);
+  const match = entry.price.match(/(\d+)\s*[–-]\s*(\d+)\s*тыс/);
+  if (!match) throw new Error(`products.ts: extensionPrices "${id}" не в формате "N–M тыс. ₽": "${entry.price}"`);
+  return { min: Number(match[1]) * 1000, max: Number(match[2]) * 1000 };
+}
+
 export const actionAdders: Record<string, Adder> = {
   pick: { price: { min: 25000, max: 50000 } },
   calc: { price: { min: 25000, max: 50000 } },
-  book: { price: { min: 30000, max: 60000 } },
-  buy: { price: { min: 60000, max: 120000 }, weeks: { min: 1, max: 1 } },
+  /** Канонический диапазон — products.ts extensionPrices['online-booking']. */
+  book: { price: canonicalExtensionPrice('online-booking') },
+  // `buy` намеренно не хранит надбавку: recommendFormat() всегда направляет выбор
+  // действия «купить и оплатить» в формат shop, а shop.includesActions уже содержит
+  // 'buy' — надбавка была недостижима (см. отчёт фазы pricing-alignment).
   login: { price: { min: 80000, max: 160000 }, weeks: { min: 1, max: 2 } },
   data: { price: { min: 60000, max: 120000 }, weeks: { min: 1, max: 2 } },
 };
@@ -145,11 +161,16 @@ export const manageAdders: Record<string, Adder> = {
 };
 
 export const dataflowAdders: Record<string, Adder> = {
-  crm: { price: { min: 25000, max: 50000 } },
+  /** Канонический диапазон — products.ts extensionPrices['crm']. */
+  crm: { price: canonicalExtensionPrice('crm') },
   sheet: { price: { min: 15000, max: 30000 } },
   email: { price: { min: 15000, max: 30000 } },
   site: { price: { min: 20000, max: 40000 } },
-  onec: { price: { min: 60000, max: 120000 }, weeks: { min: 1, max: 2 } },
+  /**
+   * Канонический диапазон цены — products.ts extensionPrices['integration-1c'].
+   * Срок там не число («по задаче»), поэтому недельная оценка остаётся brief-only.
+   */
+  onec: { price: canonicalExtensionPrice('integration-1c'), weeks: { min: 1, max: 2 } },
   doc: { price: { min: 30000, max: 60000 } },
 };
 
@@ -178,6 +199,90 @@ export function contextStillMatches(task: string, productSlug: ProductSlug): boo
   if (!task) return true;
   const expected = productTaskExpectation[productSlug];
   return !expected || expected === task;
+}
+
+export interface Baseline {
+  actions: string[];
+  manage: string[];
+  dataflow: string[];
+}
+
+/**
+ * Точечные добавления к формат-уровневому baseline для SKU, где агрегированный формат
+ * недооценивает то, что уже входит в конкретный продукт. Минимальная структура —
+ * только то, что действительно расходится с форматом; не таксономия на все 21 SKU.
+ */
+export const productBaselineOverride: Partial<Record<ProductSlug, Partial<Baseline>>> = {
+  // Documents — продукт «создание документов/отчётов»: свой dataflow-выбор 'doc' уже оплачен.
+  documents: { dataflow: ['doc'] },
+  // Booking — продукт «личный кабинет и запись», агрегированный формат company baseline
+  // 'book' не содержит: своя запись на время уже часть SKU, не надбавка.
+  booking: { actions: ['book'] },
+};
+
+/** SKU/формат → что уже входит в base price/срок продукта (используется прямым SKU-контекстом). */
+export function productBaseline(product: ProductSlug, format: FormatId): Baseline {
+  const base = formatBase[format];
+  const extra = productBaselineOverride[product];
+  return {
+    actions: extra?.actions ? [...base.includesActions, ...extra.actions] : base.includesActions,
+    manage: extra?.manage ? [...base.includesManage, ...extra.manage] : base.includesManage,
+    dataflow: extra?.dataflow ? [...base.includesDataflow, ...extra.dataflow] : base.includesDataflow,
+  };
+}
+
+export interface DirectOverflow {
+  priceMin: number;
+  priceMax: number;
+  weeksMin: number;
+  weeksMax: number;
+  actions: string[];
+  manage: string[];
+  dataflow: string[];
+}
+
+/**
+ * Прямой SKU-контекст: сам SKU остаётся базой (canonical price/term), но выбор
+ * actions/manage/dataflow сверх его baseline добавляет дельту — как обычные надбавки брифа.
+ * Выбор в рамках baseline даёт дельту 0 (без double counting). Не меняет recommendFormat —
+ * это отдельная функция, применяемая только поверх уже зафиксированного SKU.
+ */
+export function computeDirectOverflow(
+  product: ProductSlug,
+  a: { task: string; actions: string[]; manage: string[]; dataflow: string[] },
+  applyWeeks: boolean,
+): DirectOverflow {
+  const format = recommendFormat(a.task, a.actions);
+  const baseline = productBaseline(product, format);
+
+  let priceMin = 0;
+  let priceMax = 0;
+  let weeksMin = 0;
+  let weeksMax = 0;
+  const outActions: string[] = [];
+  const outManage: string[] = [];
+  const outDataflow: string[] = [];
+
+  const collect = (ids: string[], included: string[], adders: Record<string, Adder>, bucket: string[]) => {
+    for (const id of ids) {
+      if (included.includes(id)) continue;
+      const adder = adders[id];
+      if (!adder) continue;
+      priceMin += adder.price.min;
+      priceMax += adder.price.max;
+      if (applyWeeks) {
+        weeksMin += adder.weeks?.min ?? 0;
+        weeksMax += adder.weeks?.max ?? 0;
+      }
+      bucket.push(id);
+    }
+  };
+
+  collect(a.actions, baseline.actions, actionAdders, outActions);
+  collect(a.manage, baseline.manage, manageAdders, outManage);
+  collect(a.dataflow, baseline.dataflow, dataflowAdders, outDataflow);
+
+  return { priceMin, priceMax, weeksMin, weeksMax, actions: outActions, manage: outManage, dataflow: outDataflow };
 }
 
 export function recommendFormat(task: string, actions: string[]): FormatId {
