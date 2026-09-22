@@ -21,10 +21,22 @@ interface LeadBody {
   hp?: string;
   ts: number;
   utm?: Record<string, string>;
+  draftId?: string;
+  submissionId?: string;
 }
 
 function clip(value: unknown): string {
   return typeof value === 'string' ? value.slice(0, MAX_TEXT) : '';
+}
+
+function validId(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-z0-9-]{16,80}$/i.test(value);
+}
+
+function validContact(contact: LeadContact | undefined): boolean {
+  const name = clip(contact?.name).trim();
+  const value = clip(contact?.phone).trim();
+  return name.length > 0 && value.length >= 2 && /^[\p{L}\p{N}@+._()\-\s/]+$/u.test(value);
 }
 
 /**
@@ -55,7 +67,7 @@ async function parseBody(c: { req: { header: (name: string) => string | undefine
   const form = await c.req.formData();
   const answers: Answers = {};
   for (const [key, value] of form.entries()) {
-    if (typeof value === 'string' && !['hp', 'ts'].includes(key)) answers[key] = value;
+    if (typeof value === 'string' && !['hp', 'ts', 'name', 'phone', 'comment', 'draftId', 'submissionId'].includes(key)) answers[key] = value;
   }
   // Noscript-форма не знает product/task (см. комментарий у contextFromReferer выше) —
   // восстанавливаем их из Referer, свободный текст без контекста уходит как task=other.
@@ -64,26 +76,45 @@ async function parseBody(c: { req: { header: (name: string) => string | undefine
   if (!answers.task) answers.task = (answers.product && fromReferer.task) || 'other';
   return {
     answers,
+    contact: { name: String(form.get('name') ?? ''), phone: String(form.get('phone') ?? ''), comment: String(form.get('comment') ?? '') },
     hp: String(form.get('hp') ?? ''),
     ts: Number(form.get('ts') ?? 0),
+    draftId: String(form.get('draftId') ?? '') || undefined,
+    submissionId: String(form.get('submissionId') ?? '') || undefined,
   };
 }
 
 export function registerLead(app: Hono, db: Database, deps: { relay: typeof sendRelay }): void {
   app.post('/api/lead', async (c) => {
-    const body = await parseBody(c);
+    let body: LeadBody;
+    try {
+      body = await parseBody(c);
+    } catch {
+      return c.json({ error: 'invalid_payload' }, 400);
+    }
     const ip = c.req.header('x-forwarded-for') ?? 'unknown';
 
     if (body.hp || Date.now() - body.ts < MIN_FILL_MS || !allow(ip)) {
       return c.json({ ok: true });
     }
 
+    if (!body.answers || typeof body.answers !== 'object') return c.json({ error: 'invalid_payload' }, 400);
+    if (body.answers.product && !isProductSlug(body.answers.product)) return c.json({ error: 'invalid_product' }, 400);
+    if (!validContact(body.contact)) return c.json({ error: 'invalid_contact' }, 400);
+    if (body.draftId && !validId(body.draftId)) return c.json({ error: 'invalid_draft' }, 400);
+    if (body.submissionId && !validId(body.submissionId)) return c.json({ error: 'invalid_submission' }, 400);
+
+    if (body.submissionId) {
+      const existing = db.prepare('SELECT id FROM leads WHERE submission_id = ?').get(body.submissionId) as { id: number } | undefined;
+      if (existing) return c.json({ ok: true, id: existing.id, duplicate: true });
+    }
+
     const result = estimate(body.answers);
 
     const info = db
       .prepare(
-        `INSERT INTO leads (kind, price_low, price_high, term_low, term_high, utm_json, source)
-         VALUES (@kind, @price_low, @price_high, @term_low, @term_high, @utm_json, 'brief')`,
+        `INSERT INTO leads (kind, price_low, price_high, term_low, term_high, price_label, delivery_label, draft_id, submission_id, utm_json, source)
+         VALUES (@kind, @price_low, @price_high, @term_low, @term_high, @price_label, @delivery_label, @draft_id, @submission_id, @utm_json, 'brief')`,
       )
       .run({
         kind: result.kind,
@@ -91,6 +122,10 @@ export function registerLead(app: Hono, db: Database, deps: { relay: typeof send
         price_high: result.priceHigh,
         term_low: result.termLow,
         term_high: result.termHigh,
+        price_label: result.priceLabel,
+        delivery_label: result.weeksLabel,
+        draft_id: body.draftId ?? null,
+        submission_id: body.submissionId ?? null,
         utm_json: JSON.stringify(body.utm ?? {}),
       });
 
@@ -109,13 +144,18 @@ export function registerLead(app: Hono, db: Database, deps: { relay: typeof send
       summary,
     });
 
-    await deps.relay({
-      id,
-      kind: result.kind,
-      priceLabel: result.priceLabel,
-      panelUrl: `${process.env.PANEL_BASE_URL ?? ''}/admin/leads#${id}`,
-      summary: buildRelaySummary(id, body, summary, result.priceLabel),
-    });
+    try {
+      await deps.relay({
+        id,
+        kind: result.kind,
+        priceLabel: result.priceLabel,
+        panelUrl: `${process.env.PANEL_BASE_URL ?? ''}/admin/leads#${id}`,
+        summary: buildRelaySummary(id, body, summary, result.priceLabel),
+      });
+    } catch {
+      // A saved lead remains successful even if the optional notification path is unavailable.
+      console.warn(`Lead ${id} saved, but relay notification failed.`);
+    }
 
     return c.json({ ok: true, id });
   });

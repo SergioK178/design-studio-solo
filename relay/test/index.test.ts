@@ -49,3 +49,9 @@ test('invalid token is rejected without calling the Bot API', async () => {
   expect(res.status).toBe(401);
   expect(fetch).not.toHaveBeenCalled();
 });
+
+test('Telegram failure is observable to the API relay client', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 500 })));
+  const res = await post({ id: 1, kind: 'start', priceLabel: '1 ₽', panelUrl: 'https://panel.example/' }, env.RELAY_TOKEN);
+  expect(res.status).toBe(502);
+});

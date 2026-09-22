@@ -2,6 +2,10 @@ import { beforeEach, expect, test } from 'vitest';
 import { openDb } from '../src/db.ts';
 import { createApp } from '../src/server.ts';
 
+// Даты относительно сегодняшнего дня в часовом поясе админки, чтобы «просрочено» не зависело от календаря.
+const dayKey = (offsetDays: number) =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: process.env.ADMIN_TIMEZONE ?? 'Europe/Moscow' }).format(new Date(Date.now() + offsetDays * 86_400_000));
+
 let app: ReturnType<typeof createApp>;
 let db: ReturnType<typeof openDb>;
 
@@ -9,9 +13,9 @@ beforeEach(() => {
   db = openDb(':memory:');
   app = createApp(db);
   db.prepare(`INSERT INTO leads (kind, price_low, price_high, term_low, term_high, source, status, next_action, next_action_at)
-    VALUES ('company', 140000, 260000, 2, 3, 'brief', 'new', 'Написать в Telegram', '2026-07-15')`).run();
+    VALUES ('company', 140000, 260000, 2, 3, 'brief', 'new', 'Написать в Telegram', '${dayKey(0)}')`).run();
   db.prepare(`INSERT INTO leads (kind, price_low, price_high, term_low, term_high, source, status, next_action, next_action_at)
-    VALUES ('catalog', 220000, 420000, 3, 5, 'brief', 'in_progress', 'Позвонить', '2026-07-14')`).run();
+    VALUES ('catalog', 220000, 420000, 3, 5, 'brief', 'in_progress', 'Позвонить', '${dayKey(-1)}')`).run();
   db.prepare(`INSERT INTO lead_details (lead_id, name, contact, comment, answers_json, summary)
     VALUES (1, 'Анна', '@anna', 'после обеда', '{"task":"present"}', 'Корпоративный сайт\nЗадача: представить компанию')`).run();
 });

@@ -32,8 +32,8 @@ export function estimate(answers: Answers): Estimate {
     priceHigh: result.priceHigh,
     termLow: result.termLow,
     termHigh: result.termHigh,
-    priceLabel: priceLabel(result.priceLow, result.priceHigh),
-    weeksLabel: weeksLabel(result.termLow, result.termHigh),
+    priceLabel: result.priceLabel ?? priceLabel(result.priceLow, result.priceHigh),
+    weeksLabel: result.deliveryLabel ?? weeksLabel(result.termLow, result.termHigh),
     version: 'v3',
   };
 }

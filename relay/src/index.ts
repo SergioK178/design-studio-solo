@@ -28,11 +28,12 @@ export default {
       ? `${payload.summary}\n${payload.panelUrl}`
       : `Заявка №${payload.id} · ${payload.kind} · ${payload.priceLabel}\n${payload.panelUrl}`;
 
-    await fetch(`https://api.telegram.org/bot${env.TG_BOT_TOKEN}/sendMessage`, {
+    const telegram = await fetch(`https://api.telegram.org/bot${env.TG_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: env.TG_CHAT_ID, text }),
     });
+    if (!telegram.ok) return new Response('Telegram delivery failed', { status: 502 });
 
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,

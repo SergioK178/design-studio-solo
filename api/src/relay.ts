@@ -13,7 +13,7 @@ export async function sendRelay(payload: RelayPayload): Promise<void> {
   if (!relayUrl) return;
 
   try {
-    await fetch(relayUrl, {
+    const response = await fetch(relayUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -22,6 +22,7 @@ export async function sendRelay(payload: RelayPayload): Promise<void> {
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(3000),
     });
+    if (!response.ok) console.warn(`Relay notification failed with HTTP ${response.status}.`);
   } catch {
     // relay failures never block lead submission
   }

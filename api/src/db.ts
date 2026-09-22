@@ -14,10 +14,16 @@ export function openDb(path: string): Database.Database {
     .filter((name) => name.endsWith('.sql'))
     .sort();
 
-  for (const file of files) {
-    const sql = readFileSync(`${migrationsDir}/${file}`, 'utf8');
-    db.exec(sql);
-  }
+  db.exec('CREATE TABLE IF NOT EXISTS schema_migrations (name TEXT PRIMARY KEY, applied_at TEXT NOT NULL DEFAULT (strftime(\'%Y-%m-%dT%H:%M:%fZ\', \'now\')))');
+  const applied = db.prepare('SELECT 1 FROM schema_migrations WHERE name = ?');
+  const markApplied = db.prepare('INSERT INTO schema_migrations (name) VALUES (?)');
+  const apply = db.transaction((file: string) => {
+    if (applied.get(file)) return;
+    db.exec(readFileSync(`${migrationsDir}/${file}`, 'utf8'));
+    markApplied.run(file);
+  });
+
+  for (const file of files) apply(file);
 
   return db;
 }

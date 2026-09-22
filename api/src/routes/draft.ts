@@ -1,12 +1,21 @@
 import type { Hono } from 'hono';
 import type { Database } from 'better-sqlite3';
 import { estimate, type Answers } from '../brief/estimate.ts';
+import { isProductSlug } from '../brief/estimate-v3.ts';
 
 const DRAFT_TTL_MS = 60 * 24 * 60 * 60 * 1000;
 
 export function registerDraft(app: Hono, db: Database): void {
   app.post('/api/draft', async (c) => {
-    const body = await c.req.json<{ id?: string; answers: Answers }>();
+    let body: { id?: string; answers?: Answers };
+    try {
+      body = await c.req.json<{ id?: string; answers?: Answers }>();
+    } catch {
+      return c.json({ error: 'invalid_payload' }, 400);
+    }
+    if (!body.answers || typeof body.answers !== 'object') return c.json({ error: 'invalid_payload' }, 400);
+    if (body.id && (typeof body.id !== 'string' || !/^[a-z0-9-]{16,80}$/i.test(body.id))) return c.json({ error: 'invalid_draft' }, 400);
+    if (body.answers.product && !isProductSlug(body.answers.product)) return c.json({ error: 'invalid_product' }, 400);
     const id = body.id ?? crypto.randomUUID();
     const result = estimate(body.answers);
     const expiresAt = new Date(Date.now() + DRAFT_TTL_MS).toISOString();

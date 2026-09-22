@@ -21,7 +21,15 @@ test('POST /api/draft creates a draft and returns id + estimate', async () => {
   expect(res.status).toBe(200);
   const body = await res.json();
   expect(body.id).toBeTruthy();
-  expect(body.estimate.priceLow).toBe(140000);
+  expect(body.estimate.priceLow).toBe(220000);
+});
+
+test('POST /api/draft preserves a known optional product context', async () => {
+  const productAnswers = { version: 'v3', product: 'quiz', task: 'launch' };
+  const res = await app.request('/api/draft', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ answers: productAnswers }) });
+  expect(res.status).toBe(200);
+  const body = await res.json();
+  expect(body.estimate.priceLow).toBe(120000);
 });
 
 test('GET /api/draft/:id restores saved answers', async () => {
