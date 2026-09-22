@@ -1,0 +1,117 @@
+---
+import Glyph from './parts/Glyph.astro';
+
+/**
+ * Глава 10. Почтовый контур.
+ *
+ * Первым уровнем — что получил клиент: доменная почта и разделённые сценарии
+ * общения. Аббревиатуры протоколов идут вторым уровнем мелкими тегами: они
+ * подтверждают, что работа сделана всерьёз, но продавать кейс должны не они.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { infra } = presentation;
+---
+
+<section class="scene infra" data-bg="ink">
+  <div class="wrap chapter">
+    <div class="chapter-copy">
+      <p class="s-label"><b>06</b> {infra.eyebrow}</p>
+      <h2 class="s-title">
+        {infra.title.map((line: string, index: number) => (
+          <>{index > 0 && <br />}{line}</>
+        ))}
+      </h2>
+      {infra.text.map((paragraph: string) => (
+        <p class="s-text" set:html={paragraph} />
+      ))}
+    </div>
+
+    <div class="chapter-visual project-layer">
+      <ul class="boxes">
+        {infra.boxes.map((box: any) => (
+          <li class="box">
+            <span class="box-icon"><Glyph name={box.icon} /></span>
+            <span class="box-body">
+              <b>{box.address}</b>
+              <span>{box.purpose}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <div class="tags">
+        {infra.tags.map((tag: string) => <span class="p-chip">{tag}</span>)}
+      </div>
+
+      <p class="evidence infra-note">{infra.note}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .boxes {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid var(--line-light);
+    border-radius: 12px;
+    background: var(--p-ink-900);
+    padding: 18px 20px;
+  }
+
+  .box-icon {
+    display: inline-flex;
+    width: 42px;
+    height: 42px;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgb(141 215 193 / 0.12);
+    color: var(--p-mint-400);
+    --icon-size: 22px;
+  }
+
+  .box-body {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  /* Адрес набран моноширинным: это техническая строка, которую копируют, а не
+     заголовок, который читают. */
+  .box-body b {
+    overflow-wrap: anywhere;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .box-body span {
+    color: rgb(247 243 236 / 0.5);
+    font-size: 12.5px;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 22px;
+  }
+
+  .infra-note {
+    margin-top: 20px;
+  }
+</style>

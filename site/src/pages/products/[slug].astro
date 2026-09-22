@@ -4,7 +4,7 @@ import Nav from '../../components/Nav.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import ProofModule from '../../components/ProofModule.astro';
-import { briefHref, detailedProducts, extensionPrices, projectSteps } from '../../data/products';
+import { briefHref, detailedProducts, extensionPrices, productPriceLabel, productTermLabel, projectSteps } from '../../data/products';
 import { site } from '../../data/site';
 
 export function getStaticPaths() {
@@ -18,9 +18,9 @@ const steps = projectSteps(product);
 const recommended = extensionPrices.filter((extension) => product.recommendedExtensions?.includes(extension.id)).slice(0, 6);
 ---
 
-<Base title={`${product.name} · 3K Studio`}>
+<Base title={`${product.name} · 3D Studio`}>
   <Nav />
-  <PageHeader eyebrow={`${product.term} · ${product.price}`} title={product.name} lead={product.summary} tone="gold" />
+  <PageHeader eyebrow={`${productTermLabel(product)} · ${productPriceLabel(product)}`} title={product.name} lead={product.summary} tone="gold" />
   <main class="product" data-bg="paper">
     {proof && <ProofModule proof={proof} briefHref={briefHref(product)} />}
 
@@ -81,14 +81,14 @@ const recommended = extensionPrices.filter((extension) => product.recommendedExt
     {product.cta === 'discuss' ? (
       <section class="wrap cta" data-reveal>
         <h2>Такие проекты начинаются с разговора</h2>
-        <a class="btn-gold" href={site.telegramUrl} data-magnetic>Обсудить задачу {site.telegram}</a>
-        <a class="brief-link" href={briefHref(product)}>Или опишите задачу в брифе →</a>
+        <a class="btn-gold" href={site.telegramUrl} data-magnetic>Обсудить проект ↗</a>
+        <a class="text-action" href={briefHref(product)}>Или пройти бриф <span class="arrow" aria-hidden="true">→</span></a>
       </section>
     ) : (
       <section class="wrap cta" data-reveal>
         <h2>Проверим, попадает ли задача в этот формат?</h2>
-        <a class="btn-gold" href={briefHref(product)} data-magnetic>Разобрать задачу в брифе</a>
-        <a class="outline" href={site.telegramUrl} data-magnetic>Написать {site.telegram}</a>
+        <a class="btn-gold" href={briefHref(product)} data-magnetic>Пройти бриф →</a>
+        <a class="btn-outline" href={site.telegramUrl} data-magnetic>Обсудить проект ↗</a>
       </section>
     )}
   </main>
@@ -121,7 +121,7 @@ const recommended = extensionPrices.filter((extension) => product.recommendedExt
   }
 
   .mono {
-    color: var(--color-blue);
+    color: var(--color-blue-legacy);
   }
 
   p,
@@ -181,7 +181,7 @@ const recommended = extensionPrices.filter((extension) => product.recommendedExt
     font-family: var(--font-display);
     font-size: 15px;
     font-weight: 800;
-    color: var(--color-blue);
+    color: var(--color-blue-legacy);
   }
 
   .steps li strong {
@@ -261,7 +261,7 @@ const recommended = extensionPrices.filter((extension) => product.recommendedExt
   }
 
   .options-grid strong {
-    color: var(--color-blue);
+    color: var(--color-blue-legacy);
     font-size: 18px;
   }
 
@@ -283,22 +283,6 @@ const recommended = extensionPrices.filter((extension) => product.recommendedExt
   .cta h2 {
     flex-basis: 100%;
     margin-bottom: 10px;
-  }
-
-  .outline {
-    border: 1.5px solid rgb(23 21 15 / 0.3);
-    padding: 17.5px 26px;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .brief-link {
-    color: rgb(23 21 15 / 0.62);
-    font-weight: 600;
-    text-decoration: underline;
-    text-decoration-color: var(--color-gold);
-    text-decoration-thickness: 2px;
-    text-underline-offset: 6px;
   }
 
   @media (max-width: 900px) {

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <title>Структура нити</title>
+  <path d="m8 5 16 22M16 5l8 11-8 11L8 16 16 5ZM24 5 8 27" stroke="#9B82ED" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m11.8 10.3 8.4 11.4M20.2 10.3l-8.4 11.4" stroke="#D8CCFF" stroke-width="1.4" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,55 @@
+---
+import '../../styles/case-olginka.css';
+import CaseBar from './parts/CaseBar.astro';
+import SceneHero from './SceneHero.astro';
+import SceneContext from './SceneContext.astro';
+import SceneScenarios from './SceneScenarios.astro';
+import SceneSystem from './SceneSystem.astro';
+import SceneNumbers from './SceneNumbers.astro';
+import SceneInterface from './SceneInterface.astro';
+import ScenePerformance from './ScenePerformance.astro';
+import SceneOutcome from './SceneOutcome.astro';
+
+/**
+ * Кейс «Ольгинка» — восемь сцен вместо каталога экранов.
+ *
+ * Порядок глав: идея → доказательство → следующая идея → доказательство.
+ * Три визуальных слоя (studio / project / evidence) чередуются: если раскатать
+ * дизайн клиента на весь кейс, исчезнет авторство студии; если оставить всё в
+ * скриншотах — исчезнет ощущение craft.
+ *
+ * Финальный акт закрывает три вопроса подряд и не вводит новых идей:
+ * как это работает (интерфейс) → насколько хорошо (производительность) →
+ * чем закончилось (финал).
+ *
+ * Бюджет движения — ровно три заметных интерактивных момента: вход в hero
+ * (сцена 1), переключатель сценария (сцена 3) и липкая сцена интерфейса
+ * (сцена 6). Остальное работает без анимации.
+ */
+interface Props {
+  title: string;
+  stack: string[];
+  presentation: any;
+}
+
+const { title, stack, presentation } = Astro.props;
+---
+
+<CaseBar title={title} />
+
+<main class="olginka-case" data-bg="paper">
+  <SceneHero title={title} presentation={presentation} />
+  <SceneContext presentation={presentation} />
+  <SceneScenarios presentation={presentation} />
+  <SceneSystem presentation={presentation} />
+  <SceneNumbers presentation={presentation} />
+  <SceneInterface presentation={presentation} />
+  <ScenePerformance stack={stack} presentation={presentation} />
+  <SceneOutcome presentation={presentation} />
+</main>
+
+<script>
+  import { initCaseMode } from '../../scripts/case-mode';
+
+  initCaseMode();
+</script>

@@ -1,0 +1,324 @@
+---
+import AssetSlot from '../AssetSlot.astro';
+import PhotoFrame from './parts/PhotoFrame.astro';
+import { site } from '../../data/site';
+
+/**
+ * Сцена 8. Финал в три уровня, а не ещё одна аналитическая глава:
+ * большой кадр → компактный итог → доказательство и CTA.
+ *
+ * На кадре стоит только утверждение: после тёмной главы читателю нужна точка,
+ * а не новые показатели. Итог занимает один экран — три факта, по абзацу про
+ * результат и роль студии. Здесь же единственный полноразмерный скриншот на
+ * весь кейс: всё остальное выше пересобрано нативно, и «целое» человек видит
+ * ровно один раз — в конце.
+ *
+ * В доказательствах только измеримые факты проекта: конверсионной аналитики по
+ * объекту нет, поэтому процентов «роста заявок» здесь тоже нет.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { finale, photos } = presentation;
+---
+
+<section class="outcome">
+  <div class="outcome-shot project-layer">
+    <PhotoFrame
+      photo={photos.sunset}
+      ratio="21 / 9"
+      graded={false}
+      showCaption={false}
+      kenburns
+      class="outcome-photo"
+    />
+    <p class="outcome-statement">{finale.statement}</p>
+  </div>
+
+  <div class="wrap">
+    <p class="outcome-credits">{finale.credits}</p>
+
+    <div class="outcome-summary">
+      <div class="outcome-left">
+        <div class="outcome-proof" data-reveal-group>
+          {finale.proof.map((item: any) => (
+            <article>
+              <strong>{item.value}</strong>
+              <span>{item.label}</span>
+            </article>
+          ))}
+        </div>
+
+        <div class="outcome-proof-shot" data-reveal>
+          <AssetSlot
+            label="Главный экран проекта"
+            src="/assets/works/guest-house/screens/hero.webp"
+            alt="Первый экран сайта «Приморская 22А» с переключателем «Для себя / Для инвестора»"
+            frame="browser"
+            tone="dark"
+            url="olginka-residence.online"
+            ratio="16 / 10"
+          />
+        </div>
+      </div>
+
+      <div class="outcome-right" data-reveal>
+        <div class="outcome-notes">
+          <div>
+            <span class="s-label">Результат</span><i class="s-rule"></i>
+            <p>{finale.result}</p>
+          </div>
+          <div>
+            <span class="s-label">3D Studio</span><i class="s-rule"></i>
+            <p>{finale.studio}</p>
+          </div>
+        </div>
+
+        <!-- Подпись к скриншоту живёт в правой колонке и прижата к её низу:
+             по вертикали она встаёт вровень с нижним краем кадра. -->
+        <p class="outcome-shot-note">
+          Живой сайт, снятый как есть — единственный полноразмерный скриншот в кейсе.
+          <a href={presentation.projectUrl} target="_blank" rel="noreferrer">Смотреть сайт ↗</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="outcome-cta" data-reveal>
+      <div>
+        <h2>{presentation.cta.title}</h2>
+        <p>{presentation.cta.copy}</p>
+      </div>
+      <div class="cta-actions">
+        <a class="s-btn s-btn--wide" href={site.telegramUrl} data-magnetic>
+          Обсудить проект <span aria-hidden="true">→</span>
+        </a>
+        <a class="cta-link" href={site.telegramUrl}>Обсудить проект ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .outcome {
+    padding-bottom: clamp(64px, 7vh, 80px);
+  }
+
+  /* Финальный кадр: последнее, что должно остаться, — объект, а не интерфейс,
+     поэтому на нём стоит одно утверждение и больше ничего. Высота ниже вьюпорта:
+     после длинной страницы кадр читается точкой, а не вторым первым экраном. */
+  /* Высота задана жёстко, а не минимумом: у кадра собственная пропорция 21/9,
+     и на широком мониторе она сама разгоняла сцену до 73vh. */
+  .outcome-shot {
+    position: relative;
+    display: grid;
+    height: clamp(380px, 54vh, 560px);
+    margin-bottom: clamp(44px, 5.5vh, 72px);
+  }
+
+  /* Обе стороны заданы явно — инлайновая пропорция PhotoFrame при этом не
+     работает, и кадр берёт высоту сцены, а не собственный 21/9. */
+  .outcome-shot :global(.outcome-photo) {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Кадр стал ниже собственной пропорции, и центральный кроп срезал горизонт:
+     держим линию моря в нижней трети. */
+  .outcome-shot :global(.outcome-photo img) {
+    object-position: 50% 68%;
+  }
+
+  .outcome-shot::after {
+    content: '';
+    grid-area: 1 / 1;
+    background: linear-gradient(180deg, rgb(15 12 20 / 0.24) 0%, rgb(12 9 16 / 0.72) 100%);
+  }
+
+  .outcome-statement {
+    z-index: 2;
+    grid-area: 1 / 1;
+    align-self: end;
+    box-sizing: border-box;
+    max-width: 20ch;
+    margin: 0;
+    padding: clamp(28px, 5vw, 72px);
+    color: var(--p-paper);
+    font-family: var(--font-project);
+    font-size: clamp(28px, 3.8vw, 58px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.06;
+    text-wrap: balance;
+  }
+
+  .outcome-credits {
+    margin: 0;
+    border-bottom: 1px solid var(--line-ink);
+    padding-bottom: 20px;
+    color: rgb(23 21 15 / 0.5);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Слева доказательства (факты и скриншот), справа два коротких вывода:
+     после тёмной главы итог должен читаться одним взглядом. */
+  .outcome-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(32px, 5vw, 72px);
+    margin-top: clamp(36px, 4.5vh, 56px);
+  }
+
+  .outcome-proof {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px var(--col-gap);
+  }
+
+  /* Подписи прижаты к низу колонки: значения разной длины, и без общего низа
+     три факта перестают читаться одной строкой. */
+  .outcome-proof article {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .outcome-proof strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(20px, 1.9vw, 27px);
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+
+  .outcome-proof span {
+    display: block;
+    max-width: 22ch;
+    margin-top: auto;
+    padding-top: 14px;
+    color: var(--text-soft);
+    font-size: var(--font-caption);
+    line-height: 1.5;
+  }
+
+  .outcome-proof-shot {
+    margin-top: clamp(32px, 4vh, 48px);
+  }
+
+  .outcome-right {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .outcome-notes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(24px, 3vw, 40px);
+  }
+
+  .outcome-notes p {
+    margin: 22px 0 0;
+    color: var(--text-soft);
+    font-size: var(--font-secondary);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .outcome-shot-note {
+    max-width: 40ch;
+    margin: auto 0 0;
+    padding-top: clamp(32px, 4vh, 48px);
+    color: var(--text-soft);
+    font-size: var(--font-caption);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  .outcome-shot-note a {
+    display: block;
+    margin-top: 12px;
+    color: var(--color-ochre);
+    text-decoration: none;
+  }
+
+  /* Компактный CTA: после доказательства нужна одна ясная реплика, а не ещё
+     один экран. Левая колонка шире 7/5 — вопрос должен вставать в две строки,
+     а не в четыре. */
+  .outcome-cta {
+    display: grid;
+    grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(28px, 4vw, 56px);
+    box-sizing: border-box;
+    margin-top: clamp(56px, 7vh, 96px);
+    background: rgb(229 164 59 / 0.16);
+    padding: clamp(32px, 3.8vw, 56px);
+  }
+
+  .outcome-cta h2 {
+    max-width: 640px;
+    margin: 0;
+    font-family: var(--font-display);
+    /* Потолок 32px: выше вопрос перестаёт укладываться в две строки, а четыре
+       строки в CTA читаются как ещё один экран продажи. */
+    font-size: clamp(25px, 2.1vw, 32px);
+    letter-spacing: -0.04em;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+
+  .outcome-cta p {
+    max-width: 46ch;
+    margin: 16px 0 0;
+    color: var(--text-soft);
+    font-size: var(--font-body);
+    line-height: 1.5;
+  }
+
+  .cta-actions {
+    align-self: center;
+    display: grid;
+    gap: 16px;
+    justify-items: start;
+  }
+
+  .s-btn--wide {
+    width: min(100%, 320px);
+    height: 58px;
+    padding-inline: 28px 24px;
+    font-size: 16px;
+  }
+
+  .cta-link {
+    color: var(--color-ink);
+    font-size: var(--font-caption);
+  }
+
+  @media (max-width: 900px) {
+    .outcome-summary,
+    .outcome-cta {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .outcome-proof {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    .outcome-notes {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .outcome-shot {
+      min-height: 62vh;
+    }
+
+    .s-btn--wide {
+      width: 100%;
+    }
+  }
+</style>

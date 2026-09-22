@@ -1,0 +1,461 @@
+---
+import Glyph from './parts/Glyph.astro';
+
+/**
+ * Сцена 4. Дизайн-система вместо «текст слева, четыре цветных квадрата справа».
+ *
+ * Всё на этом экране — работающие элементы, а не изображения элементов: кнопки
+ * действительно наводятся, специмен набран тем самым шрифтом, линейка — та же
+ * волосяная линия, что держит ритм всего сайта. Четыре свотча так убедительно
+ * не показывают ничего.
+ *
+ * Страница гайдлайна, а не сетка плиток: две колонки через вертикальную линию,
+ * по два блока в каждой. Слева — как набрано (типографика и структура), справа —
+ * как звучит и как действует (кнопки и голос). Числа шкалы взяты из кода живого
+ * сайта, а не подобраны на глаз: сцена показывает систему, и врать в ней нельзя.
+ *
+ * Глава закрывается палитрой. Ниже стояла пара «исходник / с обработкой», но
+ * грейдинг проекта намеренно настолько тонкий, что на паре кадров разница не
+ * читается: доказательства не было, была только длина.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { artDirection } = presentation;
+
+const weights = ['Regular', 'Medium', 'Semibold', 'Bold'];
+---
+
+<section class="scene system" data-bg="paper">
+  <div class="wrap">
+    <div class="s-heading" data-reveal>
+      <span class="s-label">Визуальная система</span><i class="s-rule"></i>
+      <h2>{artDirection.title}</h2>
+      <p>{artDirection.description}</p>
+    </div>
+
+    <div class="system-cols project-layer" data-reveal-group>
+      <div class="col">
+        <!-- Специмен: один гротеск на весь проект, четыре веса, и рядом —
+             реальная шкала кегля с живого сайта. -->
+        <article class="part part--type">
+          <span class="part-label">Типографика</span>
+          <div class="specimen-row">
+            <p class="specimen">Аа</p>
+            <div class="specimen-meta">
+              <strong>Onest</strong>
+              <span>{weights.join(' / ')}</span>
+            </div>
+          </div>
+          <dl class="type-scale">
+            {artDirection.typeScale.map((step: any) => (
+              <div>
+                <dt>{step.name}</dt>
+                <dd>
+                  <b>{step.size}</b>
+                  <i>{step.detail}</i>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </article>
+
+        <!-- Волосяная линейка вместо карточек — основной разделитель проекта. -->
+        <article class="part part--structure">
+          <span class="part-label">Структура</span>
+          <div class="rule-demo">
+            {artDirection.structure.map((row: any, index: number) => (
+              <div>
+                <span>{String(index + 1).padStart(2, '0')}</span>
+                <b>{row.label}</b>
+                <i>{row.value}</i>
+              </div>
+            ))}
+          </div>
+          <p class="part-note">{artDirection.structureNote}</p>
+        </article>
+      </div>
+
+      <div class="col">
+        <!-- Живые кнопки: наведите — это те же состояния, что на сайте. -->
+        <article class="part part--buttons">
+          <span class="part-label">Кнопки и ссылки</span>
+          <div class="button-row">
+            <button type="button" class="p-btn p-btn--cream">Посмотреть дом</button>
+            <button type="button" class="p-btn p-btn--terracotta">Запросить паспорт объекта</button>
+            <a class="p-link" href={presentation.projectUrl} target="_blank" rel="noreferrer">
+              Написать в WhatsApp <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <!-- Правило системы стоит в собственной панели: это не подпись к
+               кнопкам, а условие, по которому они собраны. -->
+          <p class="rule-note">
+            <span class="rule-note__icon"><Glyph name="lock" /></span>
+            <span>Одна форма — пилюля. Второстепенное действие никогда не становится кнопкой.</span>
+          </p>
+        </article>
+
+        <!-- Голос: не декларация «мы пишем фактами», а сами замены. -->
+        <article class="part part--voice">
+          <span class="part-label">Голос</span>
+          <p class="voice">{artDirection.voice}</p>
+          <ul class="voice-pairs">
+            {artDirection.voicePairs.map((pair: any) => (
+              <li>
+                <b>{pair.fact}</b>
+                <i>вместо «{pair.cliche}»</i>
+              </li>
+            ))}
+          </ul>
+        </article>
+      </div>
+    </div>
+
+    <!-- Палитра полосами во всю ширину, а не квадратиками. -->
+    <div class="palette project-layer" data-reveal>
+      <span class="part-label">Палитра</span>
+      <div class="palette-bars">
+        {artDirection.palette.map((color: any) => (
+          <div class="palette-bar" style={`--swatch: ${color.hex}`}>
+            <i aria-hidden="true"></i>
+            <b>{color.name}</b>
+            <em>{color.hex}</em>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Две колонки через волосяную линию. Линия — border правой колонки, а не
+     отдельный элемент: ей нечего делать в разметке, она часть сетки. */
+  /* 5/7, а не пополам: слева шкала и линейка живут в узкой мере, справа кнопки
+     проекта требуют реальной ширины — в равных колонках пилюли складывались
+     в столбик, чего на живом сайте не бывает. */
+  .system-cols {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: auto auto;
+    column-gap: clamp(40px, 5vw, 72px);
+    margin-top: clamp(48px, 6vh, 72px);
+  }
+
+  /* subgrid — чтобы вторые блоки колонок («Структура» и «Голос») стартовали с
+     одной высоты: без общей строки они разъезжались по длине первых блоков. */
+  .col {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    align-content: start;
+    row-gap: clamp(40px, 5vh, 64px);
+  }
+
+  .col + .col {
+    border-left: 1px solid var(--line-ink);
+    padding-left: clamp(40px, 5vw, 72px);
+  }
+
+  .part-note {
+    max-width: 42ch;
+    margin: 20px 0 0;
+    color: rgb(33 27 20 / 0.6);
+    font-size: 14px;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  /* ── Типографика ──
+     Специмен стоит в строку с метой: «Аа» размером в половину блока съедало
+     колонку целиком и оставляло шкалу без воздуха. */
+  .specimen-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(20px, 2.5vw, 36px);
+  }
+
+  .specimen {
+    margin: 0;
+    font-size: clamp(76px, 6.6vw, 112px);
+    font-weight: 500;
+    letter-spacing: -0.05em;
+    line-height: 0.8;
+  }
+
+  .specimen-meta strong {
+    display: block;
+    font-size: 19px;
+    font-weight: 600;
+  }
+
+  .specimen-meta span {
+    display: block;
+    max-width: 18ch;
+    margin-top: 6px;
+    color: rgb(33 27 20 / 0.55);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  /* Шкала и линейка ниже собраны одинаково — строка на волосяной линии. Это и
+     есть демонстрация: разделитель проекта показывает сам себя. */
+  .type-scale {
+    margin: clamp(28px, 3vh, 40px) 0 0;
+  }
+
+  .type-scale > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 210px);
+    align-items: baseline;
+    gap: 16px;
+    border-bottom: 1px solid var(--line-ink);
+    padding: 12px 0;
+  }
+
+  .type-scale > div:first-child {
+    border-top: 1px solid var(--line-ink);
+  }
+
+  .type-scale dt {
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  /* Последняя ступень — сами подписи, поэтому набрана как подпись: терракота и
+     тот же кегль, о котором строка и говорит. */
+  .type-scale > div:last-child dt {
+    color: var(--p-terracotta);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+
+  .type-scale dd {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  .type-scale b {
+    font-weight: 400;
+  }
+
+  .type-scale i {
+    color: rgb(33 27 20 / 0.45);
+    font-style: normal;
+  }
+
+  /* ── Структура ── */
+  .rule-demo > div {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 16px;
+    border-bottom: 1px solid var(--line-ink);
+    padding: 18px 0;
+  }
+
+  .rule-demo > div:first-child {
+    border-top: 1px solid var(--line-ink);
+  }
+
+  .rule-demo span {
+    color: var(--p-terracotta);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .rule-demo b {
+    font-size: 17px;
+    font-weight: 500;
+  }
+
+  .rule-demo i {
+    color: rgb(33 27 20 / 0.55);
+    font-size: 15px;
+    font-style: normal;
+  }
+
+  /* ── Кнопки ── */
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 20px;
+  }
+
+  .button-row .p-link {
+    margin-left: 6px;
+  }
+
+  .rule-note {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+    box-sizing: border-box;
+    margin: clamp(24px, 3vh, 34px) 0 0;
+    border: 1px solid var(--line-ink);
+    border-radius: 16px;
+    padding: 24px 26px;
+    background: rgb(33 27 20 / 0.03);
+    color: rgb(33 27 20 / 0.72);
+    font-size: 15px;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  .rule-note__icon {
+    display: grid;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    border-radius: 999px;
+    background: rgb(232 160 107 / 0.22);
+    color: var(--p-terracotta);
+  }
+
+  /* :global — глиф рисует Glyph, и scope-метка этой сцены до него не доходит. */
+  .rule-note__icon :global(.p-icon) {
+    --icon-size: 24px;
+  }
+
+  /* ── Голос ── */
+  .voice {
+    margin: 0;
+    font-size: clamp(28px, 2.6vw, 38px);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  .voice-pairs {
+    margin: clamp(20px, 2.5vh, 28px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .voice-pairs li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 16px;
+    border-bottom: 1px solid var(--line-ink);
+    padding: 16px 0;
+  }
+
+  .voice-pairs li:first-child {
+    border-top: 1px solid var(--line-ink);
+  }
+
+  .voice-pairs b {
+    font-size: clamp(20px, 1.8vw, 27px);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+
+  .voice-pairs i {
+    color: rgb(33 27 20 / 0.55);
+    font-size: 15px;
+    font-style: normal;
+  }
+
+  /* ── Палитра ── */
+  .palette {
+    margin-top: clamp(56px, 6vh, 80px);
+  }
+
+  .palette-bars {
+    display: grid;
+    grid-template-columns: repeat(var(--bars, 6), minmax(0, 1fr));
+    gap: 2px;
+  }
+
+  .palette-bar i {
+    display: block;
+    height: clamp(80px, 10vh, 132px);
+    border: 1px solid rgb(33 27 20 / 0.1);
+    background: var(--swatch);
+  }
+
+  .palette-bar b {
+    display: block;
+    margin-top: 12px;
+    font-family: var(--font-project);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .palette-bar em {
+    display: block;
+    margin-top: 4px;
+    color: rgb(33 27 20 / 0.5);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-style: normal;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    /* Колонки встают друг под друга — вертикальная линия теряет смысл, и общая
+       строка вместе с ней: блоки идут простым потоком. */
+    .system-cols {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: none;
+    }
+
+    .col {
+      grid-row: auto;
+      grid-template-rows: none;
+    }
+
+    .col + .col {
+      margin-top: clamp(40px, 5vh, 64px);
+      border-left: 0;
+      padding-left: 0;
+    }
+
+    .palette-bars {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px 2px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .button-row .p-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .button-row .p-link {
+      margin-left: 0;
+    }
+
+    /* Две колонки в строке рвутся на узком экране: имя и значение встают друг
+       под друга, а линия остаётся общей. */
+    .type-scale > div,
+    .voice-pairs li {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 6px;
+    }
+
+    .rule-demo > div {
+      grid-template-columns: 34px minmax(0, 1fr);
+    }
+
+    .rule-demo i {
+      grid-column: 2;
+    }
+
+    .rule-note {
+      gap: 14px;
+      padding: 18px;
+    }
+  }
+</style>

@@ -6,24 +6,42 @@ interface Props {
   work: WorkItem;
   /** Уровень заголовка карточки — зависит от места в иерархии страницы (h2 на /cases/, h3 в секции главной). */
   titleTag?: 'h2' | 'h3';
+  /** `home` — крупная proof-first карточка секции «Работы» на главной: обложка 16:10, название и одна строка типа. */
+  variant?: 'default' | 'home';
 }
 
-const { work, titleTag = 'h3' } = Astro.props;
+const { work, titleTag = 'h3', variant = 'default' } = Astro.props;
 const Title = titleTag;
+const home = variant === 'home';
 ---
 
 <a
-  class:list={['case-preview', work.status === 'planned' && 'planned']}
+  class:list={['case-preview', home && 'home', work.status === 'planned' && 'planned']}
   href={work.href}
   data-cursor={work.status === 'planned' ? 'Скоро' : 'Смотреть →'}
+  data-cursor-size={home ? 'sm' : undefined}
 >
-  <AssetSlot label={work.assetKey} src={work.assetSrc} frame={work.assetSrc ? 'plain' : 'browser'} />
-  <div class="copy">
-    <span class="mono">{work.category}</span>
-    <Title>{work.title}</Title>
-    <p>{work.inside}</p>
-    <b>{work.status === 'planned' ? 'Место под будущий кейс' : 'Смотреть →'}</b>
-  </div>
+  {home ? (
+    <AssetSlot label={work.assetKey} src={work.assetSrc} alt={`Обложка проекта «${work.title}»`} ratio="16 / 10" frame={work.assetSrc ? 'plain' : 'browser'} />
+  ) : (
+    <AssetSlot label={work.assetKey} src={work.assetSrc} frame={work.assetSrc ? 'plain' : 'browser'} />
+  )}
+  {home ? (
+    <div class="copy">
+      <div class="title-row">
+        <Title>{work.title}</Title>
+        <span class="arrow" aria-hidden="true">→</span>
+      </div>
+      <p class="kind">{work.category}</p>
+    </div>
+  ) : (
+    <div class="copy">
+      <span class="mono">{work.category}</span>
+      <Title>{work.title}</Title>
+      <p>{work.inside}</p>
+      <b>{work.status === 'planned' ? 'Место под будущий кейс' : 'Смотреть →'}</b>
+    </div>
+  )}
 </a>
 
 <style>
@@ -53,7 +71,7 @@ const Title = titleTag;
   }
 
   .copy .mono {
-    color: var(--color-blue);
+    color: var(--color-blue-legacy);
   }
 
   .copy h2,
@@ -76,5 +94,89 @@ const Title = titleTag;
     margin-top: 18px;
     color: var(--color-ochre);
     font-weight: 700;
+  }
+
+  /* Home / «Работы»: обложка — главный объект (16:10 без рамки внутри карточки),
+     копия минимальна: название + тип. Глубина — единственный hard offset (§13.2). */
+  .case-preview.home {
+    align-content: start;
+  }
+
+  .case-preview.home :global(.asset-slot) {
+    border: 0;
+    border-bottom: var(--border-width) solid rgb(23 21 15 / 0.2);
+  }
+
+  .case-preview.home .copy {
+    padding: var(--space-5) var(--space-6) var(--space-6);
+  }
+
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+
+  .case-preview.home .copy :is(h2, h3) {
+    margin: 0;
+    min-width: 0;
+    font-size: clamp(18px, 1.8vw, 22px);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    overflow-wrap: break-word;
+  }
+
+  .arrow {
+    flex: none;
+    font-size: 20px;
+    line-height: 1.2;
+    transition: transform var(--dur-feedback) var(--ease-site);
+  }
+
+  .case-preview.home .kind {
+    margin: var(--space-2) 0 0;
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .case-preview.home:focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 4px;
+    box-shadow: var(--depth-work-offset) var(--depth-work-offset) 0 var(--color-gold);
+    transform: translate(var(--depth-work-shift), var(--depth-work-shift));
+  }
+
+  .case-preview.home:is(:hover, :focus-visible) .arrow {
+    transform: translateX(var(--space-1));
+  }
+
+  @media (max-width: 640px) {
+    .case-preview.home .copy {
+      padding: var(--space-4) var(--space-5) var(--space-5);
+    }
+
+    .case-preview.home .copy :is(h2, h3) {
+      font-size: 18px;
+    }
+
+    .case-preview.home .kind {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  }
+
+  /* Reduced motion: affordance (offset, цвет) остаётся, само движение убрано. */
+  @media (prefers-reduced-motion: reduce) {
+    .case-preview.home,
+    .case-preview.home .arrow {
+      transition: none;
+    }
+
+    .case-preview.home:is(:hover, :focus-visible) .arrow {
+      transform: none;
+    }
   }
 </style>

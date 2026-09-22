@@ -7,8 +7,11 @@ test('brief v3 walks the interview, builds the document and shows the studio con
 
   await brief.getByRole('button', { name: 'Начать' }).click();
 
-  // Этап 1: задача (одиночный выбор, авто-переход)
+  // Этап 1: группа (те же 5, что в каталоге) → уточнение задачи (одиночный выбор, авто-переход)
   await expect(brief.getByRole('heading', { name: 'Какую задачу должен решать проект?' })).toBeVisible();
+  await expect(brief.getByRole('radio')).toHaveCount(6);
+  await brief.getByRole('radio', { name: 'Сайты', exact: true }).click();
+  await expect(brief.getByRole('heading', { name: 'Что именно нужно сделать?' })).toBeVisible();
   await brief.getByRole('radio', { name: 'Представить компанию и услуги' }).click();
 
   // Этап 2: действия (множественный выбор)
@@ -38,9 +41,9 @@ test('brief v3 walks the interview, builds the document and shows the studio con
 
   // Заключение студии
   const result = page.getByTestId('brief-result');
-  await expect(result).toContainText('Рекомендуем начать с корпоративного сайта');
-  await expect(result).toContainText('Первый запуск');
-  await expect(result).toContainText('Ориентир');
+  await expect(result).toContainText('Рекомендуем начать с «Корпоративный сайт»');
+  await expect(result).toContainText('Срок');
+  await expect(result).toContainText('Предварительная оценка выбранного состава работ');
   await expect(result).toContainText('Почему такой формат');
   // Система учёта не входит в бюджет — уходит в «позже»
   await expect(result).toContainText('Можно добавить позже');
@@ -52,6 +55,8 @@ test('brief v3 builds the living document from answers', async ({ page }) => {
   const brief = page.getByTestId('brief');
 
   await brief.getByRole('button', { name: 'Начать' }).click();
+  await brief.getByRole('radio', { name: 'Каталоги и продажи', exact: true }).click();
+  await expect(page.locator('.doc')).toContainText('Направление: каталоги и продажи.');
   await brief.getByRole('radio', { name: 'Показать ассортимент' }).click();
 
   const doc = page.locator('.doc');
@@ -66,19 +71,28 @@ test('brief v3 restores the conclusion from a draft URL', async ({ page }) => {
     '/brief/?version=v3&task=present&actions=view,lead&manage=texts&dataflow=notify&have=content&deadline=month&budget=b250&stage=result',
   );
   const result = page.getByTestId('brief-result');
-  await expect(result).toContainText('Рекомендуем начать с корпоративного сайта');
-  await expect(result).toContainText('120–260 тыс. ₽');
+  await expect(result).toContainText('Рекомендуем начать с «Корпоративный сайт»');
+  await expect(result).toContainText('220–450 тыс. ₽');
 });
 
 test('product page bridges into the brief with the task prefilled', async ({ page }) => {
   await page.goto('/products/company/');
-  await page.getByRole('link', { name: 'Разобрать задачу в брифе' }).click();
+  await page.locator('main').getByRole('link', { name: 'Пройти бриф' }).first().click();
 
   // Задача предзаполнена — бриф стартует со второго этапа, документ уже начат
-  await expect(page).toHaveURL(/version=v3&task=present/);
+  await expect(page).toHaveURL(/version=v3&product=company&task=present/);
   const brief = page.getByTestId('brief');
   await expect(brief.getByRole('heading', { name: /Что посетитель/ })).toBeVisible();
   await expect(page.locator('.doc')).toContainText('Нужно представить компанию и услуги.');
+});
+
+test('Telegram Mini App keeps its exact product context in the brief', async ({ page }) => {
+  await page.goto('/products/tma/');
+  await page.locator('main').getByRole('link', { name: 'Пройти бриф' }).first().click();
+  await expect(page).toHaveURL(/version=v3&product=tma&task=cabinet/);
+  const brief = page.getByTestId('brief');
+  await expect(brief.getByRole('heading', { name: /Что посетитель/ })).toBeVisible();
+  await expect(page.locator('.doc')).toContainText('Направление: приложения и системы.');
 });
 
 test('brief v3 sends the project with contact details', async ({ page }) => {

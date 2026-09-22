@@ -1,0 +1,203 @@
+---
+import AssetSlot from '../AssetSlot.astro';
+import { site } from '../../data/site';
+
+/**
+ * Глава 13, финал и CTA студии.
+ *
+ * Единственный полноразмерный скриншот всего кейса стоит здесь — и только
+ * здесь. До этого момента интерфейс был пересобран вёрсткой, поэтому снимок
+ * в браузерной рамке работает не как иллюстрация, а как подпись: вот это
+ * действительно существует и открывается по адресу.
+ *
+ * Цепочка в финале — та же, что во второй главе. Кейс закрывает круг: что
+ * обещали разобрать, то и предъявили.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { finale, photos } = presentation;
+---
+
+<section class="scene outcome" data-bg="ink">
+  <div class="wrap">
+    <div class="chapter chapter--wide">
+      <div class="chapter-copy">
+        <p class="s-label"><b>09</b> {finale.eyebrow}</p>
+        <h2 class="s-title">
+          {finale.title.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </h2>
+        {finale.text.map((paragraph: string) => (
+          <p class="s-text" set:html={paragraph} />
+        ))}
+      </div>
+
+      <div class="chapter-visual">
+        <AssetSlot
+          label="works/suture/screens/hero"
+          src={finale.screenshotSrc}
+          alt="Конфигуратор исполнения на сайте ИМЭКС: материал, формат, длина и тип иглы в одном экране"
+          frame="browser"
+          tone="dark"
+          url={finale.screenshotUrl}
+          ratio="16 / 13"
+        />
+      </div>
+    </div>
+
+    <ol class="chain" aria-label="Что получил клиент">
+      {finale.chain.map((step: string) => <li>{step}</li>)}
+    </ol>
+
+    <div class="final">
+      <div class="final-copy">
+        <p class="p-kicker final-kicker">Final</p>
+        <p class="final-statement">
+          {finale.statement.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </p>
+        <p class="final-note">{finale.statementNote}</p>
+      </div>
+
+      <figure class="final-shot">
+        <img src={photos.hero.src} alt={photos.hero.alt} loading="lazy" />
+      </figure>
+    </div>
+
+    <div class="cta">
+      <div>
+        <p class="s-label">Есть сложный продукт?</p>
+        <h2 class="cta-title">
+          {finale.cta.title.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </h2>
+        <p class="s-text">{finale.cta.copy}</p>
+      </div>
+      <div class="cta-actions">
+        <a class="s-btn" href="/brief/">Пройти бриф <span aria-hidden="true">→</span></a>
+        <a class="cta-link" href={site.telegramUrl} target="_blank" rel="noreferrer">
+          Обсудить проект <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 8px;
+    margin: clamp(48px, 5vh, 72px) 0 0;
+    padding: 0;
+    list-style: none;
+    color: rgb(247 243 236 / 0.6);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .chain li + li::before {
+    content: '→';
+    margin-right: 8px;
+    color: var(--p-mint-400);
+  }
+
+  /* Финал: почти пустой экран. Одна фраза и один кадр — всё, что должно
+     остаться в памяти после девяти глав. */
+  .final {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: clamp(32px, 4vw, 64px);
+    margin-top: clamp(64px, 7vh, 104px);
+    border-top: 1px solid var(--line-light);
+    padding-top: clamp(48px, 5vh, 80px);
+  }
+
+  .final-kicker {
+    color: rgb(247 243 236 / 0.4);
+  }
+
+  .final-statement {
+    margin: 18px 0 0;
+    font-family: var(--font-project-display);
+    font-size: clamp(30px, 4vw, 54px);
+    line-height: 1.05;
+  }
+
+  .final-note {
+    margin: 22px 0 0;
+    max-width: 34ch;
+    color: var(--text-soft-light);
+    font-size: var(--font-secondary);
+    line-height: 1.55;
+  }
+
+  .final-shot {
+    margin: 0;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #fff;
+  }
+
+  .final-shot img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+  }
+
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+    margin-top: clamp(64px, 7vh, 104px);
+    border-top: 1px solid var(--line-light);
+    padding-top: clamp(40px, 4vh, 64px);
+  }
+
+  .cta-title {
+    max-width: 18ch;
+    margin: 18px 0 0;
+    font-family: var(--font-display);
+    font-size: var(--font-section);
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    line-height: 1.02;
+  }
+
+  .cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .cta-link {
+    color: rgb(247 243 236 / 0.7);
+    font-size: 15px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .cta-link:hover {
+    color: var(--color-paper);
+  }
+
+  @media (max-width: 900px) {
+    .final {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,5 @@
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Needle 3/8 icon">
+  <path d="M124 109 C85 135 34 112 31 70 C29 35 65 17 94 34 C113 45 124 65 123 88" stroke="#10201C" stroke-width="6" stroke-linecap="round"/>
+  <path d="M123 88 L135 97 L122 103" stroke="#8DD7C1" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="52" y="91" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" fill="#7B2636">3/8</text>
+</svg>

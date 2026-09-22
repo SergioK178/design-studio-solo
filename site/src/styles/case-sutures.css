@@ -1,0 +1,514 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Кейс «ИМЭКС · Шовные материалы»
+
+   Композиция главы всюду одна: слева номер, кикер, заголовок и объяснение,
+   справа — кусок продукта или интерфейса, пересобранный вёрсткой. Читатель
+   за девять глав ни разу не переучивается, куда смотреть.
+
+   Три слоя, как в кейсе «Ольгинка»:
+     studio   — язык 3K: Unbounded + Golos Text, молочный и почти чёрный.
+     project  — язык ИМЭКС: Prata в заголовках, Inter в подписях, мятный
+                акцент. Здесь интерфейс собран нативно, а не заскриншочен.
+     evidence — объяснение решений: снова язык 3K, но тише студийного.
+
+   Палитра донора объявлена здесь один раз (--p-*): global.css §3 запрещает
+   хексы в компонентах. Жёлтый остаётся только за глобальными CTA 3K —
+   мятный принадлежит клиенту, жёлтый студии, и смешивать их нельзя.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.sutures-case {
+  /* Палитра донора: mzkrs-imex/src/styles/tokens.css */
+  --p-ink-950: #10141a;
+  --p-ink-900: #151821;
+  --p-ink-800: #1d222c;
+  --p-stage: #11161c;
+  --p-card: #151a21;
+  --p-paper: #f7f3ec;
+  --p-paper-soft: #f5f0e8;
+  --p-paper-muted: #e8ebe4;
+  --p-mint-300: #a4ead7;
+  --p-mint-400: #8dd7c1;
+  --p-mint-500: #5fb9a2;
+  --p-mint-700: #3d8070;
+  --p-violet: #8b73d9;
+  --p-burgundy: #7b2636;
+
+  --font-project: 'Inter', sans-serif;
+  --font-project-display: 'Prata', Georgia, serif;
+
+  /* Шкала кейса — одна на все девять глав */
+  --font-hero: clamp(32px, 5.4vw, 58px);
+  --font-section: clamp(28px, 2.9vw, 42px);
+  --font-lead: 18px;
+  --font-body: 17px;
+  --font-secondary: 16px;
+  --font-caption: 14px;
+  --font-label: 13px;
+
+  --line-ink: rgb(16 20 26 / 0.14);
+  --line-light: rgb(247 243 236 / 0.14);
+  --text-soft: rgb(16 20 26 / 0.66);
+  --text-soft-light: rgb(247 243 236 / 0.7);
+
+  --col-gap: 24px;
+  /* Ритм глав плотнее олгинковского: там девять сцен-разворотов, здесь
+     девять глав с плотной информацией, и щедрый воздух растянул бы чтение. */
+  --scene-gap: clamp(76px, 8vh, 112px);
+
+  background: var(--color-paper);
+  color: var(--color-ink);
+  overflow-x: clip;
+}
+
+/* На странице кейса сетка шире основной студийной: первый экран построен как
+   предметный разворот, а не как обычная текстовая страница. */
+body:has(.sutures-case) > .nav .wrap,
+.sutures-case .wrap,
+body:has(.sutures-case) > footer .wrap {
+  max-width: 1680px;
+  padding-inline: 93px;
+}
+
+body:has(.sutures-case) > .nav .nav-inner {
+  height: 92px;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgb(247 243 236 / 0.1);
+  padding-top: 0;
+}
+
+/* ── Слой проекта ────────────────────────────────────────────────────── */
+.sutures-case .project-layer {
+  font-family: var(--font-project);
+  color: var(--p-paper-soft);
+}
+
+.sutures-case .p-display {
+  margin: 0;
+  font-family: var(--font-project-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+/* Кикер проекта: 11px / uppercase / широкий трекинг — повторяет
+   микро-лейбл донора (0.6875rem, tracking .18em). */
+.sutures-case .p-kicker {
+  display: block;
+  font-family: var(--font-project);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Глиф кейса: контур в currentColor, кегль снаружи через --icon-size. */
+.sutures-case .p-icon {
+  display: block;
+  flex: none;
+  width: var(--icon-size, 20px);
+  height: var(--icon-size, 20px);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Иконка-ассет самого проекта (feature-*.svg, needle-*.svg): приходит
+   готовым файлом, поэтому не красится currentColor и живёт в кружке. */
+.sutures-case .p-asset-icon {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(139 115 217 / 0.2);
+  border-radius: 50%;
+  background: rgb(139 115 217 / 0.1);
+}
+
+.sutures-case .p-asset-icon img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* Карточка проекта на тёмном — базовая плоскость интерфейса ИМЭКС. */
+.sutures-case .p-card {
+  box-sizing: border-box;
+  border: 1px solid var(--line-light);
+  border-radius: 14px;
+  background: var(--p-card);
+}
+
+/* Чип параметра: то, из чего собран конфигуратор донора. */
+.sutures-case .p-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 38px;
+  border: 1px solid var(--line-light);
+  border-radius: 9px;
+  background: rgb(16 20 26 / 0.6);
+  padding: 8px 14px;
+  color: rgb(247 243 236 / 0.72);
+  font-family: var(--font-project);
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.sutures-case .p-chip--on {
+  border-color: rgb(141 215 193 / 0.55);
+  background: rgb(141 215 193 / 0.12);
+  color: var(--p-mint-300);
+}
+
+.sutures-case .p-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 10px;
+  padding: 14px 24px;
+  background: var(--p-mint-400);
+  color: #11302a;
+  font-family: var(--font-project);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.sutures-case .p-btn--ghost {
+  border: 1px solid var(--line-light);
+  background: transparent;
+  color: var(--p-paper-soft);
+  font-weight: 500;
+}
+
+/* ── Слой студии ─────────────────────────────────────────────────────── */
+/* Номер главы и кикер стоят в одной строке, как на макете: цифра держит
+   счёт, кикер называет тему. */
+.sutures-case .s-label {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  color: var(--p-mint-700);
+  font-family: var(--font-text);
+  font-size: var(--font-label);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.sutures-case .s-label b {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.sutures-case [data-bg='ink'] .s-label {
+  color: var(--p-mint-400);
+}
+
+.sutures-case [data-bg='ink'] .s-label b {
+  color: var(--color-paper);
+}
+
+.sutures-case .s-title {
+  max-width: 15ch;
+  margin: 18px 0 0;
+  font-family: var(--font-display);
+  font-size: var(--font-section);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.sutures-case .s-text {
+  margin: 20px 0 0;
+  max-width: 46ch;
+  color: var(--text-soft);
+  font-family: var(--font-text);
+  font-size: var(--font-secondary);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.sutures-case [data-bg='ink'] .s-text {
+  color: var(--text-soft-light);
+}
+
+.sutures-case .s-text strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.sutures-case [data-bg='ink'] .s-text strong {
+  color: var(--color-paper);
+}
+
+.sutures-case .s-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-sizing: border-box;
+  height: 52px;
+  padding: 0 20px 0 24px;
+  background: var(--color-gold);
+  color: var(--color-ink);
+  font-family: var(--font-text);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    background-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.sutures-case .s-btn:hover {
+  background: color-mix(in srgb, var(--color-gold) 86%, white);
+  transform: translateY(-1px);
+}
+
+/* ── Слой доказательств ──────────────────────────────────────────────── */
+.sutures-case .evidence {
+  max-width: 68ch;
+  color: var(--text-soft);
+  font-family: var(--font-text);
+  font-size: var(--font-caption);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.sutures-case [data-bg='ink'] .evidence {
+  color: var(--text-soft-light);
+}
+
+.sutures-case .evidence strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.sutures-case [data-bg='ink'] .evidence strong {
+  color: var(--color-paper);
+}
+
+/* Служебный лейбл над разобранной частью интерфейса. */
+.sutures-case .part-label {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: rgb(16 20 26 / 0.42);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sutures-case .part-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line-ink);
+}
+
+.sutures-case [data-bg='ink'] .part-label {
+  color: rgb(247 243 236 / 0.4);
+}
+
+.sutures-case [data-bg='ink'] .part-label::after {
+  background: var(--line-light);
+}
+
+/* ── Сетка глав ──────────────────────────────────────────────────────── */
+.sutures-case .scene {
+  padding-block: var(--scene-gap);
+}
+
+.sutures-case .scene--tight {
+  padding-block: clamp(56px, 6vh, 84px);
+}
+
+/* Тёмная глава кладётся встык к соседней тёмной: между 05 и 06 не должно
+   быть шва, это одна тёмная зона макета. */
+.sutures-case [data-bg='ink'] {
+  background: var(--p-ink-950);
+  color: var(--color-paper);
+}
+
+.sutures-case [data-bg='muted'] {
+  background: var(--p-paper-muted);
+}
+
+.sutures-case .grid12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+}
+
+/* Глава: текст слева на 4 колонки, визуал справа на 8. */
+.sutures-case .chapter {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  row-gap: 40px;
+  align-items: start;
+}
+
+.sutures-case .chapter > .chapter-copy {
+  grid-column: 1 / span 4;
+}
+
+.sutures-case .chapter > .chapter-visual {
+  grid-column: 6 / -1;
+  min-width: 0;
+}
+
+.sutures-case .chapter--wide > .chapter-copy {
+  grid-column: 1 / span 5;
+}
+
+.sutures-case .chapter--wide > .chapter-visual {
+  grid-column: 7 / -1;
+}
+
+@media (max-width: 1000px) {
+  .sutures-case .chapter,
+  .sutures-case .grid12 {
+    display: block;
+  }
+
+  .sutures-case .chapter > .chapter-visual {
+    margin-top: 36px;
+  }
+
+  .sutures-case .s-title {
+    max-width: none;
+  }
+
+  .sutures-case .s-text {
+    max-width: none;
+  }
+}
+
+/* Длинный кейс в референсе читается как плотная полоса арт-дирекшна. На
+   десктопе главы работают почти как строки большого editorial-макета; на
+   телефоне ниже остаётся исходный, более спокойный ритм. */
+@media (min-width: 1001px) {
+  .sutures-case {
+    --font-section: clamp(25px, 1.65vw, 31px);
+    --font-lead: 17px;
+    --font-body: 14px;
+    --font-secondary: 13px;
+    --font-caption: 11.5px;
+    --font-label: 10px;
+    --scene-gap: 42px;
+    --col-gap: 20px;
+  }
+
+  .sutures-case .scene--tight {
+    padding-block: 36px;
+  }
+
+  .sutures-case .s-label {
+    gap: 9px;
+  }
+
+  .sutures-case .s-label b {
+    font-size: 12px;
+  }
+
+  .sutures-case .s-title {
+    margin-top: 11px;
+  }
+
+  .sutures-case .s-text {
+    margin-top: 12px;
+    line-height: 1.48;
+  }
+
+  .sutures-case .chapter {
+    row-gap: 24px;
+  }
+
+  .sutures-case .part-label {
+    margin-bottom: 9px;
+    font-size: 9px;
+  }
+
+  .sutures-case .p-card {
+    border-radius: 10px;
+  }
+
+  .sutures-case .p-chip {
+    min-height: 28px;
+    border-radius: 7px;
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .sutures-case .flow {
+    margin-top: 32px;
+  }
+
+  .sutures-case .compare {
+    margin-top: 38px;
+  }
+
+  .sutures-case .steps {
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .sutures-case .step-medallion {
+    width: 34px;
+    height: 34px;
+  }
+
+  .sutures-case .phone {
+    width: min(100%, 250px);
+    height: 504px;
+  }
+
+  .sutures-case .layers-block,
+  .sutures-case .stats-row {
+    margin-top: 38px;
+  }
+
+  .sutures-case .chain,
+  .sutures-case .final,
+  .sutures-case .cta {
+    margin-top: 38px;
+  }
+
+  .sutures-case .final {
+    padding-top: 34px;
+  }
+
+  .sutures-case .cta {
+    padding-top: 30px;
+  }
+}
+
+@media (max-width: 720px) {
+  body:has(.sutures-case) > .nav .wrap,
+  .sutures-case .wrap,
+  body:has(.sutures-case) > footer .wrap {
+    padding-inline: 20px;
+  }
+}

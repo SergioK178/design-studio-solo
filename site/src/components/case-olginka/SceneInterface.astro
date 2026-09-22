@@ -1,0 +1,646 @@
+---
+import Glyph from './parts/Glyph.astro';
+import ProjectNav from './parts/ProjectNav.astro';
+
+/**
+ * Сцена 6. Один интерфейс на любом экране.
+ *
+ * Раньше здесь стояли две главы подряд: разбор сайта на компоненты и отдельный
+ * мобильный walkthrough на четыре экрана. Обе рассказывали то, что читатель уже
+ * видел выше, и вместе занимали четыре вьюпорта. Осталась одна сцена с
+ * единственным доказательством, которого больше нигде нет: логика сайта
+ * переживает смену экрана.
+ *
+ * Телефон липкий, содержимое внутри — настоящий DOM, а не картинки: при
+ * прокрутке экран действительно перестраивается по маршруту
+ * выбор → информация → действие. Три состояния, не больше: после третьего
+ * липкость отпускается, и телефон уезжает вверх, открывая тёмную главу.
+ *
+ * Интерактивный момент №3. При prefers-reduced-motion липкость и кроссфейд
+ * выключаются, и все экраны показываются рядом — сцена остаётся понятной.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { mobileSteps, photos, price, scenarios } = presentation;
+const [owner] = scenarios;
+---
+
+<section class="scene interface" data-bg="paper">
+  <div class="wrap">
+    <div class="s-heading" data-reveal>
+      <span class="s-label">Интерфейс</span><i class="s-rule"></i>
+      <h2>Один интерфейс — на любом экране</h2>
+      <p>
+        На десктопе можно изучать объект. На телефоне нужно понять главное за несколько движений —
+        сценарий, факты и способ связаться с собственником остаются на первом плане.
+      </p>
+    </div>
+
+    <div class="if-body" data-mobile-scene>
+      <div class="if-stage">
+        <!-- Рамка нарисована CSS, внутри живёт вёрстка проекта. Кнопки здесь
+             намеренно неинтерактивные span: макет не должен ловить фокус. -->
+        <div class="phone project-layer" aria-hidden="true">
+          <div class="phone-screen is-active" data-mobile-screen="hero">
+            <div class="phone-hero">
+              <img class="phone-bg" src={photos.hero.src} alt="" loading="lazy" />
+              <div class="phone-veil"></div>
+              <div class="phone-bar">
+                <span>Приморская&nbsp;22А</span>
+                <i class="phone-burger"></i>
+              </div>
+              <div class="phone-hero-copy">
+                <div class="phone-pill">
+                  {scenarios.map((scenario: any, index: number) => (
+                    <span class:list={['phone-pill__btn', index === 0 && 'is-active']}>{scenario.label}</span>
+                  ))}
+                </div>
+                <p class="phone-title">Дом у моря, в пятидесяти шагах <em>от воды</em></p>
+                <span class="phone-caption">{photos.panorama.caption}</span>
+                <span class="phone-btn">{owner.heroCopy.cta}</span>
+              </div>
+            </div>
+
+            <!-- Начало следующего блока подрезано нижним краем экрана: так
+                 видно, что это страница, а не картинка первого экрана. -->
+            <div class="phone-peek">
+              <div class="phone-facts phone-facts--row">
+                <div><strong>1 082<span>м²</span></strong><span>площадь</span></div>
+                <div><strong>22</strong><span>комнаты</span></div>
+                <div><strong>50<span>м</span></strong><span>до моря</span></div>
+              </div>
+              <span class="phone-kicker">О доме</span>
+              <p class="phone-peek-text">{owner.description}</p>
+            </div>
+          </div>
+
+          <div class="phone-screen" data-mobile-screen="facts">
+            <div class="phone-bar phone-bar--light">
+              <span>Приморская&nbsp;22А</span>
+              <i class="phone-burger"></i>
+            </div>
+            <div class="phone-content phone-content--light">
+              <span class="phone-kicker">Объект</span>
+              <div class="phone-facts">
+                <div><strong>1 082<span>м²</span></strong><span>Площадь</span></div>
+                <div><strong>22</strong><span>Комнаты</span></div>
+                <div><strong>50<span>м</span></strong><span>До моря</span></div>
+              </div>
+              <p class="phone-price">{price.value}<span>{price.unit}</span></p>
+              <p class="phone-per">{price.perMeter}</p>
+            </div>
+          </div>
+
+          <div class="phone-screen" data-mobile-screen="contact">
+            <div class="phone-bar">
+              <span>Приморская&nbsp;22А</span>
+              <i class="phone-burger"></i>
+            </div>
+            <div class="phone-content phone-content--dark">
+              <span class="phone-kicker">Собственник</span>
+              <p class="phone-phone">+7 911 966-51-99</p>
+              <p class="phone-note">Продажа напрямую, без агентства и посредников.</p>
+              <span class="phone-btn phone-btn--terracotta">Написать в WhatsApp</span>
+              <span class="phone-link">Telegram</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ol class="if-steps">
+        {mobileSteps.map((step: any, index: number) => (
+          <li class:list={['if-step', index === 0 && 'is-active']} data-mobile-step={step.id}>
+            <span class="if-medallion">{step.icon && <Glyph name={step.icon} />}</span>
+            <div class="if-step-copy">
+              <span class="s-label">{String(index + 1).padStart(2, '0')} · {step.label}</span>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <!-- Узкая полоса вместо отдельной главы «система элементов»: одной
+           строкой видно, что на широком экране работает та же навигация. -->
+      <div class="if-desktop project-layer" data-reveal>
+        <div class="if-nav"><ProjectNav state="scrolled" compact /></div>
+        <p class="if-desktop-note">Та же система на широком экране.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const scene = document.querySelector<HTMLElement>('[data-mobile-scene]');
+
+  if (scene && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const steps = Array.from(scene.querySelectorAll<HTMLElement>('[data-mobile-step]'));
+    const screens = Array.from(scene.querySelectorAll<HTMLElement>('[data-mobile-screen]'));
+
+    const show = (id: string) => {
+      for (const step of steps) step.classList.toggle('is-active', step.dataset.mobileStep === id);
+      for (const screen of screens) screen.classList.toggle('is-active', screen.dataset.mobileScreen === id);
+    };
+
+    // Активным считается шаг, пересёкший середину экрана: телефон меняется
+    // тогда же, когда читатель доходит до соответствующего тезиса.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const id = (entry.target as HTMLElement).dataset.mobileStep;
+          if (id) show(id);
+        }
+      },
+      { rootMargin: '-50% 0px -50% 0px', threshold: 0 },
+    );
+
+    for (const step of steps) observer.observe(step);
+  }
+</script>
+
+<style>
+  /* 40 / 60: телефон — доказательство, тезисы — объяснение, и читаются они
+     справа. Полоса desktop-навигации стоит второй строкой правой колонки, на
+     одной вертикали с тезисами. */
+  .if-body {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(32px, 6vw, 88px);
+    margin-top: clamp(48px, 6vh, 72px);
+  }
+
+  .if-stage {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .if-steps {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .if-desktop {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  /* Рамка — CSS, а не картинка: внутри живёт настоящая вёрстка. Высота задана
+     вьюпортом, чтобы телефон целиком помещался в сцену. Потолок 700px даёт
+     ширину около 320px: крупнее телефон начинает спорить с текстом справа и
+     читается как второй hero. */
+  .phone {
+    position: sticky;
+    top: 90px;
+    display: grid;
+    height: clamp(560px, 76vh, 700px);
+    aspect-ratio: 390 / 844;
+    margin-inline: auto;
+    overflow: hidden;
+    border: 8px solid var(--p-ink-deep);
+    border-radius: 38px;
+    background: var(--p-ink-deep);
+    box-shadow: 0 28px 60px rgb(23 21 15 / 0.22);
+  }
+
+  .phone-screen {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    grid-area: 1 / 1;
+    overflow: hidden;
+    border-radius: 30px;
+    background: var(--p-paper);
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  .phone-screen.is-active {
+    opacity: 1;
+  }
+
+  /* ── Первый экран ── */
+  .phone-hero {
+    position: relative;
+    display: flex;
+    flex: 0 0 66%;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+
+  .phone-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .phone-veil {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgb(15 12 20 / 0.4) 0%, rgb(12 9 16 / 0.86) 100%);
+  }
+
+  /* Шапка стоит на всех трёх экранах: она и делает состояния одним сайтом,
+     а не тремя отдельными макетами. */
+  .phone-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    color: var(--p-paper);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .phone-bar--light {
+    color: var(--p-ink);
+  }
+
+  .phone-burger {
+    width: 16px;
+    height: 10px;
+    border-top: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+  }
+
+  .phone-hero-copy {
+    position: relative;
+    z-index: 2;
+    padding: 0 18px 20px;
+    color: var(--p-paper);
+  }
+
+  /* Та же пилюля, что в hero кейса, но неинтерактивная: внутри макета кнопкам
+     нечего ловить, а фокус в aria-hidden-области недопустим. */
+  .phone-pill {
+    display: inline-flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    border: 1px solid rgb(244 238 227 / 0.28);
+    border-radius: 999px;
+    background: rgb(12 9 16 / 0.55);
+    padding: 3px;
+  }
+
+  .phone-pill__btn {
+    border-radius: 999px;
+    padding: 6px 12px;
+    color: rgb(244 238 227 / 0.92);
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  .phone-pill__btn.is-active {
+    background: var(--p-cream);
+    color: var(--p-ink);
+  }
+
+  .phone-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+  }
+
+  .phone-title em {
+    display: block;
+    color: var(--p-amber-light);
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  .phone-caption {
+    display: block;
+    margin-top: 12px;
+    color: rgb(244 238 227 / 0.7);
+    font-size: 11px;
+  }
+
+  .phone-btn {
+    display: block;
+    margin-top: 16px;
+    border-radius: 999px;
+    background: var(--p-cream);
+    padding: 12px 18px;
+    color: var(--p-ink);
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .phone-btn--terracotta {
+    background: var(--p-terracotta);
+    color: var(--p-paper);
+  }
+
+  .phone-link {
+    margin-top: 12px;
+    color: rgb(244 238 227 / 0.7);
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .phone-peek {
+    flex: 1;
+    box-sizing: border-box;
+    padding: 16px 18px;
+    background: var(--p-paper);
+    color: var(--p-ink);
+  }
+
+  .phone-peek-text {
+    margin: 0;
+    color: rgb(33 27 20 / 0.62);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  /* ── Экраны фактов и контакта ── */
+  .phone-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 26px 22px;
+  }
+
+  .phone-content--light {
+    background: var(--p-paper);
+    color: var(--p-ink);
+  }
+
+  .phone-content--dark {
+    background: var(--p-ink-deep);
+    color: var(--p-paper);
+  }
+
+  .phone-kicker {
+    display: block;
+    margin-bottom: 14px;
+    color: var(--p-terracotta);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .phone-content--dark .phone-kicker {
+    color: var(--p-amber);
+  }
+
+  .phone-facts > div {
+    border-bottom: 1px solid rgb(33 27 20 / 0.15);
+    padding: 12px 0;
+  }
+
+  .phone-facts > div:first-child {
+    border-top: 1px solid rgb(33 27 20 / 0.15);
+  }
+
+  /* На первом экране те же факты стоят строкой: снизу их подрезает край
+     телефона, и колонка туда не поместилась бы. */
+  .phone-facts--row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .phone-facts--row > div {
+    border: 0;
+    padding: 0;
+  }
+
+  .phone-facts--row > div:first-child {
+    border-top: 0;
+  }
+
+  .phone-facts strong {
+    display: block;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .phone-facts--row strong {
+    font-size: 18px;
+  }
+
+  .phone-facts strong span {
+    vertical-align: super;
+    color: rgb(33 27 20 / 0.5);
+    font-family: var(--font-mono);
+    font-size: 0.36em;
+  }
+
+  .phone-facts > div > span {
+    display: block;
+    margin-top: 6px;
+    color: rgb(33 27 20 / 0.55);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .phone-price {
+    margin: 22px 0 0;
+    font-size: 46px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 0.9;
+  }
+
+  .phone-price span {
+    vertical-align: super;
+    margin-left: 0.12em;
+    color: rgb(33 27 20 / 0.5);
+    font-family: var(--font-mono);
+    font-size: 0.22em;
+  }
+
+  .phone-per {
+    margin: 14px 0 0;
+    color: rgb(33 27 20 / 0.6);
+    font-size: 12px;
+  }
+
+  .phone-phone {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .phone-note {
+    margin: 14px 0 0;
+    color: rgb(244 238 227 / 0.6);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  /* ── Тезисы ── */
+  .if-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Шаг ≈ 55vh: вся липкая сцена укладывается примерно в 180vh — маршрута из
+     трёх состояний хватает, чтобы каждое успело прочитаться, и не хватает,
+     чтобы страница начала тянуться. Нижняя граница в пикселях держит блок
+     собранным на низких окнах. */
+  .if-step {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: center;
+    gap: clamp(20px, 2.4vw, 32px);
+    min-height: max(220px, 52vh);
+    border-top: 1px solid var(--line-ink);
+    padding: 30px 0;
+    opacity: 0.24;
+    transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Соседний шаг светлее активного, но заметно плотнее дальних: иначе
+     неактивный текст читается как disabled, а не как «ещё не сейчас». */
+  .if-step.is-active + .if-step,
+  .if-step:has(+ .if-step.is-active) {
+    opacity: 0.38;
+  }
+
+  .if-step.is-active {
+    opacity: 1;
+  }
+
+  .if-medallion {
+    display: grid;
+    width: clamp(50px, 4vw, 60px);
+    height: clamp(50px, 4vw, 60px);
+    place-items: center;
+    border-radius: 999px;
+    background: rgb(232 160 107 / 0.22);
+    color: var(--p-terracotta);
+  }
+
+  /* :global — глиф рисует Glyph, и scope-метка этой сцены до него не доходит. */
+  .if-medallion :global(.p-icon) {
+    --icon-size: 26px;
+  }
+
+  .if-step h3 {
+    max-width: 22ch;
+    margin: 14px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(26px, 2.7vw, 40px);
+    letter-spacing: -0.035em;
+    line-height: 1.04;
+    text-wrap: balance;
+  }
+
+  .if-step p {
+    max-width: 34ch;
+    margin: 18px 0 0;
+    color: var(--text-soft);
+    font-size: var(--font-lead);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  /* ── Полоса широкого экрана ── */
+  .if-nav {
+    overflow: hidden;
+    background: var(--p-ink-deep);
+  }
+
+  .if-desktop-note {
+    margin: 16px 0 0;
+    color: var(--text-soft);
+    font-family: var(--font-project);
+    font-size: var(--font-caption);
+  }
+
+  @media (max-width: 900px) {
+    .if-body {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 40px;
+    }
+
+    .if-stage,
+    .if-steps,
+    .if-desktop {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    .phone {
+      position: static;
+      height: min(72vh, 620px);
+    }
+
+    /* Без липкости шаги идут обычным списком — приглушать соседние нечего. */
+    .if-step,
+    .if-step.is-active + .if-step,
+    .if-step:has(+ .if-step.is-active) {
+      min-height: 0;
+      padding: 26px 0;
+      opacity: 1;
+    }
+  }
+
+  /* Без анимации сцена разворачивается статикой: все три экрана видны сразу,
+     липкость и кроссфейд не нужны. */
+  @media (prefers-reduced-motion: reduce) {
+    .if-body {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 40px;
+    }
+
+    .if-stage,
+    .if-steps,
+    .if-desktop {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    .phone {
+      position: static;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      width: min(720px, 100%);
+      height: auto;
+      aspect-ratio: auto;
+      gap: 12px;
+      border-radius: 20px;
+      padding: 12px;
+    }
+
+    .phone-screen {
+      grid-area: auto;
+      aspect-ratio: 390 / 780;
+      opacity: 1;
+      transition: none;
+    }
+
+    .if-step,
+    .if-step.is-active + .if-step,
+    .if-step:has(+ .if-step.is-active) {
+      min-height: 0;
+      opacity: 1;
+      transition: none;
+    }
+  }
+</style>

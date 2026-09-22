@@ -1,0 +1,69 @@
+---
+/* Шрифты проекта: донор объявляет Inter + Prata, но файлов у себя не держит,
+   поэтому self-host берём на себя. Живут только внутри project-слоя кейса —
+   студийная типографика остаётся на Unbounded + Golos Text. */
+import '@fontsource/inter/cyrillic-400.css';
+import '@fontsource/inter/cyrillic-500.css';
+import '@fontsource/inter/cyrillic-600.css';
+import '@fontsource/inter/latin-400.css';
+import '@fontsource/inter/latin-500.css';
+import '@fontsource/inter/latin-600.css';
+import '@fontsource/prata/cyrillic-400.css';
+import '@fontsource/prata/latin-400.css';
+import '../../styles/fonts-onest.css';
+import '../../styles/case-sutures.css';
+
+import CaseBar from '../case-olginka/parts/CaseBar.astro';
+import SceneHero from './SceneHero.astro';
+import SceneContext from './SceneContext.astro';
+import SceneProduct from './SceneProduct.astro';
+import SceneChoice from './SceneChoice.astro';
+import SceneRequest from './SceneRequest.astro';
+import SceneInfra from './SceneInfra.astro';
+import SceneSystem from './SceneSystem.astro';
+import SceneOutcome from './SceneOutcome.astro';
+
+/**
+ * Кейс «ИМЭКС · Шовные материалы» — главы вместо выкладки экранов.
+ *
+ * Продают не сайт, а упаковку B2B-продукта: продукт → позиционирование →
+ * линейка → исполнение → подборка → запрос → почта. Поэтому главы идут не по
+ * разделам сайта, а по пути продукта к клиенту, и каждая закрывает один шаг.
+ *
+ * Полосы чередуются тёмное/светлое, но не механически: сравнение материалов
+ * и конфигуратор стоят одной тёмной главой 04, потому что это один разговор
+ * про выбор, и шов между ними разрезал бы мысль пополам.
+ *
+ * Бюджет движения — ровно три заметных момента: вход в шапку (глава 01),
+ * выбор материала и переключение параметров (глава 04) и липкая мобильная
+ * сцена. Всё остальное статично и не двигается под prefers-reduced-motion.
+ */
+interface Props {
+  title: string;
+  stack: string[];
+  presentation: any;
+}
+
+const { title, stack, presentation } = Astro.props;
+---
+
+<CaseBar title={title} heroSelector=".sutures-hero" />
+
+<main class="sutures-case" data-bg="paper">
+  <SceneHero title={title} presentation={presentation} />
+  <SceneContext presentation={presentation} />
+  <SceneProduct presentation={presentation} />
+  <SceneChoice presentation={presentation} />
+  <SceneRequest presentation={presentation} />
+  <SceneInfra presentation={presentation} />
+  <SceneSystem stack={stack} presentation={presentation} />
+  <SceneOutcome presentation={presentation} />
+</main>
+
+<script>
+  import { initCaseMode } from '../../scripts/case-mode';
+  import { initCaseConfig } from '../../scripts/case-config';
+
+  initCaseMode();
+  initCaseConfig();
+</script>

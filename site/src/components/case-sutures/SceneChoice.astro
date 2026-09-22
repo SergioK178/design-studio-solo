@@ -1,0 +1,1197 @@
+---
+/**
+ * Глава 04. Выбор — одна тёмная глава из двух актов.
+ *
+ * Мысль главы простая: сначала человек понимает, какой материал ему нужен,
+ * затем собирает конкретное исполнение. Поэтому здесь нет отдельных номеров
+ * на линейку, конфигуратор и «предметность» — это один разговор, разделённый
+ * воздухом и одной волосяной линией.
+ *
+ * Акт A — плоскость сравнения: колонка равна материалу, строка равна свойству,
+ * сроки подписаны над колонками. Положение материала само несёт информацию,
+ * поэтому карточек-плиток здесь нет.
+ *
+ * Акт B — рабочая плоскость конфигуратора: предмет слева, управление справа,
+ * итог там же внизу. Параметры переключаются по-настоящему: это единственное
+ * место кейса, где интерактив показывает саму работу, а не украшает её.
+ *
+ * Цветовое правило главы: мятный — состояние интерфейса, фиолетовый — свойство
+ * продукта. Смешивать их как два равноправных акцента нельзя.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { materials, configurator, photos } = presentation;
+
+/** Строки матрицы сравнения: подписи здесь, значения — в полях материала. */
+const MATRIX_ROWS: { label: string; key: string }[] = [
+  { label: 'Рассасывание', key: 'pace' },
+  { label: 'Структура нити', key: 'structure' },
+  { label: 'Состав', key: 'composition' },
+  { label: 'Стерилизация', key: 'sterilization' },
+  { label: 'Форма поставки', key: 'supply' },
+];
+
+/** Иглы иллюстрируются собственными иконками проекта: у каждой геометрии свой файл. */
+const NEEDLE_ICONS: Record<string, string> = {
+  'Колющая': 'needle-taper.svg',
+  'Режущая': 'needle-cutting.svg',
+  'Обратно-режущая': 'needle-reverse-cutting.svg',
+  'Таперкат': 'needle-tapercut.svg',
+  'Шпательная': 'needle-spatula.svg',
+};
+
+const ICON_BASE = '/assets/works/suture/icons';
+const THREADS: Record<string, string> = {
+  braided: photos.configThread.src,
+  mono: photos.configThreadMono.src,
+};
+const LOOP = photos.configThreadLoop.src;
+
+/** Ключи шагов: по ним скрипт связывает чипы, этикетку и итог. */
+const STEP_KEYS = ['format', 'length', 'needle'];
+const stepsWithKeys = configurator.steps.map((step: any, index: number) => ({
+  ...step,
+  key: STEP_KEYS[index] ?? `step-${index}`,
+}));
+const [formatStep, lengthStep, needleStep] = stepsWithKeys;
+---
+
+<section
+  class="scene choice"
+  data-bg="ink"
+  data-mode-scope
+  data-mode-active={materials.items[0].id}
+  data-config
+>
+  <div class="wrap">
+    {/* ── Акт A: сравнение материалов ──────────────────────────────── */}
+    <div class="chapter act">
+      <div class="chapter-copy">
+        <p class="s-label"><b>04</b> {materials.eyebrow}</p>
+        <h2 class="s-title">
+          {materials.title.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </h2>
+        {materials.text.map((paragraph: string) => (
+          <p class="s-text" set:html={paragraph} />
+        ))}
+        <p class="act-lead">{materials.lead}</p>
+      </div>
+
+      <div class="chapter-visual project-layer">
+        <p class="part-label">Сравнение материалов</p>
+
+        {/* Одна сетка на всю плоскость: шкала сроков, колонки материалов и
+            матрица свойств стоят по одним и тем же вертикалям. */}
+        <div class="matrix-scroll">
+        <div class="matrix">
+          <span class="matrix-corner" aria-hidden="true"></span>
+          {materials.items.map((item: any) => (
+            <p class="term">{item.termLabel}</p>
+          ))}
+
+          <span class="matrix-corner" aria-hidden="true"></span>
+          {materials.items.map((item: any, index: number) => (
+            <button
+              class:list={['mat', index === 0 && 'is-active']}
+              type="button"
+              aria-pressed={index === 0 ? 'true' : 'false'}
+              data-mode-btn={item.id}
+              data-mode-label={item.name}
+              data-mode-sublabel={`${item.group} · ${item.structure.toLowerCase()}`}
+            >
+              {/* Виток тонируется реальным цветом нити материала: один рендер
+                  обслуживает всю линейку — тот же приём, что в конфигураторе. */}
+              <span
+                class="mat-thread thread-tint"
+                style={`--thread-tint: ${item.tint}; --thread-mask: url(${LOOP})`}
+              >
+                <img src={LOOP} alt="" width="220" height="130" loading="lazy" />
+              </span>
+              <b>{item.name}</b>
+            </button>
+          ))}
+
+          {MATRIX_ROWS.map((row) => (
+            <>
+              <p class="row-label">{row.label}</p>
+              {materials.items.map((item: any, index: number) => (
+                <p
+                  class:list={['cell', index === 0 && 'is-active']}
+                  data-mode-mark={item.id}
+                >{item[row.key]}</p>
+              ))}
+            </>
+          ))}
+        </div>
+        </div>
+
+        <p class="matrix-note">{materials.scaleNote}</p>
+      </div>
+    </div>
+
+    {/* ── Акт B: конкретное исполнение ─────────────────────────────── */}
+    <div class="chapter act act--config">
+      <div class="chapter-copy">
+        <p class="p-kicker act-kicker">{configurator.eyebrow}</p>
+        <h2 class="s-title">
+          {configurator.title.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </h2>
+        {configurator.text.map((paragraph: string) => (
+          <p class="s-text" set:html={paragraph} />
+        ))}
+      </div>
+
+      <div class="chapter-visual project-layer">
+        <p class="bridge">{configurator.bridge}</p>
+
+        {/* Одна рабочая плоскость, разделённая волосяной линией: предмет и
+            управление — не две карточки внутри третьей. */}
+        <div class="config">
+          <div class="config-product">
+            {materials.items.map((item: any, index: number) => (
+              <div
+                class:list={['mat-panel', index === 0 && 'is-active']}
+                data-mode-panel={item.id}
+              >
+                <p class="p-kicker pane-kicker">Выбранный материал</p>
+                <p class="config-name">{item.name}</p>
+                <p class="config-sub">{item.group} · {item.structure.toLowerCase()}</p>
+
+                <div class="features">
+                  <div class="feature">
+                    <span class="p-asset-icon"><img src={`${ICON_BASE}/feature-duration.svg`} alt="" /></span>
+                    <span><b>{item.pace} рассасывание</b><small>{item.term ?? 'не рассасывается'}</small></span>
+                  </div>
+                  <div class="feature">
+                    <span class="p-asset-icon"><img src={`${ICON_BASE}/feature-structure.svg`} alt="" /></span>
+                    <span><b>{item.structure}</b><small>Структура нити</small></span>
+                  </div>
+                  <div class="feature">
+                    <span class="p-asset-icon"><img src={`${ICON_BASE}/feature-sterilization.svg`} alt="" /></span>
+                    <span><b>{item.sterilization} стерилизация</b><small>EO</small></span>
+                  </div>
+                  <div class="feature">
+                    <span class="p-asset-icon"><img src={`${ICON_BASE}/feature-material.svg`} alt="" /></span>
+                    <span><b>{item.supply}</b><small>Форма поставки</small></span>
+                  </div>
+                </div>
+
+                <div class="stage" aria-hidden="true">
+                  <img class="layer layer--box" src={photos.configBox.src} alt="" loading="lazy" />
+                  <div
+                    class="layer layer--thread thread-tint"
+                    style={`--thread-tint: ${item.tint}; --thread-mask: url(${THREADS[item.thread]})`}
+                  >
+                    <img src={THREADS[item.thread]} alt="" loading="lazy" />
+                  </div>
+                  <img class="layer layer--needle" src={photos.configNeedle.src} alt="" loading="lazy" />
+                  <div class="layer layer--sachet">
+                    <img src={photos.configSachet.src} alt="" loading="lazy" />
+                    {/* Этикетка — живой текст на плоскости сашета: значения
+                        меняются вместе с параметрами справа. */}
+                    <div class="label-scaler">
+                      <div class="label-plane">
+                        <div class="label-row">
+                          <span class="label-kicker">Шовный материал</span>
+                          <span class="label-sterile">STERILE | EO</span>
+                        </div>
+                        <div class="label-name">{item.name}</div>
+                        <div class="label-structure">{item.structure.toLowerCase()}</div>
+                        <div class="label-meta">
+                          <div><span>Формат</span><b data-config-out="format">{formatStep.active}</b></div>
+                          <div><span>Длина</span><b data-config-out="length">{lengthStep.active}</b></div>
+                          <div><span>Игла</span><b data-config-out="needle">{needleStep.active}</b></div>
+                        </div>
+                      </div>
+                      <div class="label-gloss"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div class="config-options">
+            <p class="p-kicker pane-kicker">Параметры</p>
+
+            {stepsWithKeys.map((step: any) => (
+              <div class="step" data-config-step={step.key}>
+                <p class="step-title"><span class="step-num">{step.num}</span> {step.label}</p>
+                <div class:list={['step-options', step.key === 'needle' && 'step-options--needle']}>
+                  {step.options.map((option: string) => (
+                    <button
+                      class:list={['p-chip', option === step.active && 'p-chip--on']}
+                      type="button"
+                      aria-pressed={option === step.active ? 'true' : 'false'}
+                      data-config-opt={step.key}
+                      data-config-value={option}
+                    >
+                      {NEEDLE_ICONS[option] && (
+                        <img class="needle-icon" src={`${ICON_BASE}/${NEEDLE_ICONS[option]}`} alt="" width="34" height="26" loading="lazy" />
+                      )}
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div class="summary">
+              <p class="p-kicker pane-kicker">{configurator.summaryTitle}</p>
+              <p class="summary-line">
+                <span data-mode-name>{materials.items[0].name}</span> ·
+                <span data-config-out="format">{formatStep.active}</span> ·
+                <span data-config-out="length">{lengthStep.active}</span> ·
+                <span data-config-out="needle">{needleStep.active}</span>
+              </p>
+              <span class="p-btn config-add">{configurator.cta}<i>+</i></span>
+            </div>
+          </div>
+        </div>
+
+        {/* Предметность — не отдельная сцена, а полоса из двух заметок. */}
+        <div class="craft">
+          {configurator.craft.map((item: any) => (
+            <div class="craft-item">
+              <div class="craft-copy">
+                <b><span class="craft-dot"></span>{item.title}</b>
+                <p class="evidence">{item.text}</p>
+              </div>
+              {item.tinted ? (
+                materials.items.map((mat: any, index: number) => (
+                  <span
+                    class:list={['craft-shot', 'thread-tint', index === 0 && 'is-active']}
+                    data-mode-mark={mat.id}
+                    style={`--thread-tint: ${mat.tint}; --thread-mask: url(${item.image})`}
+                  >
+                    <img src={item.image} alt={item.alt} loading="lazy" />
+                  </span>
+                ))
+              ) : (
+                <span class="craft-shot is-active">
+                  <img src={item.image} alt={item.alt} loading="lazy" />
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* ── Эпилог: тот же выбор на телефоне ─────────────────────────── */}
+    <div class="chapter act act--mobile">
+      <div class="chapter-copy">
+        <p class="p-kicker act-kicker">{configurator.mobile.eyebrow}</p>
+        <p class="mobile-text">{configurator.mobile.text}</p>
+        <ul class="checks">
+          {configurator.mobile.checks.map((check: string) => (
+            <li>{check}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="chapter-visual project-layer">
+        {/* Экраны собраны той же вёрсткой, что и десктоп: это не скриншоты,
+            а тот же интерфейс в одну колонку. */}
+        <div class="phones">
+          <div class="phone">
+            <p class="phone-back">←</p>
+            <p class="phone-name" data-mode-name>{materials.items[0].name}</p>
+            <p class="phone-sub" data-mode-sub>{materials.items[0].group} · {materials.items[0].structure.toLowerCase()}</p>
+            <p class="phone-step"><span>{formatStep.num}</span> {formatStep.label}</p>
+            <ul class="phone-opts">
+              {formatStep.options.map((option: string) => (
+                <li class:list={[option === formatStep.active && 'is-on']}>{option}</li>
+              ))}
+            </ul>
+          </div>
+
+          <span class="phone-arrow" aria-hidden="true">→</span>
+
+          <div class="phone">
+            <p class="phone-back">←</p>
+            <p class="phone-step"><span>{lengthStep.num}</span> {lengthStep.label}</p>
+            <ul class="phone-opts">
+              {lengthStep.options.map((option: string) => (
+                <li class:list={[option === lengthStep.active && 'is-on']}>{option}</li>
+              ))}
+            </ul>
+            <p class="phone-step"><span>{needleStep.num}</span> {needleStep.label}</p>
+            <ul class="phone-opts phone-opts--needle">
+              {needleStep.options.slice(0, 3).map((option: string) => (
+                <li class:list={[option === needleStep.active && 'is-on']}>
+                  <img src={`${ICON_BASE}/${NEEDLE_ICONS[option]}`} alt="" width="28" height="20" loading="lazy" />
+                  {option}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <span class="phone-arrow" aria-hidden="true">→</span>
+
+          <div class="phone">
+            <p class="phone-title">{configurator.summaryTitle}</p>
+            <dl class="phone-summary">
+              <div><dt>Материал</dt><dd data-mode-name>{materials.items[0].name}</dd></div>
+              {configurator.summary.map((row: any, index: number) => (
+                <div>
+                  <dt>{row.label}</dt>
+                  <dd data-config-out={STEP_KEYS[index]}>{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+            <span class="p-btn phone-btn">{configurator.cta}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Ритм главы задан макетом: два акта и эпилог внутри одной тёмной полосы. */
+  .choice {
+    padding-block: clamp(72px, 7.5vw, 116px) clamp(80px, 8vw, 128px);
+  }
+
+  .act + .act {
+    margin-top: clamp(76px, 8vw, 132px);
+  }
+
+  /* Единственная линия внутри главы — шов между актами. */
+  .act--config {
+    border-top: 1px solid var(--line-light);
+    padding-top: clamp(56px, 5.5vw, 84px);
+  }
+
+  .act--mobile {
+    margin-top: clamp(56px, 6vw, 88px);
+  }
+
+  .act-lead {
+    margin: 28px 0 0;
+    max-width: 26ch;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  .act-kicker {
+    color: var(--p-mint-400);
+  }
+
+  .act--config .chapter-copy .s-title,
+  .act--mobile .chapter-copy .s-title {
+    margin-top: 16px;
+  }
+
+  /* ── Акт A: плоскость сравнения ──────────────────────────────────── */
+  .matrix {
+    display: grid;
+    grid-template-columns: 132px repeat(6, minmax(0, 1fr));
+    column-gap: 10px;
+    align-items: start;
+  }
+
+  /* Срок подписан над колонкой: положение материала само несёт информацию. */
+  .term {
+    position: relative;
+    margin: 0 0 26px;
+    padding-top: 16px;
+    color: rgb(247 243 236 / 0.62);
+    font-size: 11.5px;
+    line-height: 1.3;
+    text-align: center;
+  }
+
+  .term::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: var(--p-mint-400);
+  }
+
+  .term::after {
+    content: '';
+    position: absolute;
+    top: -1px;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background: var(--line-light);
+  }
+
+  .mat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    margin-bottom: 28px;
+    border: 1px solid var(--line-light);
+    border-radius: 10px;
+    background: rgb(21 26 33 / 0.7);
+    padding: 14px 10px 16px;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition:
+      border-color 0.2s var(--ease-site),
+      background-color 0.2s var(--ease-site);
+  }
+
+  .mat:hover {
+    border-color: rgb(247 243 236 / 0.24);
+  }
+
+  /* Активный материал держит мятную кромку — тот же сигнал выбора, что и
+     у чипов конфигуратора ниже. */
+  .mat.is-active {
+    border-color: rgb(141 215 193 / 0.5);
+    background: rgb(141 215 193 / 0.08);
+  }
+
+  .mat b {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .mat-thread {
+    display: block;
+    position: relative;
+    width: 100%;
+  }
+
+  .mat-thread img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .row-label,
+  .cell {
+    margin: 0;
+    border-top: 1px solid rgb(247 243 236 / 0.08);
+    padding: 13px 4px;
+    font-size: 12.5px;
+    line-height: 1.35;
+  }
+
+  .row-label {
+    color: rgb(247 243 236 / 0.45);
+  }
+
+  .cell {
+    color: rgb(247 243 236 / 0.78);
+    text-align: center;
+  }
+
+  .cell:not(.is-active) {
+    color: rgb(247 243 236 / 0.5);
+  }
+
+  .cell.is-active {
+    color: var(--color-paper);
+  }
+
+  .matrix-note {
+    margin: 20px 0 0;
+    color: rgb(247 243 236 / 0.38);
+    font-size: 12px;
+  }
+
+  /* ── Переход A → B ───────────────────────────────────────────────── */
+  .bridge {
+    margin: 0 0 22px;
+    color: rgb(247 243 236 / 0.5);
+    font-size: 13.5px;
+  }
+
+  /* ── Акт B: рабочая плоскость ────────────────────────────────────── */
+  .config {
+    display: grid;
+    grid-template-columns: 1.42fr 1fr;
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 0.12);
+    border-radius: 20px;
+    background: var(--p-card);
+  }
+
+  .config-product {
+    position: relative;
+    min-height: 442px;
+    border-right: 1px solid rgb(255 255 255 / 0.08);
+    background:
+      radial-gradient(circle at 57% 58%, rgb(43 54 67 / 0.5), transparent 45%),
+      linear-gradient(135deg, rgb(255 255 255 / 0.03), transparent 38%);
+  }
+
+  /* Панели материалов лежат стопкой и кроссфейдятся: плоскость не должна
+     прыгать по высоте от того, что у одного материала подпись длиннее. */
+  .mat-panel {
+    position: absolute;
+    inset: 0;
+    padding: 26px 28px;
+    opacity: 0;
+    transition: opacity 0.22s var(--ease-site);
+  }
+
+  .mat-panel.is-active {
+    position: relative;
+    opacity: 1;
+  }
+
+  .pane-kicker {
+    color: rgb(247 243 236 / 0.4);
+  }
+
+  .config-name {
+    position: relative;
+    z-index: 8;
+    max-width: 11ch;
+    margin: 10px 0 0;
+    font-family: var(--font-project-display);
+    font-size: clamp(21px, 1.8vw, 27px);
+    line-height: 1.05;
+  }
+
+  .config-sub {
+    position: relative;
+    z-index: 8;
+    margin: 8px 0 0;
+    color: rgb(247 243 236 / 0.5);
+    font-size: 12.5px;
+  }
+
+  .features {
+    position: relative;
+    z-index: 8;
+    display: grid;
+    width: min(50%, 236px);
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .feature {
+    display: flex;
+    min-height: 46px;
+    align-items: center;
+    gap: 11px;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 9px;
+    background: rgb(13 18 24 / 0.62);
+    padding: 8px 12px;
+    font-size: 12.5px;
+    line-height: 1.18;
+  }
+
+  .feature b {
+    display: block;
+    font-weight: 500;
+  }
+
+  .feature small {
+    display: block;
+    margin-top: 3px;
+    color: rgb(247 243 236 / 0.45);
+    font-size: 10.5px;
+  }
+
+  /* ── Сцена продукта: слои в процентах от кадра ───────────────────── */
+  .stage {
+    position: absolute;
+    inset: 0;
+    overflow: clip;
+    pointer-events: none;
+  }
+
+  .layer {
+    position: absolute;
+    display: block;
+  }
+
+  .layer img {
+    display: block;
+    width: 100%;
+  }
+
+  .layer--box {
+    z-index: 1;
+    top: 6%;
+    left: 64%;
+    width: 28%;
+    opacity: 0.66;
+    filter: drop-shadow(0 22px 34px rgb(0 0 0 / 0.34));
+  }
+
+  .layer--thread {
+    z-index: 4;
+    top: 38%;
+    left: 42%;
+    width: 62%;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.65));
+  }
+
+  /* У лигатуры и петли иглы нет — предмет обязан это показывать, иначе
+     сцена спорит с параметрами. */
+  .choice.is-needleless .layer--needle {
+    opacity: 0;
+    transition: opacity 0.18s var(--ease-site);
+  }
+
+  .layer--needle {
+    z-index: 6;
+    top: 68%;
+    left: 40%;
+    width: 37%;
+    filter: drop-shadow(0 8px 9px rgb(0 0 0 / 0.58));
+  }
+
+  .layer--sachet {
+    z-index: 3;
+    top: 26%;
+    left: 52%;
+    width: 39%;
+    filter: drop-shadow(0 20px 18px rgb(0 0 0 / 0.38));
+  }
+
+  /* Ассет нити нейтрально-серый: цвет кладётся multiply поверх него, чтобы
+     сохранить плетение и блики. Так один рендер обслуживает всю линейку —
+     и это ровно тот приём, который работает на живом сайте. */
+  .thread-tint {
+    isolation: isolate;
+  }
+
+  .thread-tint::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--thread-tint);
+    mix-blend-mode: multiply;
+    mask-image: var(--thread-mask);
+    mask-size: 100% 100%;
+    -webkit-mask-image: var(--thread-mask);
+    -webkit-mask-size: 100% 100%;
+  }
+
+  /* Этикетка задана в процентах от сашета; простое двумерное преобразование
+     остаётся резким при любом размере и не рвёт глифы, как matrix3d. */
+  .label-scaler {
+    position: absolute;
+    top: 20%;
+    left: 25%;
+    width: 61%;
+    height: 45%;
+    transform: rotate(4.2deg) skewX(2deg);
+    transform-origin: 50% 50%;
+  }
+
+  .label-plane {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 5% 6% 7%;
+    color: #1b2027;
+    font-family: var(--font-project);
+  }
+
+  .label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .label-kicker {
+    color: #596373;
+    font-size: clamp(5px, 0.75vw, 9px);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .label-sterile {
+    border: 1px solid #566070;
+    padding: 1px 4px;
+    color: #566070;
+    font-size: clamp(5px, 0.65vw, 8px);
+    letter-spacing: 0.08em;
+  }
+
+  /* Кегль названия держит самое длинное имя линейки: «Полидиоксанон»
+     должен помещаться на этикетку целиком, а не обрезаться плоскостью. */
+  .label-name {
+    max-width: 92%;
+    margin-top: 4%;
+    font-size: clamp(7px, 1.05vw, 13px);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  .label-structure {
+    margin-top: 2%;
+    color: #5b6675;
+    font-size: clamp(5px, 0.75vw, 10px);
+  }
+
+  .label-meta {
+    display: flex;
+    margin-top: auto;
+    gap: 6%;
+    border-top: 1px solid rgb(86 96 112 / 0.3);
+    padding-top: 3%;
+  }
+
+  .label-meta div {
+    display: flex;
+    min-width: 0;
+    max-width: 32%;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .label-meta span {
+    color: #78828f;
+    font-size: clamp(4px, 0.55vw, 7px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .label-meta b {
+    overflow: hidden;
+    color: #232b35;
+    font-size: clamp(5px, 0.75vw, 10px);
+    font-weight: 600;
+    line-height: 1.12;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Блик плёнки поверх текста: надпись должна читаться как напечатанная
+     под упаковкой, а не наклеенная сверху. */
+  .label-gloss {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, rgb(255 255 255 / 0.42) 8%, transparent 34%, rgb(255 255 255 / 0.16) 62%, transparent 78%);
+    pointer-events: none;
+  }
+
+  /* ── Управление ──────────────────────────────────────────────────── */
+  .config-options {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding: 26px 28px;
+  }
+
+  .step-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0 0 10px;
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+
+  .step-num {
+    color: rgb(247 243 236 / 0.4);
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .step-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .step-options .p-chip {
+    border-radius: 9px;
+    cursor: pointer;
+    transition:
+      border-color 0.18s var(--ease-site),
+      background-color 0.18s var(--ease-site),
+      color 0.18s var(--ease-site);
+  }
+
+  .step-options .p-chip:hover:not(:disabled) {
+    border-color: rgb(247 243 236 / 0.26);
+  }
+
+  /* Недоступное значение остаётся видимым: интерфейс не прячет ассортимент,
+     а показывает, чего у этого материала не бывает. */
+  .step-options .p-chip:disabled {
+    opacity: 0.34;
+    cursor: not-allowed;
+  }
+
+  .step.is-off .step-title {
+    color: rgb(247 243 236 / 0.45);
+  }
+
+  /* Четыре геометрии иглы стоят одной строкой: шаг не должен растить
+     плоскость вдвое ради переноса. */
+  .step-options--needle {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .step-options--needle .p-chip {
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 4px;
+    font-size: 10.5px;
+    line-height: 1.15;
+  }
+
+  .needle-icon {
+    width: 34px;
+    height: 26px;
+    object-fit: contain;
+  }
+
+  .summary {
+    margin-top: auto;
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: 12px;
+    background: rgb(16 20 26 / 0.5);
+    padding: 16px 18px 18px;
+  }
+
+  .summary-line {
+    margin: 10px 0 16px;
+    color: rgb(247 243 236 / 0.72);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .config-add {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .config-add i {
+    font-style: normal;
+  }
+
+  /* Итог и этикетка меняются кроссфейдом: значение подменяется в момент,
+     когда его не видно. */
+  [data-config-out] {
+    transition: opacity 0.14s var(--ease-site);
+  }
+
+  [data-config-out].is-out {
+    opacity: 0;
+  }
+
+  /* ── Предметность: две заметки, а не отдельная глава ─────────────── */
+  .craft {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 44px;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 14px;
+    background: rgb(21 26 33 / 0.5);
+  }
+
+  .craft-item {
+    position: relative;
+    min-height: 156px;
+    overflow: hidden;
+    padding: 20px 36% 20px 22px;
+  }
+
+  .craft-item + .craft-item {
+    border-left: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .craft-copy {
+    position: relative;
+    z-index: 2;
+  }
+
+  .craft-item b {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    color: var(--color-paper);
+    font-family: var(--font-display);
+    font-size: 14.5px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  /* Фиолетовая точка — свойство продукта, а не состояние интерфейса. */
+  .craft-dot {
+    width: 8px;
+    height: 8px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--p-violet);
+  }
+
+  .craft-item .evidence {
+    margin: 10px 0 0;
+    font-size: 13px;
+  }
+
+  /* Кадр стоит в своей половине ячейки и не наезжает на текст: заметка
+     объясняет приём, а кадр его показывает. */
+  .craft-shot {
+    position: absolute;
+    top: 12px;
+    right: 0;
+    bottom: 12px;
+    display: none;
+    width: 36%;
+  }
+
+  .craft-shot.is-active {
+    display: block;
+  }
+
+  .craft-shot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: 100% 50%;
+  }
+
+  /* ── Эпилог: телефон ─────────────────────────────────────────────── */
+  .mobile-text {
+    margin: 18px 0 0;
+    max-width: 34ch;
+    color: var(--text-soft-light);
+    font-family: var(--font-text);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .checks {
+    display: grid;
+    gap: 12px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .checks li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: rgb(247 243 236 / 0.72);
+    font-size: 13.5px;
+  }
+
+  .checks li::before {
+    content: '✓';
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(141 215 193 / 0.45);
+    border-radius: 4px;
+    color: var(--p-mint-400);
+    font-size: 10px;
+  }
+
+  .phones {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    gap: 20px;
+  }
+
+  .phone {
+    display: flex;
+    width: 236px;
+    flex: none;
+    flex-direction: column;
+    box-sizing: border-box;
+    border: 1px solid rgb(255 255 255 / 0.14);
+    border-radius: 22px;
+    background: var(--p-stage);
+    padding: 18px 16px;
+  }
+
+  .phone-arrow {
+    align-self: center;
+    color: rgb(247 243 236 / 0.35);
+    font-size: 15px;
+  }
+
+  .phone-back {
+    margin: 0 0 12px;
+    color: rgb(247 243 236 / 0.4);
+    font-size: 13px;
+  }
+
+  .phone-name,
+  .phone-title {
+    margin: 0;
+    font-family: var(--font-project-display);
+    font-size: 17px;
+    line-height: 1.15;
+  }
+
+  .phone-sub {
+    margin: 6px 0 0;
+    color: rgb(247 243 236 / 0.45);
+    font-size: 10.5px;
+  }
+
+  .phone-step {
+    display: flex;
+    gap: 8px;
+    margin: 18px 0 8px;
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+
+  .phone-step span {
+    color: rgb(247 243 236 / 0.4);
+    font-family: var(--font-mono);
+  }
+
+  .phone-opts {
+    display: grid;
+    gap: 7px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .phone-opts li {
+    box-sizing: border-box;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 8px;
+    background: rgb(16 20 26 / 0.6);
+    padding: 9px 12px;
+    color: rgb(247 243 236 / 0.68);
+    font-size: 11.5px;
+    text-align: center;
+  }
+
+  .phone-opts li.is-on {
+    border-color: rgb(141 215 193 / 0.5);
+    background: rgb(141 215 193 / 0.12);
+    color: var(--p-mint-300);
+  }
+
+  .phone-opts--needle {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .phone-opts--needle li {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    font-size: 10px;
+    line-height: 1.15;
+  }
+
+  .phone-summary {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0 0;
+  }
+
+  .phone-summary div {
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    padding-bottom: 8px;
+  }
+
+  .phone-summary dt {
+    color: rgb(247 243 236 / 0.4);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .phone-summary dd {
+    margin: 4px 0 0;
+    font-size: 12.5px;
+  }
+
+  .phone-btn {
+    margin-top: auto;
+    padding: 12px 16px;
+    font-size: 12.5px;
+    text-align: center;
+  }
+
+  @media (max-width: 1240px) {
+    .matrix {
+      grid-template-columns: 108px repeat(6, minmax(0, 1fr));
+    }
+
+    .phones {
+      justify-content: flex-start;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+  }
+
+  @media (max-width: 1000px) {
+    .config {
+      display: block;
+    }
+
+    .config-product {
+      min-height: 440px;
+      border-right: 0;
+      border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    }
+
+    /* Матрица не ужимается до нечитаемых колонок: она прокручивается
+       вбок целиком, сохраняя вертикали. */
+    .matrix-scroll {
+      overflow-x: auto;
+    }
+  }
+
+  @media (max-width: 860px) {
+    .chapter-visual .matrix {
+      min-width: 680px;
+    }
+
+    .craft {
+      grid-template-columns: 1fr;
+    }
+
+    .craft-item + .craft-item {
+      border-top: 1px solid rgb(255 255 255 / 0.08);
+      border-left: 0;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .features {
+      width: min(66%, 220px);
+    }
+  }
+</style>

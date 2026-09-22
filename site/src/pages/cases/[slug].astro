@@ -5,9 +5,9 @@ import Nav from '../../components/Nav.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import SiteFooter from '../../components/SiteFooter.astro';
 import AssetSlot from '../../components/AssetSlot.astro';
-import EditorialCase from '../../components/EditorialCase.astro';
+import OlginkaCase from '../../components/case-olginka/OlginkaCase.astro';
+import SuturesCase from '../../components/case-sutures/SuturesCase.astro';
 import ShowroomCase from '../../components/ShowroomCase.astro';
-import CaseDetail from '../../components/CaseDetail.astro';
 import CatalogCase from '../../components/CatalogCase.astro';
 import { site } from '../../data/site';
 import { briefHref, products } from '../../data/products';
@@ -24,27 +24,9 @@ const { Content } = await render(entry);
 const product = products.find((item) => item.slug === data.productSlug);
 ---
 
-<Base title={`${data.title} · 3K Studio`}>
+<Base title={`${data.title} · 3D Studio`}>
   <Nav />
-  {data.presentation?.variant === 'detail' ? (
-    <CaseDetail
-      slug={slug}
-      title={data.title}
-      category={data.category}
-      client={data.client}
-      audience={data.audience}
-      task={data.task}
-      constraints={data.constraints}
-      solution={data.solution}
-      screens={data.screens}
-      role={data.role}
-      result={data.result}
-      stack={data.stack}
-      presentation={data.presentation}
-      productName={product?.name}
-      productHref={product ? briefHref(product) : undefined}
-    />
-  ) : data.presentation?.variant === 'catalog' ? (
+  {data.presentation?.variant === 'catalog' ? (
     <CatalogCase
       slug={slug}
       title={data.title}
@@ -63,7 +45,9 @@ const product = products.find((item) => item.slug === data.productSlug);
       productHref={product ? briefHref(product) : undefined}
     />
   ) : data.presentation?.variant === 'editorial' ? (
-    <EditorialCase title={data.title} category={data.category} solution={data.solution} task={data.task} role={data.role} result={data.result} stack={data.stack} presentation={data.presentation} />
+    <OlginkaCase title={data.title} stack={data.stack} presentation={data.presentation} />
+  ) : data.presentation?.variant === 'sutures' ? (
+    <SuturesCase title={data.title} stack={data.stack} presentation={data.presentation} />
   ) : data.presentation?.variant === 'showroom' ? (
     <ShowroomCase
       slug={slug}
@@ -128,7 +112,7 @@ const product = products.find((item) => item.slug === data.productSlug);
 
       <section class="role-result" data-reveal-group>
         <article>
-          <span class="mono">роль 3K Studio</span>
+          <span class="mono">роль 3D Studio</span>
           <p>{data.role}</p>
         </article>
         <article>
@@ -144,8 +128,8 @@ const product = products.find((item) => item.slug === data.productSlug);
           <p>Ответьте на несколько вопросов — предложим формат и ориентир по цене и сроку. Точную смету фиксируем после проверки деталей.</p>
         </div>
         <div class="actions">
-          {product && <a class="btn-gold" href={briefHref(product)} data-magnetic>Разобрать похожую задачу →</a>}
-          <a class="btn-outline dark" href={site.telegramUrl} data-magnetic>Написать в Telegram</a>
+          {product && <a class="btn-gold" href={briefHref(product)} data-magnetic>Пройти бриф →</a>}
+          <a class="btn-outline dark" href={site.telegramUrl} data-magnetic>Обсудить проект</a>
         </div>
       </section>
     </div>
@@ -162,7 +146,7 @@ const product = products.find((item) => item.slug === data.productSlug);
   }
 
   .mono {
-    color: var(--color-blue);
+    color: var(--color-blue-legacy);
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.06em;

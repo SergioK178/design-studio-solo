@@ -1,0 +1,444 @@
+---
+import ProjectNav from './parts/ProjectNav.astro';
+import ModePill from './parts/ModePill.astro';
+
+/**
+ * Сцена 1. Студийная шапка кейса, а сразу под ней — без зазора и без рамки
+ * браузера — начинается сам проект: первый экран Ольгинки, пересобранный
+ * нативно. Человек буквально входит внутрь сделанного сайта, а не смотрит
+ * на его снимок.
+ *
+ * Интерактивный момент №1: пилюля переключает копирайт первого экрана ровно
+ * так же, как ModeContext на живом сайте.
+ */
+interface Props {
+  title: string;
+  presentation: any;
+}
+
+const { title, presentation } = Astro.props;
+const { photos, scenarios } = presentation;
+const modeOptions = scenarios.map((scenario: any) => ({ id: scenario.id, label: scenario.label }));
+---
+
+<section class="hero">
+  <div class="hero-studio" data-bg="ink">
+    <div class="wrap hero-grid" data-reveal-group>
+      <p class="s-label hero-kicker">{title} · {presentation.sector} · {presentation.year}</p>
+
+      <div class="hero-copy">
+        <h1>Сайт дома у моря<br />с двумя сценариями<br />покупки</h1>
+        <p class="hero-place">{presentation.location}</p>
+        <p class="hero-lead">
+          {presentation.lead.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </p>
+        <p class="hero-pull">{presentation.pullquote} <span aria-hidden="true">↓</span></p>
+      </div>
+
+      <div class="hero-side">
+        <dl class="hero-meta">
+          {presentation.facts.map((fact: any) => (
+            <div>
+              <dt>{fact.label}</dt>
+              <dd>{fact.value}{fact.sub && <span>{fact.sub}</span>}</dd>
+            </div>
+          ))}
+        </dl>
+        <a class="hero-visit" href={presentation.projectUrl} target="_blank" rel="noreferrer">
+          Перейти на сайт <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-project project-layer" data-mode-scope data-mode-active={scenarios[0].id}>
+    <div class="hero-photo">
+      <img
+        class="p-kenburns"
+        src={photos.hero.src}
+        alt={photos.hero.alt}
+        fetchpriority="high"
+        decoding="sync"
+      />
+      <div class="hero-veil" aria-hidden="true"></div>
+    </div>
+
+    <div class="hero-chrome">
+      <ProjectNav state="transparent" />
+
+      <div class="hero-stage">
+        <ModePill options={modeOptions} active={scenarios[0].id} ariaLabel="Сценарий покупки, первый экран" />
+
+        <div class="hero-panels">
+          {scenarios.map((scenario: any, index: number) => (
+            <div class:list={['hero-panel', index === 0 && 'is-active']} data-mode-panel={scenario.id}>
+              <p class="p-kicker hero-eyebrow">{scenario.heroCopy.eyebrow}</p>
+              <p class="p-title hero-title">
+                {scenario.heroCopy.headTop}
+                <span class="hero-title__em">{scenario.heroCopy.headEm}</span>
+              </p>
+              <p class="hero-sub">{scenario.heroCopy.sub}</p>
+              <div class="hero-actions">
+                <span class="p-btn p-btn--cream">{scenario.heroCopy.cta}</span>
+                <span class="p-link">{scenario.heroCopy.ctaSub}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="hero-badge">
+        <strong>50<span class="p-unit">м</span></strong>
+        <span class="p-kicker">до воды</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ── Студийная шапка ── */
+  .hero-studio {
+    box-sizing: border-box;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    padding: 116px 0 88px;
+  }
+
+  /* Кикер стоит в левой колонке отдельной строкой, а мета-таблица справа
+     начинается ровно на линии H1 — обе колонки читаются с одной высоты. */
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: clamp(36px, 5vw, 64px);
+    align-items: start;
+  }
+
+  /* Единственный s-label кейса в золоте, а не в охре: он стоит на чёрном
+     рядом с шапкой сайта и должен читаться с ней одной температурой. */
+  .hero-kicker {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0 0 34px;
+    color: var(--color-gold);
+  }
+
+  .hero-copy {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .hero-side {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  /* Три строки заданы разметкой, а не мерой: композиция шапки строится на
+     конкретном силуэте заголовка, и отдавать перенос браузеру нельзя. */
+  .hero-copy h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--font-hero);
+    letter-spacing: -0.045em;
+    line-height: 0.96;
+  }
+
+  .hero-place {
+    margin: 30px 0 0;
+    color: var(--color-gold);
+    font-size: clamp(17px, 1.4vw, 21px);
+  }
+
+  .hero-lead {
+    max-width: 52ch;
+    margin: 34px 0 0;
+    color: var(--text-soft-light);
+    font-size: var(--font-lead);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  /* Врезка: одна мысль кейса, вынесенная из абзаца золотой линейкой.
+     Стрелка ↓ — единственный указатель, что ниже начинается сам проект. */
+  .hero-pull {
+    max-width: 40ch;
+    margin: 38px 0 0;
+    border-left: 2px solid var(--color-gold);
+    padding: 4px 0 4px 22px;
+    font-size: 17px;
+    line-height: 1.55;
+    text-wrap: balance;
+  }
+
+  .hero-pull span {
+    margin-left: 8px;
+    color: var(--color-gold);
+  }
+
+  .hero-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(30px, 4vh, 52px) 32px;
+    margin: 0;
+    border-block: 1px solid rgb(244 242 236 / 0.2);
+    padding: 30px 0 34px;
+  }
+
+  .hero-meta dt {
+    margin-bottom: 12px;
+    color: rgb(244 242 236 / 0.5);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .hero-meta dd {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  /* Уточнение под значением — вторая строка того же факта, поэтому
+     чуть мельче: иначе в узкой колонке она спорит с самим значением. */
+  .hero-meta dd span {
+    display: block;
+    margin-top: 3px;
+    font-size: 15px;
+  }
+
+  /* Ссылка, а не кнопка: главный CTA страницы — студийный, он ждёт в финале.
+     Здесь достаточно золотой подчёркнутой строки. */
+  .hero-visit {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 40px;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-gold) 50%, transparent);
+    padding-bottom: 10px;
+    color: var(--color-gold);
+    font-size: 17px;
+    text-decoration: none;
+    transition:
+      border-color 0.25s ease,
+      gap 0.25s var(--ease-site);
+  }
+
+  .hero-visit:hover {
+    border-bottom-color: var(--color-gold);
+    gap: 24px;
+  }
+
+  /* ── Первый экран проекта ──
+     Занимает почти весь вьюпорт и стыкуется со студийной шапкой без зазора:
+     переход из кейса в проект должен читаться как вход внутрь, а не как
+     вставленная иллюстрация. */
+  .hero-project {
+    position: relative;
+    display: grid;
+    min-height: min(86vh, 900px);
+    overflow: hidden;
+    background: var(--p-night);
+  }
+
+  .hero-photo,
+  .hero-chrome {
+    grid-area: 1 / 1;
+  }
+
+  .hero-photo {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Четырёхстоповый градиент донора + внутренняя виньетка: без них текст
+     не держится на закате, а кадр выглядит рекламным. */
+  .hero-veil {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgb(15 12 20 / 0.5) 0%,
+      rgb(15 12 20 / 0.28) 34%,
+      rgb(13 10 18 / 0.56) 72%,
+      rgb(12 9 16 / 0.84) 100%
+    );
+    box-shadow: inset 0 0 240px 50px rgb(8 6 12 / 0.6);
+  }
+
+  .hero-chrome {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding-bottom: clamp(40px, 6vh, 76px);
+  }
+
+  .hero-stage {
+    display: grid;
+    gap: 26px;
+    justify-items: start;
+    box-sizing: border-box;
+    width: min(1280px, 100%);
+    margin: auto auto 0;
+    padding: 0 clamp(20px, 4vw, 64px);
+  }
+
+  .hero-panels {
+    display: grid;
+  }
+
+  .hero-panel {
+    grid-area: 1 / 1;
+    color: var(--p-paper);
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.55s cubic-bezier(0.25, 0.1, 0.25, 1),
+      transform 0.55s cubic-bezier(0.25, 0.1, 0.25, 1);
+    pointer-events: none;
+  }
+
+  .hero-panel.is-active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .hero-eyebrow {
+    margin: 0 0 20px;
+    color: var(--p-amber);
+  }
+
+  .hero-title {
+    max-width: 15ch;
+    text-wrap: balance;
+  }
+
+  .hero-title__em {
+    display: block;
+    color: var(--p-amber-light);
+    font-weight: 400;
+  }
+
+  .hero-sub {
+    max-width: 52ch;
+    margin: 28px 0 0;
+    color: rgb(244 238 227 / 0.82);
+    font-size: clamp(15px, 1.2vw, 17px);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 28px;
+    margin-top: 34px;
+    color: rgb(244 238 227 / 0.86);
+  }
+
+  /* Угловой бейдж — ровно тот приём, ради которого объект и покупают:
+     одно число, вынесенное из текста в композицию. */
+  .hero-badge {
+    position: absolute;
+    right: clamp(20px, 4vw, 64px);
+    bottom: clamp(40px, 6vh, 76px);
+    border-left: 1px solid rgb(244 238 227 / 0.28);
+    padding-left: 18px;
+    color: var(--p-paper);
+    text-align: left;
+  }
+
+  .hero-badge strong {
+    display: block;
+    font-family: var(--font-project);
+    font-size: clamp(30px, 3vw, 46px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .hero-badge .p-unit {
+    color: rgb(244 238 227 / 0.6);
+    font-family: var(--font-mono);
+  }
+
+  .hero-badge .p-kicker {
+    margin-top: 8px;
+    color: rgb(244 238 227 / 0.6);
+  }
+
+  @media (max-width: 1080px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hero-kicker,
+    .hero-copy,
+    .hero-side {
+      grid-column: 1;
+    }
+
+    .hero-side {
+      grid-row: 3;
+      margin-top: 52px;
+    }
+
+    .hero-meta {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 28px 24px;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .hero-badge {
+      position: static;
+      margin: 30px clamp(20px, 4vw, 64px) 0;
+    }
+
+    .hero-project {
+      min-height: min(94vh, 780px);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .hero-studio {
+      padding: 106px 0 62px;
+    }
+
+    .hero-side {
+      margin-top: 40px;
+    }
+
+    .hero-meta {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 26px 20px;
+    }
+
+    .hero-actions {
+      gap: 16px;
+    }
+
+    .hero-actions .p-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-panel {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>

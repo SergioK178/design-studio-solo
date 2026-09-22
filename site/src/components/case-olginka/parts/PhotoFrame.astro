@@ -1,0 +1,42 @@
+---
+/**
+ * Кадр объекта в обработке проекта: один градиент на multiply поверх снимка
+ * (.film-grade донора) плюс подпись-плашка в углу. Именно это склеивает
+ * разнородные съёмки — фасад, номера, аэрофото — в одну плёнку.
+ */
+interface Props {
+  photo: { src: string; alt: string; caption?: string };
+  ratio?: string;
+  /** Единственный кадр первого экрана грузим сразу, остальные — лениво. */
+  priority?: boolean;
+  graded?: boolean;
+  showCaption?: boolean;
+  kenburns?: boolean;
+  class?: string;
+}
+
+const {
+  photo,
+  ratio = '4 / 3',
+  priority = false,
+  graded = true,
+  showCaption = true,
+  kenburns = false,
+  class: className,
+} = Astro.props;
+---
+
+<figure
+  class:list={['p-photo', graded && 'p-photo--graded', className]}
+  style={`aspect-ratio: ${ratio}`}
+>
+  <img
+    src={photo.src}
+    alt={photo.alt}
+    class:list={[kenburns && 'p-kenburns']}
+    loading={priority ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : undefined}
+    decoding={priority ? 'sync' : 'async'}
+  />
+  {showCaption && photo.caption && <figcaption>{photo.caption}</figcaption>}
+</figure>

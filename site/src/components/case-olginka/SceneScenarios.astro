@@ -1,0 +1,481 @@
+---
+import Glyph from './parts/Glyph.astro';
+import ModePill from './parts/ModePill.astro';
+import PhotoFrame from './parts/PhotoFrame.astro';
+
+/**
+ * Сцена 3 — центральная. Один объект, две логики принятия решения.
+ *
+ * Обе плитки стоят рядом и читаются вместе: покупатель должен увидеть, что у
+ * одного дома есть два ракурса, а не выбирать между ними вслепую. Тумблер
+ * поэтому не прячет половину сцены, а расставляет акцент — это группа
+ * переключателей, а не tablist. Правая карточка сознательно не содержит ни одной
+ * финансовой цифры: собственник не раскрывает экономику публично, и вместо
+ * выдуманного «прогноза доходности» кейс показывает саму закрытость данных как
+ * решение — это и честнее, и для объекта за 95 млн ₽ работает лучше калькулятора
+ * окупаемости.
+ *
+ * Интерактивный момент №2.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { scenarios, confidential, photos } = presentation;
+const [owner, investor] = scenarios;
+const modeOptions = scenarios.map((scenario: any) => ({
+  id: scenario.id,
+  label: scenario.label,
+  icon: scenario.icon,
+}));
+---
+
+<section class="scene scenarios" data-bg="paper">
+  <!-- Узкий левый рельс и одна широкая колонка справа: заголовок, тумблер и обе
+       плитки стоят на одной вертикали, поэтому сцена читается как демонстрация
+       решения, а не как рассказ о нём. -->
+  <div
+    class="wrap idea-grid scenario-scope"
+    data-reveal
+    data-mode-scope
+    data-mode-emphasis
+    data-mode-active={owner.id}
+  >
+    <div class="idea-rail">
+      <span class="s-label">Ключевая идея</span><i class="s-rule"></i>
+    </div>
+
+    <div class="idea-main">
+      <!-- Перенос задан разметкой: композиция строится на двух строках, и
+           отдавать его браузеру нельзя. -->
+      <h2>Покупатель видит то,<br />что важно именно ему</h2>
+      <p class="idea-lead">
+        Интерфейс выводит на первый план разные свойства одного объекта — в зависимости от намерения
+        покупателя.
+      </p>
+
+      <div class="scenario-tabs">
+        <ModePill options={modeOptions} active={owner.id} tone="light" controls ariaLabel="Сценарии покупки" />
+      </div>
+    </div>
+
+    <!-- Плитки идут во всю ширину сцены, под рельсом: текст живёт в колонке
+         рассказа, а демонстрация — на всю полосу, иначе карточкам не хватает
+         меры и низ каждой из них ужимается до нечитаемого. -->
+    <div class="scenario-panels project-layer">
+      <!-- Для себя: свет, воздух, фотография. Аргумент здесь — само пространство. -->
+      <article
+        class="scenario-panel panel-owner is-active"
+        id={`panel-${owner.id}`}
+        data-mode-panel={owner.id}
+        aria-labelledby={`tab-${owner.id}`}
+      >
+        <!-- Бухта с высоты вместо портретного кадра пляжа: сверху во всю
+             ширину плитки нужен горизонтальный снимок, иначе кроп съедает
+             именно то, ради чего кадр стоит. -->
+        <PhotoFrame photo={photos.panorama} ratio="16 / 10" class="panel-photo" />
+        <div class="panel-body">
+          <div class="panel-lead">
+            <span class="p-kicker panel-kicker">{owner.label}</span>
+            <h3>{owner.title}</h3>
+            <p class="panel-text">{owner.description}</p>
+          </div>
+          <ul class="panel-bullets panel-utility">
+            {owner.bullets.map((bullet: any) => (
+              <li>
+                {bullet.icon && <Glyph name={bullet.icon} class="bullet-icon" />}
+                <span>{bullet.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </article>
+
+      <!-- Для инвестора: тёмная подложка и закрытые данные вместо графика. -->
+      <article
+        class="scenario-panel panel-investor"
+        id={`panel-${investor.id}`}
+        data-mode-panel={investor.id}
+        aria-labelledby={`tab-${investor.id}`}
+      >
+        <PhotoFrame photo={photos.facade} ratio="2 / 1" class="panel-photo" />
+        <div class="panel-body">
+          <div class="panel-lead">
+            <span class="p-kicker panel-kicker">{investor.label}</span>
+            <h3>{investor.title}</h3>
+            <p class="panel-text">{investor.description}</p>
+          </div>
+
+          <!-- Низ инвесторской плитки — отдельная утилитарная зона в три
+               такта: состав объекта → закрытая экономика → действие. Ровно в
+               таком порядке инвестор и принимает решение. -->
+          <div class="panel-utility">
+            <!-- Цифры мини-блоками, а не строкой через разделители: инвестор
+                 считывает состав объекта раньше, чем начинает читать текст. -->
+            <ul class="panel-specs">
+              {confidential.specs.map((spec: any) => (
+                <li>
+                  {spec.icon && <Glyph name={spec.icon} class="spec-icon" />}
+                  <span class="spec-copy">
+                    <strong>{spec.value}</strong>
+                    <span class="spec-label">{spec.label}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <!-- Закрытая экономика — самостоятельный смысловой узел, поэтому
+                 собственная рамка внутри тёмной карточки, а не ещё один
+                 абзац в общем потоке. -->
+            <div class="conf-block">
+              {confidential.icon && <Glyph name={confidential.icon} class="conf-lock" />}
+              <span class="p-kicker conf-title">{confidential.title}</span>
+              <p class="conf-text">{confidential.note}</p>
+            </div>
+
+            <!-- Кнопка стоит сразу после финансовой рамки: она продолжает
+                 инвесторский сценарий, а не завершает карточку вообще. -->
+            <span class="conf-cta">{confidential.cta} <span aria-hidden="true">→</span></span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Левый рельс держит только лейбл главы. Всё остальное — заголовок, лид,
+     тумблер и обе плитки — стоит в одной широкой колонке справа. */
+  .idea-grid {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    column-gap: clamp(32px, 4vw, 64px);
+  }
+
+  /* 880, а не 760: длинная строка заголовка меряется в 819 px при кегле 60,
+     и на 760 она рвалась посреди фразы, ломая заданные два ряда. */
+  .idea-grid h2 {
+    max-width: 880px;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(34px, 4.2vw, 62px);
+    letter-spacing: -0.045em;
+    line-height: 0.94;
+    text-wrap: balance;
+  }
+
+  .idea-lead {
+    max-width: 660px;
+    margin: 24px 0 0;
+    color: var(--text-soft);
+    font-size: clamp(16px, 1.3vw, 18px);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  /* Тумблер прижат к левому краю колонки, а не по центру: он часть той же
+     вертикали, что заголовок и плитки. */
+  .scenario-tabs {
+    display: flex;
+    margin: 38px 0 0;
+  }
+
+  /* Обе плитки стоят рядом и одинаковой высоты: сравнение двух ракурсов —
+     и есть содержание сцены. Растяжку карточек до общей высоты держим
+     осознанно — низ у них общий, и разной длины содержание расходится не
+     нижним краем, а внутренним ритмом. */
+  .scenario-panels {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 22px;
+    align-items: stretch;
+  }
+
+  /* Кадр лежит сверху во всю ширину плитки, а не полосой справа: в колонке
+     вполовину сцены он превращался в вертикальный обрезок, и бухту в таком
+     кропе не видно вообще. */
+  .scenario-panel {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    border-radius: 20px;
+    overflow: hidden;
+    transition:
+      transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+      box-shadow 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  /* Акцент задаётся обводкой и подъёмом, а не прозрачностью: приглушённая
+     тёмная плитка на молочном фоне становится серой и выглядит сломанной,
+     тогда как обе половины должны читаться в полную силу. */
+  .scenario-panel.is-active {
+    transform: translateY(-6px);
+    box-shadow:
+      0 0 0 2px var(--p-terracotta),
+      0 22px 44px -28px rgb(33 27 20 / 0.55);
+  }
+
+  .scenario-panel:hover {
+    transform: translateY(-6px);
+  }
+
+  .panel-owner {
+    background: var(--p-paper);
+    color: var(--p-ink);
+  }
+
+  .panel-investor {
+    background: var(--p-ink-deep);
+    color: var(--p-paper);
+  }
+
+  /* Обе плитки собраны по одной схеме: кадр → текстовая зона → утилитарный
+     низ. Одинаковая логика важнее одинакового содержания — поэтому низ
+     прижимается к нижнему краю через auto, а не растягивается весь текст. */
+  .panel-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: clamp(24px, 2.4vw, 32px);
+  }
+
+  /* Селектор через родителя не ради специфичности вообще, а ради победы над
+     собственными отступами списков ниже: низ карточки прижимается к нижнему
+     краю, и обнулённая margin у ul не должна этот прижим снимать. */
+  .panel-body > .panel-utility {
+    margin-top: auto;
+    padding-top: 24px;
+  }
+
+  /* Волосяная линия — общий baseline обеих плиток: слева над ней воздух, справа
+     блок данных, но нижняя архитектура у карточек одна. Без неё пустота слева
+     читается как недоделанная вёрстка, а не как пауза. */
+  .panel-owner .panel-utility {
+    border-top: 1px solid rgb(33 27 20 / 0.12);
+  }
+
+  .panel-investor .panel-utility {
+    border-top: 1px solid rgb(244 238 227 / 0.12);
+  }
+
+  .panel-kicker {
+    color: var(--p-terracotta);
+  }
+
+  .panel-investor .panel-kicker {
+    color: var(--p-amber);
+  }
+
+  /* 18ch, а не 14: «Параметры объекта» — 17 знаков, и на 14 заголовок рвался
+     на две строки там, где он обязан стоять одной. */
+  .scenario-panel h3 {
+    max-width: 18ch;
+    margin: 16px 0 0;
+    font-size: clamp(24px, 2.1vw, 32px);
+    font-weight: 600;
+    line-height: 1.06;
+    text-wrap: balance;
+  }
+
+  /* 38ch: на всю ширину плитки абзац ложится в две строки и оставляет под собой
+     провал, а в меру узкой колонке обе карточки дают одинаковые три строки —
+     текстовые зоны совпадают по высоте без единого фиксированного размера. */
+  .panel-text {
+    max-width: 38ch;
+    margin: 16px 0 0;
+    font-size: clamp(15px, 1.15vw, 16px);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  .panel-owner .panel-text {
+    color: rgb(33 27 20 / 0.7);
+  }
+
+  .panel-investor .panel-text {
+    color: rgb(244 238 227 / 0.7);
+  }
+
+  /* Раскладка 2 + 1: две плашки в ряд, третья на всю ширину пары. Ширину
+     колонок задаёт содержание, поэтому широкая плашка внизу выглядит решением,
+     а не остатком после переноса. */
+  .panel-bullets {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: start;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .panel-bullets li:nth-child(n + 3) {
+    grid-column: 1 / -1;
+  }
+
+  .panel-bullets li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgb(33 27 20 / 0.18);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: clamp(14px, 1vw, 15px);
+  }
+
+  /* :global — глиф рисует Glyph, и scope-метка этой сцены до него не доходит. */
+  .panel-bullets :global(.bullet-icon) {
+    --icon-size: clamp(22px, 1.7vw, 28px);
+    color: var(--p-terracotta);
+  }
+
+  /* ── Параметры объекта ──
+     Три равных мини-блока вместо строки через разделители: состав объекта —
+     это данные, и выглядеть они должны как данные, а не как продолжение
+     абзаца. Ширина строго 1fr, чтобы низ карточки собрался в сетку. */
+  .panel-specs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .panel-specs li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    box-sizing: border-box;
+    border: 1px solid rgb(244 238 227 / 0.12);
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: rgb(244 238 227 / 0.03);
+  }
+
+  .panel-specs :global(.spec-icon) {
+    --icon-size: 20px;
+    flex: none;
+    color: var(--p-amber);
+  }
+
+  .spec-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .panel-specs strong {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  .spec-label {
+    color: rgb(244 238 227 / 0.55);
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  /* :global — класс уезжает в дочерний компонент, и собственная scope-метка
+     этой сцены до него не доходит. Высоту здесь диктует пропорция кадра, а не
+     плитка: именно поэтому фотография перестала обрезаться. */
+  .scenario-panel :global(.panel-photo) {
+    width: 100%;
+  }
+
+  /* ── Закрытые данные ──
+     Отдельная рамка внутри тёмной карточки: закрытая экономика — это узел
+     сценария, а не примечание к нему. Замок держит собственную колонку, чтобы
+     обе строки текста стояли по одной левой. */
+  .conf-block {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px 12px;
+    box-sizing: border-box;
+    margin-top: 16px;
+    border: 1px solid color-mix(in srgb, var(--p-amber) 22%, transparent);
+    border-radius: 12px;
+    padding: 16px 18px;
+    background: rgb(244 238 227 / 0.03);
+  }
+
+  .conf-block :global(.conf-lock) {
+    --icon-size: 22px;
+    grid-row: span 2;
+    color: var(--p-amber);
+  }
+
+  .conf-title {
+    align-self: center;
+    color: var(--p-amber);
+  }
+
+  .conf-text {
+    margin: 0;
+    color: rgb(244 238 227 / 0.68);
+    font-size: 13px;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  /* Заливка, а не контур: кнопка продолжает финансовую рамку и закрывает низ
+     карточки — это единственное действие сцены, и оно должно читаться как
+     действие. */
+  .conf-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    box-sizing: border-box;
+    margin-top: 16px;
+    border-radius: 12px;
+    height: 46px;
+    padding: 0 20px;
+    background: color-mix(in srgb, var(--p-terracotta) 62%, var(--p-amber));
+    color: var(--p-paper);
+    font-family: var(--font-project);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 1000px) {
+    /* Плитки встают друг под друга. Подъём активной убираем: в столбце он
+       читается как съехавшая вёрстка, а не как акцент. */
+    .idea-grid {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 24px;
+    }
+
+    .scenario-panels {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .scenario-panel.is-active,
+    .scenario-panel:hover {
+      transform: none;
+    }
+  }
+
+  @media (max-width: 620px) {
+    /* На узком экране три мини-блока в ряд ужимаются до нечитаемых: значение и
+       подпись встают друг под друга столбцом. */
+    .panel-specs {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* Плашки слева тоже в один столбец: раскладка 2 + 1 держится только на
+       ширине, которой здесь уже нет. */
+    .panel-bullets {
+      grid-template-columns: minmax(0, 1fr);
+      justify-content: stretch;
+    }
+  }
+</style>

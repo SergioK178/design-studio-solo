@@ -1,0 +1,215 @@
+---
+import Glyph from './parts/Glyph.astro';
+
+/**
+ * Главы 08–09. Подборка и путь запроса.
+ *
+ * Здесь кейс обязан быть точным: сайт не отправляет заявку сам и не заводит
+ * базу лидов. Он собирает готовый текст запроса и отдаёт его в тот канал,
+ * которым покупатель уже пользуется, — почту, WhatsApp или Telegram. Это и
+ * есть архитектурное решение, а не недоделка, поэтому оговорка стоит на
+ * видном месте, а не мелким шрифтом внизу.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { request } = presentation;
+---
+
+<section class="scene request" data-bg="paper">
+  <div class="wrap chapter chapter--wide">
+    <div class="chapter-copy">
+      <p class="s-label"><b>05</b> {request.eyebrow}</p>
+      <h2 class="s-title">
+        {request.title.map((line: string, index: number) => (
+          <>{index > 0 && <br />}{line}</>
+        ))}
+      </h2>
+      {request.text.map((paragraph: string) => (
+        <p class="s-text" set:html={paragraph} />
+      ))}
+
+      <div class="honesty">
+        <b>{request.honesty.title}</b>
+        <p class="evidence">{request.honesty.text}</p>
+      </div>
+    </div>
+
+    <div class="chapter-visual">
+      <div class="rfq project-layer">
+        <div class="rfq-head">
+          <p class="p-kicker">Подборка</p>
+          <span class="rfq-count">{request.items.length} позиции</span>
+        </div>
+
+        <ul class="rfq-items">
+          {request.items.map((item: any) => (
+            <li>
+              <b>{item.name}</b>
+              <span>{item.spec}</span>
+            </li>
+          ))}
+        </ul>
+
+        <p class="rfq-limit">{request.limitNote}</p>
+
+        <div class="rfq-channels">
+          {request.channels.map((channel: any) => (
+            <div class="channel">
+              <Glyph name={channel.icon} />
+              <b>{channel.label}</b>
+              <span>{channel.note}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <ol class="request-flow" aria-label="Путь запроса">
+        {request.flow.map((step: string) => <li>{step}</li>)}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .honesty {
+    margin-top: 32px;
+    border-left: 2px solid var(--p-mint-500);
+    padding-left: 18px;
+  }
+
+  .honesty b {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .honesty .evidence {
+    margin: 8px 0 0;
+  }
+
+  /* Подборка нарисована светлой карточкой на молочном фоне: на живом сайте она
+     тёмная, но здесь глава светлая, и вставлять сюда чёрный прямоугольник
+     значило бы разорвать полосу ради буквального сходства. */
+  .rfq {
+    border: 1px solid var(--line-ink);
+    border-radius: 16px;
+    background: #fff;
+    padding: clamp(20px, 2.2vw, 28px);
+    color: var(--color-ink);
+    box-shadow: 0 14px 36px rgb(16 32 28 / 0.06);
+  }
+
+  .rfq-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--line-ink);
+    padding-bottom: 14px;
+  }
+
+  .rfq-head .p-kicker {
+    color: rgb(16 20 26 / 0.45);
+  }
+
+  .rfq-count {
+    color: var(--p-mint-700);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .rfq-items {
+    display: grid;
+    gap: 12px;
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rfq-items li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 16px;
+    border: 1px solid var(--line-ink);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+
+  .rfq-items b {
+    font-size: 14.5px;
+    font-weight: 600;
+  }
+
+  .rfq-items span {
+    color: var(--text-soft);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .rfq-limit {
+    margin: 14px 0 0;
+    color: rgb(16 20 26 / 0.45);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+  }
+
+  .rfq-channels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 22px;
+    border-top: 1px solid var(--line-ink);
+    padding-top: 22px;
+  }
+
+  .channel {
+    color: var(--p-mint-700);
+    --icon-size: 22px;
+  }
+
+  .channel b {
+    display: block;
+    margin-top: 10px;
+    color: var(--color-ink);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .channel span {
+    display: block;
+    margin-top: 4px;
+    color: var(--text-soft);
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  /* Путь запроса — одна строка без иллюстраций: он короткий, и рисовать под
+     него схему значило бы делать вид, что там больше шагов, чем есть. */
+  .request-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 8px;
+    margin: 26px 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--text-soft);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .request-flow li + li::before {
+    content: '→';
+    margin-right: 8px;
+    color: var(--p-mint-500);
+  }
+</style>

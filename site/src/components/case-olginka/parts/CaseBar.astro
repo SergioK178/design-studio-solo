@@ -1,0 +1,173 @@
+---
+import { site } from '../../../data/site';
+
+/**
+ * Возвращающаяся шапка кейса.
+ *
+ * Обычной липкой полосы здесь быть не может: в сцене 1 стоит нативно
+ * пересобранная шапка Ольгинки, и две шапки одновременно убивают эффект входа
+ * внутрь продукта. Поэтому полоса живёт по другому правилу — прячется совсем и
+ * показывается только при скролле вверх, то есть ровно в тот момент, когда
+ * навигацию ищут.
+ *
+ * Цвет один тёмный независимо от [data-bg]: фон страницы морфится между
+ * молочным и чёрным, и инвертировать полосу на каждом переходе — лишняя
+ * машинерия и место для мигания.
+ */
+interface Props {
+  title: string;
+  /**
+   * Первый экран, пока он на виду — полосы нет. Селектор задаётся снаружи:
+   * полоса одинакова для всех кейсов, а вот что считать первым экраном, знает
+   * только сам кейс.
+   */
+  heroSelector?: string;
+}
+
+const { title, heroSelector = '.hero-project' } = Astro.props;
+---
+
+<div class="case-bar" data-case-bar data-hero-selector={heroSelector} hidden>
+  <div class="wrap case-bar-inner">
+    <a class="case-bar-brand" href="/" aria-label={`${site.name} на главную`}>{site.name}<span>.</span></a>
+    <span class="case-bar-title">{title}</span>
+    <div class="case-bar-actions">
+      <a class="case-bar-back" href="/cases/">Все работы</a>
+      <a class="btn-gold case-bar-cta" href="/brief/">Пройти бриф →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-case-bar]');
+  const hero = bar?.dataset.heroSelector
+    ? document.querySelector<HTMLElement>(bar.dataset.heroSelector)
+    : null;
+
+  if (bar && hero) {
+    // Пока первый экран проекта на виду, полосы нет ни при каком направлении
+    // скролла: там уже стоит шапка Ольгинки.
+    let inHero = true;
+    new IntersectionObserver(
+      ([entry]) => {
+        inHero = entry.isIntersecting;
+        if (inHero) bar.classList.remove('is-visible');
+      },
+      { threshold: 0 },
+    ).observe(hero);
+
+    bar.hidden = false;
+
+    let lastY = window.scrollY;
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const y = window.scrollY;
+      const delta = y - lastY;
+
+      // Порог в 6 px гасит дрожание тачпада и инерцию iOS.
+      if (Math.abs(delta) > 6) {
+        bar.classList.toggle('is-visible', delta < 0 && !inHero && y > 0);
+        lastY = y;
+      }
+    };
+
+    addEventListener(
+      'scroll',
+      () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(update);
+      },
+      { passive: true },
+    );
+  }
+</script>
+
+<style>
+  .case-bar {
+    position: fixed;
+    z-index: 45;
+    inset: 0 0 auto;
+    border-bottom: 1px solid rgb(244 242 236 / 0.14);
+    background: rgb(23 21 15 / 0.82);
+    backdrop-filter: blur(14px);
+    color: var(--color-paper);
+    transform: translateY(-100%);
+    /* visibility гасится с задержкой на длину ухода: убранная полоса не должна
+       ловить фокус с клавиатуры, но и обрезать анимацию нельзя. */
+    visibility: hidden;
+    transition:
+      transform 0.4s var(--ease-site),
+      visibility 0s 0.4s;
+    will-change: transform;
+  }
+
+  .case-bar.is-visible {
+    transform: none;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  .case-bar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    height: 56px;
+  }
+
+  .case-bar-brand {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .case-bar-brand span {
+    color: var(--color-gold);
+  }
+
+  /* Название кейса — подпись, а не ссылка: мы уже на этой странице. */
+  .case-bar-title {
+    color: rgb(244 242 236 / 0.55);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .case-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+
+  .case-bar-back {
+    color: rgb(244 242 236 / 0.75);
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .case-bar-back:hover {
+    color: var(--color-paper);
+  }
+
+  /* Кнопка та же, что в шапке сайта, но ужата под полосу в 56 px. */
+  .case-bar-cta {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 720px) {
+    .case-bar-title,
+    .case-bar-back {
+      display: none;
+    }
+  }
+</style>

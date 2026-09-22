@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48" fill="none">
+  <title>Обратно-режущая игла</title>
+  <defs><linearGradient id="m" x1="8" y1="39" x2="51" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#7E8891"/><stop offset=".48" stop-color="#E7EBED"/><stop offset="1" stop-color="#AAB3BA"/></linearGradient></defs>
+  <path d="M8 39C18 45 37 42 46 27" stroke="url(#m)" stroke-width="3" stroke-linecap="round"/>
+  <path d="m45.5 27.3 10.3-8.2-6.4 10.4-1.4 4.1-2.5-6.3Z" fill="#D8DEE2" stroke="#7E8891" stroke-width=".7" stroke-linejoin="round"/>
+</svg>

@@ -13,18 +13,8 @@ export interface WorkItem {
   homeFeatured?: boolean;
 }
 
+/** Порядок массива — это и есть порядок в /cases/ и на главной. */
 export const works: WorkItem[] = [
-  {
-    slug: 'guest-house',
-    title: 'Приморская 22А',
-    category: 'Сайт для загородного дома',
-    inside: 'Показывает объект двум аудиториям и приводит к заявке в WhatsApp.',
-    href: '/cases/guest-house/',
-    assetKey: 'works/guest-house/cover',
-    assetSrc: '/assets/works/guest-house/cover.webp',
-    status: 'published',
-    homeFeatured: true,
-  },
   {
     slug: 'car-rental',
     title: 'Loft Rent',
@@ -33,6 +23,28 @@ export const works: WorkItem[] = [
     href: '/cases/car-rental/',
     assetKey: 'works/car-rental/cover',
     assetSrc: '/assets/works/car-rental/cover.webp',
+    status: 'published',
+    homeFeatured: true,
+  },
+  {
+    slug: 'suture',
+    title: 'ИМЭКС · Шовные материалы',
+    category: 'Страница продукта',
+    inside: 'Ведёт от различий между материалами к собранному исполнению и запросу поставщику.',
+    href: '/cases/suture/',
+    assetKey: 'works/suture/cover',
+    assetSrc: '/assets/works/suture/cover.webp',
+    status: 'published',
+    homeFeatured: true,
+  },
+  {
+    slug: 'guest-house',
+    title: 'Приморская 22А',
+    category: 'Сайт для загородного дома',
+    inside: 'Показывает объект двум аудиториям и приводит к заявке в WhatsApp.',
+    href: '/cases/guest-house/',
+    assetKey: 'works/guest-house/cover',
+    assetSrc: '/assets/works/guest-house/cover.webp',
     status: 'published',
     homeFeatured: true,
   },
@@ -46,15 +58,6 @@ export const works: WorkItem[] = [
     assetSrc: '/assets/works/catalog-med/cover.webp',
     status: 'published',
     homeFeatured: true,
-  },
-  {
-    slug: 'suture',
-    title: 'Suture',
-    category: 'Страница продукта',
-    inside: 'Ведёт от знакомства с материалом к запросу пробного образца и предложения.',
-    href: '/cases/suture/',
-    assetKey: 'works/suture/cover',
-    status: 'published',
   },
   {
     slug: 'quiz-landing',

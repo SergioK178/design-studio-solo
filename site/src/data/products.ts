@@ -1,9 +1,12 @@
-export type ProductGroup = 'launch' | 'company' | 'commerce' | 'apps' | 'automation' | 'development';
+/** Единая таксономия: те же 5 групп на главной, в /products/ и в навигации. */
+export type ProductGroup = 'sites' | 'sales' | 'apps' | 'automation' | 'development';
 export type ProductSlug =
   | 'start' | 'landing' | 'quiz' | 'company' | 'catalog' | 'shop' | 'wholesale'
   | 'migration' | 'event' | 'expert' | 'booking' | 'multi-landing' | 'redesign'
   | 'tma' | 'bot' | 'app' | 'web-service' | 'leads-inbox' | 'data-exchange'
   | 'documents' | 'support';
+/** Шаблон шагов «как пройдёт проект»; по умолчанию берётся от группы (см. defaultStepsTemplate). */
+export type StepsTemplate = 'launch' | 'company' | 'commerce' | 'apps' | 'automation' | 'development';
 export type ProductStatus = 'published' | 'planned';
 
 export interface ProjectStep {
@@ -45,9 +48,10 @@ export interface ProductProof {
 }
 
 export interface Product {
-  slug: string;
+  slug: ProductSlug;
   name: string;
   group: ProductGroup;
+  stepsTemplate?: StepsTemplate;
   summary: string;
   pricing: ProductPricing;
   delivery: ProductDelivery;
@@ -123,7 +127,7 @@ const siteProducts: Product[] = [
   {
     slug: 'start',
     name: 'Промо-лендинг',
-    group: 'launch',
+    group: 'sites',
     summary: 'Одна страница по типовой структуре, форма заявки. Жёсткие рамки — поэтому такая цена.',
     ...publicMeta('start'),
     status: 'published',
@@ -151,7 +155,7 @@ const siteProducts: Product[] = [
   {
     slug: 'landing',
     name: 'Лендинг под рекламу',
-    group: 'launch',
+    group: 'sites',
     summary: 'Страница под рекламу, понятная заявка, аналитика и передача обращений менеджеру.',
     ...publicMeta('landing'),
     status: 'published',
@@ -179,7 +183,8 @@ const siteProducts: Product[] = [
   {
     slug: 'quiz',
     name: 'Квиз-лендинг',
-    group: 'launch',
+    group: 'sales',
+    stepsTemplate: 'launch',
     summary: 'Опросник вместо формы — точнее заявки, выше конверсия из рекламы.',
     ...publicMeta('quiz'),
     status: 'published',
@@ -194,7 +199,7 @@ const siteProducts: Product[] = [
     proof: {
       variant: 'scenario',
       title: 'Сценарий квиза: от вопроса до заявки',
-      href: '/brief/?version=v3&task=launch',
+      href: '/brief/?version=v3&product=quiz&task=launch&group=sales',
       status: 'planned',
       assets: [
         { assetKey: 'products/quiz/screen-01-intro', caption: 'Один понятный вопрос на экран — не длинная форма целиком.', label: '1. Вопрос' },
@@ -208,7 +213,8 @@ const siteProducts: Product[] = [
   {
     slug: 'company',
     name: 'Корпоративный сайт',
-    group: 'company',
+    group: 'sites',
+    stepsTemplate: 'company',
     summary: '5–10 страниц: услуги, цены, о компании, контакты.',
     ...publicMeta('company'),
     status: 'published',
@@ -223,7 +229,7 @@ const siteProducts: Product[] = [
     proof: {
       variant: 'real-interface',
       title: 'Сайт компании: структура и ключевые страницы',
-      href: '/brief/?version=v3&task=present',
+      href: '/brief/?version=v3&product=company&task=present',
       status: 'planned',
       assets: [
         { assetKey: 'products/company/hero', caption: 'Главная сразу называет услуги и ведёт к прайсу и заявке.' },
@@ -236,7 +242,7 @@ const siteProducts: Product[] = [
   {
     slug: 'catalog',
     name: 'Каталог компании',
-    group: 'commerce',
+    group: 'sales',
     summary: 'Витрина продукции с фильтрами и запросом предложения. В цене — панель управления и перенос данных.',
     ...publicMeta('catalog'),
     status: 'published',
@@ -263,7 +269,7 @@ const siteProducts: Product[] = [
   {
     slug: 'shop',
     name: 'Интернет-магазин',
-    group: 'commerce',
+    group: 'sales',
     summary: 'Каталог, корзина, оплата и доставка. В цене — панель управления и работа с данными.',
     ...publicMeta('shop'),
     status: 'published',
@@ -278,7 +284,7 @@ const siteProducts: Product[] = [
     proof: {
       variant: 'scenario',
       title: 'Сценарий покупки: каталог → корзина → оплата',
-      href: '/brief/?version=v3&task=sell',
+      href: '/brief/?version=v3&product=shop&task=sell',
       status: 'planned',
       assets: [
         { assetKey: 'products/shop/screen-01-catalog', caption: 'Каталог с фильтрами по нужным клиенту признакам, не общий шаблон маркетплейса.', label: '1. Каталог' },
@@ -292,7 +298,7 @@ const siteProducts: Product[] = [
   {
     slug: 'wholesale',
     name: 'Оптовый каталог с запросом КП',
-    group: 'commerce',
+    group: 'sales',
     summary: 'Позиции, цены и условия для оптовых покупателей — вместо корзины заявка на коммерческое предложение.',
     ...publicMeta('wholesale'),
     status: 'planned',
@@ -338,7 +344,7 @@ const siteProducts: Product[] = [
     proof: {
       variant: 'before-after',
       title: 'Переезд с конструктора: тот же контент, свой код',
-      href: '/brief/?version=v3&task=update',
+      href: '/brief/?version=v3&product=migration&task=update',
       status: 'planned',
       assets: [
         { assetKey: 'products/migration/before', caption: 'Сайт на конструкторе — привязан к подписке и её ограничениям вёрстки.', label: 'До' },
@@ -350,7 +356,7 @@ const siteProducts: Product[] = [
   {
     slug: 'event',
     name: 'Лендинг мероприятия/курса',
-    group: 'launch',
+    group: 'sites',
     summary: 'Программа, спикеры, регистрация, оплата или заявка.',
     ...publicMeta('event'),
     status: 'planned',
@@ -365,7 +371,8 @@ const siteProducts: Product[] = [
   {
     slug: 'expert',
     name: 'Сайт эксперта',
-    group: 'company',
+    group: 'sites',
+    stepsTemplate: 'company',
     summary: 'Услуги, кейсы, публикации и запись на консультацию.',
     ...publicMeta('expert'),
     status: 'planned',
@@ -380,7 +387,8 @@ const siteProducts: Product[] = [
   {
     slug: 'booking',
     name: 'Сайт с онлайн-записью',
-    group: 'company',
+    group: 'sites',
+    stepsTemplate: 'company',
     summary: 'Услуги, расписание, запись и уведомления.',
     ...publicMeta('booking'),
     status: 'planned',
@@ -406,7 +414,7 @@ const siteProducts: Product[] = [
   {
     slug: 'multi-landing',
     name: 'Мультилендинг',
-    group: 'company',
+    group: 'sites',
     summary: 'Несколько посадочных страниц под разные аудитории или кампании.',
     ...publicMeta('multi-landing'),
     status: 'planned',
@@ -469,7 +477,8 @@ export const products: Product[] = [
   {
     slug: 'bot',
     name: 'Telegram-бот',
-    group: 'apps',
+    group: 'automation',
+    stepsTemplate: 'apps',
     summary: 'Диалог в чате: заявки, уведомления, команды и передача обращений менеджеру.',
     ...publicMeta('bot'),
     status: 'planned',
@@ -595,16 +604,15 @@ export const products: Product[] = [
 ];
 
 export const productGroups: ProductGroupMeta[] = [
-  { id: 'launch', title: 'Быстро запустить предложение', summary: 'Страницы для рекламы, проверки идеи, услуги, события или курса.' },
-  { id: 'company', title: 'Представить компанию', summary: 'Корпоративные сайты для услуг, команды, проектов и доверия.' },
-  { id: 'commerce', title: 'Показать или продавать продукцию', summary: 'Каталоги, витрины продукции и интернет-магазины.' },
-  { id: 'apps', title: 'Создать приложение или личный кабинет', summary: 'Приложения внутри Telegram, личные кабинеты и рабочие веб-сервисы.' },
-  { id: 'automation', title: 'Убрать ручную работу', summary: 'Связываем данные и сервисы, чтобы повторяющиеся действия происходили автоматически.' },
-  { id: 'development', title: 'Развить существующий сайт или сервис', summary: 'Переработка, перенос, поддержка и новые возможности.' },
+  { id: 'sites', title: 'Сайты', summary: 'Представить компанию, услугу или эксперта, запустить предложение, мероприятие или курс.' },
+  { id: 'sales', title: 'Каталоги и продажи', summary: 'Показать продукцию, принимать запросы и заказы: каталоги, оптовые запросы КП, интернет-магазины.' },
+  { id: 'apps', title: 'Приложения и системы', summary: 'Приложения внутри Telegram, личные кабинеты и рабочие веб-сервисы.' },
+  { id: 'automation', title: 'Автоматизация и интеграции', summary: 'Связываем данные и сервисы, чтобы повторяющиеся действия происходили без ручной работы.' },
+  { id: 'development', title: 'Развитие существующего', summary: 'Редизайн, переезд с конструктора, поддержка и новые возможности для работающего сайта.' },
 ];
 
-/** Шаги «как пройдёт проект» по умолчанию для группы. Продукт с нетиповым процессом переопределяет их в detail.steps. */
-const stepsByGroup: Record<ProductGroup, ProjectStep[]> = {
+/** Шаги «как пройдёт проект» по умолчанию для группы. Продукт с нетиповым процессом переопределяет их в detail.steps или stepsTemplate. */
+const stepsByTemplate: Record<StepsTemplate, ProjectStep[]> = {
   launch: [
     { title: 'Разбор задачи', note: 'Фиксируем предложение, аудиторию и целевое действие страницы.' },
     { title: 'Структура и дизайн', note: 'Согласовываем скелет страницы до вёрстки — правки здесь дешевле по времени.' },
@@ -643,32 +651,21 @@ const stepsByGroup: Record<ProductGroup, ProjectStep[]> = {
   ],
 };
 
+const defaultStepsTemplate: Record<ProductGroup, StepsTemplate> = {
+  sites: 'launch',
+  sales: 'commerce',
+  apps: 'apps',
+  automation: 'automation',
+  development: 'development',
+};
+
 export function projectSteps(product: Product): ProjectStep[] {
-  return product.detail?.steps ?? stepsByGroup[product.group];
+  return product.detail?.steps ?? stepsByTemplate[product.stepsTemplate ?? defaultStepsTemplate[product.group]];
 }
 
 export const featuredProducts = products.filter((product) => product.featured);
 const homeProductSlugs = new Set(['start', 'landing', 'company', 'catalog']);
 export const homeProducts = products.filter((product) => homeProductSlugs.has(product.slug));
-export interface HomeSolution {
-  id: string;
-  number: string;
-  title: string;
-  format: string;
-  summary: string;
-  /** Ценовые строки: label появляется, когда вариантов больше одного (каталог/магазин). */
-  prices: { label?: string; prefix: string; value: string }[];
-  term: string;
-  href: string;
-  /** Слот превью строки (asset-manifest, ui/*) — скрин подставляется владельцем позже. */
-  previewAsset: string;
-}
-
-export const homeSolutions: HomeSolution[] = [
-  { id: 'launch', number: '01', title: 'Запустить предложение', format: 'Промо-страница или лендинг', summary: 'Для рекламы, проверки идеи, запуска услуги или мероприятия.', prices: [{ prefix: 'от', value: '39 000 ₽' }], term: 'первый запуск от 5 дней', href: '/products/#launch', previewAsset: 'ui/solution-launch' },
-  { id: 'company', number: '02', title: 'Представить компанию', format: 'Корпоративный сайт', summary: 'Для услуг, команды, проектов, документов и доверия к компании.', prices: [{ prefix: 'от', value: '120 000 ₽' }], term: 'от 2 недель', href: '/products/#company', previewAsset: 'ui/solution-company' },
-  { id: 'commerce', number: '03', title: 'Показать и продавать продукцию', format: 'Каталог, витрина продукции или интернет-магазин', summary: 'Управление товарами, фильтры, заявки, оплата и обмен данными.', prices: [{ label: 'каталог', prefix: 'от', value: '180 000 ₽' }, { label: 'магазин', prefix: 'от', value: '250 000 ₽' }], term: 'от 3 недель', href: '/products/#commerce', previewAsset: 'ui/solution-commerce' },
-];
 /** Все продукты с описанием получают детальную страницу — карточка никогда не ведёт в форму напрямую. */
 export const detailedProducts = products.filter((product) => product.detail);
 
@@ -690,7 +687,10 @@ export const extensionPrices: ExtensionPrice[] = [
   { id: 'hourly', name: 'Час отдельных доработок', price: '5 000 ₽', term: 'без срока', description: 'Публичная ставка для разовых задач вне пакета поддержки.', appliesTo: ['development'] },
 ];
 
-/** Слаг продукта → задача первого этапа брифа v3. Нет уверенного соответствия — без предзаполнения. */
+/**
+ * Слаг продукта → конкретная задача брифа v3 (группа выводится из задачи).
+ * Нет записи — бриф откроется на группе продукта (`briefHref`) и уточнит задачу сам.
+ */
 const briefTaskBySlug: Record<string, string> = {
   start: 'launch',
   landing: 'launch',
@@ -703,6 +703,8 @@ const briefTaskBySlug: Record<string, string> = {
   catalog: 'assortment',
   wholesale: 'assortment',
   shop: 'sell',
+  tma: 'cabinet',
+  bot: 'manual',
   app: 'cabinet',
   'web-service': 'tool',
   migration: 'update',
@@ -713,10 +715,21 @@ const briefTaskBySlug: Record<string, string> = {
   documents: 'manual',
 };
 
+/**
+ * Продукт, чья группа в каталоге не совпадает с группой его задачи в брифе: передаём обе.
+ * Задача остаётся совместимой с оценкой, группа — как в каталоге.
+ */
+const briefGroupOverride: Record<string, string> = {
+  quiz: 'sales',
+};
+
 export function briefHref(product: Product | string): string {
-  const slug = typeof product === 'string' ? product : product.slug;
-  const task = briefTaskBySlug[slug];
-  return task ? `/brief/?version=v3&task=${task}` : '/brief/';
+  const item = typeof product === 'string' ? products.find((p) => p.slug === product) : product;
+  if (!item) return '/brief/';
+  const task = briefTaskBySlug[item.slug];
+  if (!task) return `/brief/?version=v3&product=${item.slug}&group=${item.group}`;
+  const group = briefGroupOverride[item.slug];
+  return `/brief/?version=v3&product=${item.slug}&task=${task}${group ? `&group=${group}` : ''}`;
 }
 
 export interface ProductRange {

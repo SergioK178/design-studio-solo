@@ -1,0 +1,236 @@
+---
+import Glyph from './parts/Glyph.astro';
+
+/**
+ * Сцена 7. Тёмная глава про инженерию — смена материала, а не новый сайт:
+ * контейнер и сетка те же, что на всей странице.
+ *
+ * Четыре показателя отвечают на вопрос «насколько хорошо работает», три решения —
+ * «за счёт чего», нижняя строка со стеком стоит технической подписью, а не
+ * пояснением. Формулировки честные: «без простоя при обновлении» вместо
+ * «0 секунд простоя» — вторая цифра создаёт уязвимость, которую в кейсе не
+ * нужно защищать.
+ */
+interface Props {
+  stack: string[];
+  presentation: any;
+}
+
+const { stack, presentation } = Astro.props;
+const { engineering } = presentation;
+---
+
+<section class="performance" data-bg="ink">
+  <div class="wrap">
+    <div class="s-heading perf-heading" data-reveal>
+      <span class="s-label">Производительность</span><i class="s-rule s-rule--light"></i>
+      <h2>
+        {engineering.title.map((line: string, index: number) => (
+          <>{index > 0 && <br />}{line}</>
+        ))}
+      </h2>
+    </div>
+
+    <div class="perf-stats" data-reveal-group>
+      {engineering.stats.map((stat: any) => (
+        <article>
+          <strong data-countup>{stat.value}</strong>
+          <span class="perf-stat-label">{stat.label}</span>
+          <span class="perf-stat-note">{stat.note}</span>
+        </article>
+      ))}
+    </div>
+
+    <div class="perf-points" data-reveal-group>
+      {engineering.points.map((point: any) => (
+        <article>
+          {point.icon && <span class="perf-icon"><Glyph name={point.icon} /></span>}
+          <div>
+            <h3>{point.title}</h3>
+            <p>{point.text}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <p class="perf-stack">
+      <span class="perf-stack__label">Stack</span>
+      <span class="perf-stack__list">{stack.slice(0, 6).join(' / ')}</span>
+      <span class="perf-stack__note">{engineering.techNote}</span>
+    </p>
+  </div>
+</section>
+
+<style>
+  .performance {
+    box-sizing: border-box;
+    background: var(--color-ink);
+    color: var(--color-paper);
+    /* Низ короче верха: следом идёт полноэкранный кадр, и белого промежутка
+       между главами быть не должно. */
+    padding-block: clamp(72px, 9vh, 112px) clamp(56px, 6vh, 84px);
+  }
+
+  /* Заголовок в две строки — ровно та пара утверждений, ради которой глава
+     тёмная: скорость для покупателя, надёжность для собственника. */
+  /* Перенос задан разметкой: две строки — это две мысли, скорость и надёжность. */
+  .perf-heading h2 {
+    max-width: none;
+    font-size: clamp(28px, 3.2vw, 46px);
+  }
+
+  .perf-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: var(--col-gap);
+    margin-top: clamp(48px, 6vh, 76px);
+  }
+
+  .perf-stats article {
+    border-top: 1px solid rgb(244 242 236 / 0.24);
+    padding-top: 24px;
+  }
+
+  /* Высота показателя закреплена под две строки: «без простоя» и «≈126 КБ»
+     занимают разное число строк, и без общей высоты подписи под четырьмя
+     колонками стартовали с разных уровней. */
+  .perf-stats strong {
+    display: block;
+    min-height: 2.2em;
+    font-family: var(--font-display);
+    font-size: clamp(26px, 2.8vw, 42px);
+    letter-spacing: -0.045em;
+    line-height: 1.04;
+  }
+
+  .perf-stat-label {
+    display: block;
+    margin-top: 12px;
+    color: var(--color-paper);
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .perf-stat-note {
+    display: block;
+    max-width: 26ch;
+    margin-top: 14px;
+    color: var(--text-soft-light);
+    font-size: var(--font-caption);
+    line-height: 1.5;
+  }
+
+  .perf-points {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--col-gap);
+    margin-top: clamp(44px, 5.5vh, 68px);
+  }
+
+  /* Глиф стоит слева от заголовка, а не над ним: строка решения читается как
+     одна мысль, и три блока держат общую высоту. */
+  .perf-points article {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .perf-icon {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    color: var(--color-ochre);
+  }
+
+  /* :global — глиф рисует Glyph, и scope-метка этой сцены до него не доходит. */
+  .perf-icon :global(.p-icon) {
+    --icon-size: 26px;
+  }
+
+  /* Тот же приём, что и у показателей: «Обновления безопасны» встаёт в две
+     строки, и без резерва под вторую тексты трёх решений стартуют с разных
+     уровней. */
+  .perf-points h3 {
+    min-height: 2.2em;
+    margin: 6px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(20px, 1.8vw, 25px);
+    letter-spacing: -0.03em;
+    line-height: 1.06;
+  }
+
+  .perf-points p {
+    max-width: 40ch;
+    margin: 14px 0 0;
+    color: var(--text-soft-light);
+    font-size: var(--font-secondary);
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  /* Техническая подпись между двумя волосяными линиями, а не абзац-пояснение. */
+  .perf-stack {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px 28px;
+    margin: clamp(40px, 5vh, 64px) 0 0;
+    border-block: 1px solid rgb(244 242 236 / 0.2);
+    padding-block: 18px;
+    font-size: var(--font-caption);
+    line-height: 1.5;
+  }
+
+  .perf-stack__label {
+    color: var(--color-ochre);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .perf-stack__list {
+    color: rgb(244 242 236 / 0.62);
+    font-family: var(--font-mono);
+  }
+
+  .perf-stack__note {
+    max-width: 42ch;
+    margin-left: auto;
+    color: var(--text-soft-light);
+  }
+
+  @media (max-width: 1080px) {
+    .perf-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      row-gap: 34px;
+    }
+
+    .perf-points {
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    /* Одна колонка — выравнивать не с чем. */
+    .perf-points h3 {
+      min-height: 0;
+    }
+
+    .perf-stack__note {
+      margin-left: 0;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .perf-stats {
+      grid-template-columns: 1fr;
+    }
+
+    /* В одну колонку выравнивать нечего — резерв под вторую строку превращается
+       в пустоту под каждым показателем. */
+    .perf-stats strong {
+      min-height: 0;
+    }
+  }
+</style>

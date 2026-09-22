@@ -1,0 +1,494 @@
+---
+/**
+ * Главы 01–02. Логика подбора показана не абстрактным journey, а фрагментом
+ * результата: реальный каталог параметров слева и система выбора, собранная
+ * из тех же данных, справа. Ниже — путь одной строкой: материал → исполнение
+ * → подборка → заявка, теми же словами, что уже есть в presentation.context.flow.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { context, materials, configurator } = presentation;
+
+// В таблице нужна короткая форма названия: строка каталога должна ложиться
+// в одну линию, иначе сетка начинает «прыгать» по высоте.
+const m = (index: number) => (materials.items[index]?.name ?? materials.items[0].name).split(' ')[0];
+
+// Повтор одного названия — намеренный приём: он и показывает, почему имени
+// продукта недостаточно, чтобы заказать позицию. Список уходит в затухание
+// вниз — массив продолжается за границей кадра.
+const catalogRows = [
+  { material: m(0), usp: '2/0', length: '75 см', needle: '26 мм', curvature: '1/2' },
+  { material: m(0), usp: '2/0', length: '90 см', needle: '30 мм', curvature: '1/2' },
+  { material: m(0), usp: '3/0', length: '75 см', needle: '26 мм', curvature: '1/2' },
+  { material: m(0), usp: '3/0', length: '75 см', needle: '19 мм', curvature: '3/8' },
+  { material: m(0), usp: '3/0', length: '90 см', needle: '30 мм', curvature: '3/8' },
+  { material: m(0), usp: '4/0', length: '75 см', needle: '19 мм', curvature: '3/8' },
+  { material: m(0), usp: '4/0', length: '90 см', needle: '26 мм', curvature: '1/2' },
+  { material: m(1), usp: '2/0', length: '75 см', needle: '30 мм', curvature: '1/2' },
+  { material: m(1), usp: '3/0', length: '90 см', needle: '26 мм', curvature: '1/2' },
+  { material: m(1), usp: '3/0', length: '75 см', needle: '26 мм', curvature: '3/8' },
+  { material: m(2), usp: '2/0', length: '75 см', needle: '30 мм', curvature: '1/2' },
+  { material: m(2), usp: '3/0', length: '90 см', needle: '26 мм', curvature: '3/8' },
+];
+
+const selectionSteps = [
+  { icon: 'spool', title: 'Материал', value: materials.items[0].name },
+  { icon: 'needle', title: 'Формат', value: configurator.steps[0].active },
+  { icon: 'length-arrows', title: 'Длина нити', value: configurator.steps[1].active },
+  { icon: 'curved-needle', title: 'Игла', value: configurator.steps[2].active },
+];
+
+const flowSteps = context.flow.slice(1);
+---
+
+<section class="scene context" data-bg="paper">
+  <div class="wrap context-wrap">
+    <div class="context-grid">
+      <div class="context-col context-col--lead">
+        <p class="section-index"><b>01</b> {context.eyebrow}</p>
+        <h2 class="s-title">
+          {context.title.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </h2>
+        {context.text.map((paragraph: string) => <p class="s-text" set:html={paragraph} />)}
+      </div>
+
+      <div class="context-col context-col--approach">
+        <p class="section-index"><b>02</b> {context.approachEyebrow}</p>
+        <h3 class="s-title">
+          {context.approachTitle.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </h3>
+        <p class="s-text" set:html={context.approachText} />
+      </div>
+
+      <div class="context-col context-col--catalog">
+        <div class="catalog-block project-layer">
+          <p class="catalog-kicker">Каталог</p>
+          <p class="catalog-note">позиции × параметры × исполнения</p>
+          <div class="catalog-table" role="table" aria-label="Фрагмент каталога исполнений">
+            <div class="catalog-row catalog-head" role="row">
+              {['Материал', 'USP', 'Длина нити', 'Игла', 'Кривизна'].map((cell) => (
+                <span role="columnheader">{cell}</span>
+              ))}
+            </div>
+            {catalogRows.map((row) => (
+              <div class="catalog-row" role="row">
+                <span role="cell">{row.material}</span>
+                <span role="cell">{row.usp}</span>
+                <span role="cell">{row.length}</span>
+                <span role="cell">{row.needle}</span>
+                <span role="cell">{row.curvature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div class="context-transition" aria-hidden="true">
+        <svg class="context-transition-arrow" width="46" height="9" viewBox="0 0 46 9" fill="none">
+          <path d="M0 4.5h43M39 1l4 3.5-4 3.5" stroke="currentColor" stroke-width="1" />
+        </svg>
+      </div>
+
+      <div class="context-col context-col--selection">
+        <div class="selection-card project-layer">
+          <p class="selection-kicker">Система выбора</p>
+
+          <p class="selection-note">материал → исполнение → запрос</p>
+
+          <ol class="selection-steps">
+            {selectionSteps.map((step, index) => (
+              <>
+                {index > 0 && <li class="selection-connector" aria-hidden="true">↓</li>}
+                <li class="selection-step">
+                  <span class="selection-icon">
+                    <img src={`/assets/works/suture/icons/context/${step.icon}.webp`} alt="" />
+                  </span>
+                  <span class="selection-copy">
+                    <b>{step.title}</b>
+                    <span>{step.value}</span>
+                  </span>
+                </li>
+              </>
+            ))}
+            <li class="selection-connector" aria-hidden="true">↓</li>
+            <li class="selection-step selection-step--done">
+              <span class="selection-icon selection-icon--done">✓</span>
+              <span class="selection-copy">
+                <b>Готовое исполнение</b>
+                <span>добавлено в подборку</span>
+              </span>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <ol class="context-flow">
+      {flowSteps.map((step: any, index: number) => (
+        <li>
+          <span class="flow-index">{String(index + 1).padStart(2, '0')}</span>
+          <b>{step.label}</b>
+          <p>{step.note}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .context {
+    background:
+      radial-gradient(circle at 82% 18%, rgb(141 215 193 / 0.07), transparent 28%),
+      var(--p-paper);
+  }
+
+  .context-wrap {
+    display: grid;
+    gap: 0;
+  }
+
+  .section-index {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    margin: 0;
+    color: #2f6b5c;
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .section-index b {
+    color: var(--p-ink-950);
+    font-size: 15px;
+  }
+
+  .context-grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: start;
+    column-gap: var(--col-gap);
+    row-gap: 40px;
+  }
+
+  /* Левая колонка живёт на обеих строках: её длина не должна отодвигать
+     каталог и карточку от текста подхода — они читаются как один блок. */
+  .context-col--lead {
+    grid-row: 1 / span 2;
+    grid-column: 1 / span 4;
+  }
+
+  .context-col--approach {
+    grid-row: 1;
+    grid-column: 5 / span 4;
+  }
+
+  .context-col--catalog {
+    grid-row: 2;
+    grid-column: 5 / span 4;
+  }
+
+  .context-col--selection {
+    grid-row: 2;
+    grid-column: 10 / -1;
+  }
+
+  .context-transition {
+    display: grid;
+    grid-row: 2;
+    grid-column: 9;
+    align-self: center;
+    place-items: center;
+    pointer-events: none;
+  }
+
+  .context-transition-arrow {
+    color: rgb(47 107 92 / 0.55);
+    overflow: visible;
+  }
+
+  .context-col h2,
+  .context-col h3 {
+    margin: 20px 0 0;
+    font-family: 'Onest', sans-serif;
+    color: var(--p-ink-950);
+    letter-spacing: -0.045em;
+    font-weight: 600;
+    line-height: 0.98;
+  }
+
+  .context-col h2 {
+    font-size: clamp(34px, 2.7vw, 44px);
+  }
+
+  .context-col h3 {
+    font-size: clamp(34px, 2.7vw, 44px);
+  }
+
+  .context-col .s-text {
+    margin: 20px 0 0;
+    max-width: 46ch;
+    color: rgb(16 20 26 / 0.68);
+    font-size: 14px;
+    line-height: 1.48;
+    text-wrap: pretty;
+  }
+
+  .context-col .s-text + .s-text {
+    margin-top: 14px;
+  }
+
+  .context-col :global(strong) {
+    color: var(--p-ink-950);
+    font-weight: 650;
+  }
+
+  /* ── Каталог ─────────────────────────────────────────────────────── */
+
+  .catalog-kicker {
+    margin: 0;
+    color: var(--p-ink-950);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .catalog-note {
+    margin: 4px 0 0;
+    color: rgb(16 20 26 / 0.45);
+    font-size: 12px;
+  }
+
+  .catalog-table {
+    margin-top: 18px;
+    /* Массив продолжается за кадром: список уходит в затухание, а не
+       обрывается строкой-многоточием. */
+    mask-image: linear-gradient(to bottom, black 74%, transparent 100%);
+  }
+
+  .catalog-row {
+    display: grid;
+    grid-template-columns: 1.25fr 0.62fr 0.78fr 0.72fr 0.8fr;
+    border-bottom: 1px solid rgb(16 20 26 / 0.07);
+    font-size: 12.5px;
+    color: var(--p-ink-950);
+    line-height: 1.3;
+  }
+
+  .catalog-row > * {
+    padding: 9px 12px;
+  }
+
+  .catalog-row > *:first-child {
+    padding-left: 0;
+  }
+
+  .catalog-row > * + * {
+    border-left: 1px solid rgb(16 20 26 / 0.06);
+  }
+
+  .catalog-head {
+    color: rgb(16 20 26 / 0.38);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    border-bottom-color: rgb(16 20 26 / 0.12);
+  }
+
+  /* ── Система выбора ──────────────────────────────────────────────── */
+  .selection-card {
+    margin-top: 0;
+  }
+
+  .selection-kicker {
+    margin: 0;
+    color: #2f6b5c;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .selection-note {
+    margin: 5px 0 0;
+    color: rgb(16 20 26 / 0.45);
+    font-size: 12px;
+  }
+
+  .selection-steps {
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .selection-step {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid rgb(16 20 26 / 0.085);
+    border-radius: 13px;
+    padding: 14px 18px;
+  }
+
+  .selection-connector {
+    color: rgb(47 107 92 / 0.4);
+    font-size: 13px;
+    line-height: 1;
+    text-align: center;
+    padding: 6px 0;
+  }
+
+  .selection-step--done {
+    border-color: rgb(93 185 162 / 0.35);
+    background: rgb(141 215 193 / 0.16);
+  }
+
+  .selection-icon {
+    display: grid;
+    flex: none;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    border-radius: 50%;
+    background: rgb(141 215 193 / 0.16);
+  }
+
+  .selection-icon img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  /* Компенсация оптического веса: игла и кривизна визуально тоньше остальных
+     иконок в наборе, поэтому их нужно немного увеличить, чтобы ряд читался
+     как один комплект, а не вразнобой. */
+  .selection-steps > li:nth-child(3) .selection-icon img {
+    width: 27px;
+    height: 27px;
+  }
+
+  .selection-steps > li:nth-child(7) .selection-icon img {
+    width: 26px;
+    height: 26px;
+  }
+
+  /* Финальный state отличается насыщенностью того же mint, а не другим
+     материалом: иконка остаётся частью набора. */
+  .selection-icon--done {
+    background: rgb(141 215 193 / 0.55);
+    color: #10302a;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .selection-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .selection-copy b {
+    font-family: 'Onest', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--p-ink-950);
+  }
+
+  .selection-copy span {
+    color: #2f6b5c;
+    font-size: 13.5px;
+  }
+
+  .selection-step--done .selection-copy span {
+    color: rgb(16 20 26 / 0.55);
+  }
+
+  /* ── Путь одной строкой ──────────────────────────────────────────── */
+  .context-flow {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0 28px;
+    /* Воздух забран сверху и отдан после строки: 01–04 читаются как вывод
+       этой сцены, а не как начало следующей. */
+    margin: 34px 0 24px;
+    border-top: 1px solid rgb(16 20 26 / 0.1);
+    padding: 34px 0 0;
+    list-style: none;
+  }
+
+  .flow-index {
+    display: block;
+    color: #2f6b5c;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    opacity: 0.75;
+  }
+
+  .context-flow b {
+    display: block;
+    margin-top: 12px;
+    font-family: 'Onest', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--p-ink-950);
+  }
+
+  .context-flow p {
+    margin: 10px 0 0;
+    max-width: 22ch;
+    color: rgb(16 20 26 / 0.5);
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 1100px) {
+    .context-grid {
+      grid-template-columns: 1fr;
+      row-gap: 48px;
+    }
+
+    .context-col--lead,
+    .context-col--catalog,
+    .context-col--approach,
+    .context-col--selection,
+    .context-transition {
+      grid-row: auto;
+      grid-column: 1 / -1;
+    }
+
+
+    .context-transition {
+      display: none;
+    }
+
+    .selection-card {
+      margin-top: 0;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .catalog-row {
+      grid-template-columns: 1.3fr 0.6fr 0.8fr 0.6fr 0.7fr;
+      font-size: 11.5px;
+    }
+
+    .context-flow {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 28px 20px;
+    }
+  }
+</style>

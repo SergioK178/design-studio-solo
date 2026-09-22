@@ -1,0 +1,442 @@
+---
+/**
+ * Глава 03. Продукт и позиционирование — одна сцена, а не два блока подряд.
+ *
+ * Композиция снята с референса: текст живёт на узкой левой колонке, а справа
+ * стоит один крупный предметный кадр, который уходит за правый край страницы.
+ * Между двумя частями главы — полоса палитры во всю ширину: она отделяет
+ * «характер продукта» от «логики выбора» и одновременно их связывает.
+ *
+ * Пропорции, кегли и отступы взяты с макета; шрифты — проектные.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { product, photos } = presentation;
+---
+
+<section class="scene product" data-bg="muted">
+  <div class="wrap">
+    <div class="chapter">
+      <div class="chapter-copy">
+        <p class="s-label"><b>03</b> {product.eyebrow}</p>
+        <h2 class="s-title">
+          {product.title.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </h2>
+        {product.text.map((paragraph: string) => (
+          <p class="s-text" set:html={paragraph} />
+        ))}
+      </div>
+
+      <div class="chapter-visual">
+        {/* Один кадр вместо выкладки плиток: линейка снята целиком, поэтому
+            коробка, сашет и катушка читаются как один продукт, а не как три
+            карточки. Кадр уходит за правый край — это разворот, не картинка
+            в контейнере. */}
+        <figure class="lineup">
+          <img src="/assets/works/suture/product/product-lineup.webp" alt={photos.hero.alt} loading="lazy" />
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  {/* Полоса палитры идёт во всю ширину экрана: это шов между частями главы. */}
+  <div class="palette-band">
+    <div class="wrap">
+      <div class="palette-row">
+        <p class="palette-title">Палитра и иерархия,<br />снятые с продукта</p>
+        <ul class="palette-list">
+          {product.palette.map((swatch: any) => (
+            <li>
+              <span class="swatch" style={`--swatch: ${swatch.hex}`}></span>
+              <b>{swatch.name}</b>
+              <i>{swatch.hex}</i>
+            </li>
+          ))}
+        </ul>
+        <p class="palette-note">{product.typeNote}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="compare">
+      <div class="compare-copy">
+        <p class="compare-eyebrow">{product.compareEyebrow}</p>
+        <h2 class="s-title">
+          {product.compareTitle.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </h2>
+        <p class="s-text">{product.compareText}</p>
+        <p class="compare-lead">{product.compareLead}</p>
+      </div>
+
+      <div class="compare-field">
+        {product.compare.map((track: any) => (
+          <div class:list={['track', track.accent && 'track--accent']}>
+            <p class="track-label">{track.label}</p>
+            <ol class="track-steps">
+              {track.steps.map((step: any, index: number) => (
+                <li>
+                  <span class="step-head">
+                    <b>{step.label}</b>
+                    {index < track.steps.length - 1 && <span class="step-line"></span>}
+                  </span>
+                  <span class="step-note">{step.note}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ))}
+        <p class="compare-outro">{product.compareOutro}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Отступ снизу секции держит полоса палитры и поле сравнения, поэтому
+     собственный ритм главы задаём здесь, а не общим --scene-gap. */
+  .product {
+    padding-block: clamp(48px, 5vw, 72px) clamp(56px, 6vw, 84px);
+    --bleed: 93px;
+  }
+
+  .product > .wrap {
+    position: relative;
+  }
+
+  .chapter {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--col-gap);
+    align-items: start;
+    row-gap: 32px;
+  }
+
+  .chapter-copy {
+    grid-column: 1 / span 4;
+    padding-top: clamp(10px, 2vw, 28px);
+  }
+
+  /* Кегли главы взяты с макета: заголовок крупнее общего --font-section,
+     потому что здесь он держит весь левый столбец против большого кадра. */
+  .chapter-copy .s-title {
+    max-width: none;
+    margin-top: 22px;
+    font-size: clamp(30px, 3vw, 45px);
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+  }
+
+  .chapter-copy .s-text {
+    max-width: 34ch;
+    margin-top: 26px;
+    font-size: 15px;
+    line-height: 1.62;
+  }
+
+  .chapter-copy .s-text + .s-text {
+    margin-top: 30px;
+  }
+
+  .chapter-visual {
+    grid-column: 6 / -1;
+    /* Кадр уходит за правый край страницы: это разворот, а не картинка
+       в колонке. */
+    margin-right: calc(-1 * var(--bleed));
+  }
+
+  .lineup {
+    margin: 0;
+    /* Верх кадра срезан контейнером: пустое поле над коробкой не несёт
+       информации и только растило бы высоту главы. */
+    aspect-ratio: 160 / 94;
+    overflow: hidden;
+  }
+
+  .lineup img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 82%;
+  }
+
+  /* ── Полоса палитры: шов между частями главы ─────────────────────────── */
+  .palette-band {
+    margin-top: clamp(32px, 3.5vw, 50px);
+    border-top: 1px solid rgb(16 20 26 / 0.1);
+    border-bottom: 1px solid rgb(16 20 26 / 0.1);
+    background: rgb(255 255 255 / 0.42);
+    padding-block: 26px;
+  }
+
+  .palette-row {
+    display: grid;
+    grid-template-columns: 2fr repeat(4, 1.55fr) 2.7fr;
+    align-items: center;
+    column-gap: var(--col-gap);
+  }
+
+  .palette-list {
+    display: contents;
+  }
+
+  .palette-title,
+  .palette-note {
+    margin: 0;
+    color: rgb(16 20 26 / 0.5);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+
+  .palette-list li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 12px;
+  }
+
+  .swatch {
+    display: block;
+    grid-row: span 2;
+    width: 26px;
+    height: 26px;
+    border: 1px solid rgb(16 20 26 / 0.1);
+    border-radius: 4px;
+    background: var(--swatch);
+  }
+
+  .palette-list b {
+    align-self: end;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .palette-list i {
+    align-self: start;
+    margin-top: 4px;
+    color: rgb(16 20 26 / 0.38);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-style: normal;
+    text-transform: uppercase;
+  }
+
+  /* ── Логика выбора ───────────────────────────────────────────────────── */
+  .compare {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: start;
+    column-gap: var(--col-gap);
+    margin-top: clamp(52px, 5.5vw, 76px);
+  }
+
+  .compare-copy {
+    grid-column: 1 / span 5;
+    padding-top: 4px;
+  }
+
+  .compare-copy .s-title {
+    max-width: none;
+    margin-top: 20px;
+    font-size: clamp(26px, 2.6vw, 38px);
+    line-height: 1.12;
+    letter-spacing: -0.035em;
+  }
+
+  .compare-copy .s-text {
+    max-width: 34ch;
+    margin-top: 24px;
+    font-size: 15px;
+    line-height: 1.62;
+  }
+
+  .compare-eyebrow {
+    margin: 0;
+    color: var(--p-mint-700);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  /* Опорная строка держит вес левой колонки против плотного поля справа. */
+  .compare-lead {
+    margin: 28px 0 0;
+    max-width: 26ch;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+
+  /* Одно общее поле вместо двух карточек: сравниваются маршруты, а не блоки. */
+  .compare-field {
+    grid-column: 6 / -1;
+    border: 1px solid rgb(16 20 26 / 0.11);
+    border-radius: 12px;
+    background: rgb(255 255 255 / 0.45);
+    padding: 26px 30px 24px;
+  }
+
+  .track + .track {
+    margin-top: 26px;
+    border-top: 1px solid rgb(16 20 26 / 0.09);
+    padding-top: 26px;
+  }
+
+  .track-label {
+    margin: 0;
+    color: rgb(16 20 26 / 0.45);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Шаги стоят по колонкам: порядок читается по выравниванию и пунктирной
+     связке, стрелки для этого не нужны. */
+  .track-steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: var(--col-gap);
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .track-steps b {
+    color: rgb(16 20 26 / 0.62);
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  /* Связка идёт от слова до следующей колонки, перекрывая межколонник. */
+  .step-line {
+    position: relative;
+    flex: 1 1 auto;
+    height: 1px;
+    margin-right: calc(-1 * var(--col-gap));
+    background: repeating-linear-gradient(
+      90deg,
+      rgb(16 20 26 / 0.22) 0 1px,
+      transparent 1px 5px
+    );
+  }
+
+  .step-line::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: rgb(16 20 26 / 0.28);
+  }
+
+  .step-note {
+    display: block;
+    margin-top: 8px;
+    max-width: 15ch;
+    color: rgb(16 20 26 / 0.42);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  /* Второй маршрут отличается не оформлением, а плотностью: он темнее и весит
+     больше — читается как основной, а не как «подсвеченный вариант». */
+  .track--accent .track-label,
+  .track--accent .track-steps b {
+    color: var(--p-mint-700);
+  }
+
+  .track--accent .step-note {
+    color: rgb(47 107 92 / 0.85);
+  }
+
+  .track--accent .step-line {
+    background: repeating-linear-gradient(
+      90deg,
+      rgb(47 107 92 / 0.3) 0 1px,
+      transparent 1px 5px
+    );
+  }
+
+  .track--accent .step-line::after {
+    background: var(--p-mint-700);
+  }
+
+  .compare-outro {
+    margin: 28px 0 0;
+    border-top: 1px solid rgb(16 20 26 / 0.09);
+    padding-top: 22px;
+    color: rgb(16 20 26 / 0.55);
+    font-size: 13.5px;
+  }
+
+  @media (max-width: 1000px) {
+    .product {
+      --bleed: 24px;
+    }
+
+    .chapter,
+    .compare {
+      display: block;
+    }
+
+    .chapter-visual {
+      margin-top: 36px;
+    }
+
+    .palette-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      row-gap: 20px;
+    }
+
+    .palette-title,
+    .palette-note {
+      grid-column: 1 / -1;
+    }
+
+    .compare-field {
+      margin-top: 32px;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .product {
+      --bleed: 20px;
+    }
+
+    .track-steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      row-gap: 20px;
+    }
+
+    .step-line {
+      display: none;
+    }
+
+    .palette-row {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

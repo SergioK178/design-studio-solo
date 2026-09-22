@@ -1,0 +1,275 @@
+---
+import FactStrip from './parts/FactStrip.astro';
+import PhotoFrame from './parts/PhotoFrame.astro';
+
+/**
+ * Сцена 2 читается одной связной мыслью: что продавали → кому продавали →
+ * чем доказывали → какие факты важны. Поэтому постановка задачи, две оптики
+ * аудитории, фотодоказательство и полоса фактов стоят не четырьмя отдельными
+ * блоками, а одной лестницей сверху вниз.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { scenarios, photos, taskTitle, taskShort, objectFacts, photoNote } = presentation;
+const [owner, investor] = scenarios;
+
+/* Кадры подписаны сценариями: один и тот же объект читается как место для
+   жизни — через локацию, и как актив — через масштаб и структуру. */
+const lifePhoto = { ...photos.sunset, caption: `${owner.audience.label} · локация` };
+const assetPhoto = { ...photos.facade, caption: `${investor.audience.label} · объект` };
+---
+
+<section class="scene context" data-bg="paper">
+  <div class="wrap">
+    <p class="context-intro" data-reveal>
+      Интерфейс ниже собран внутри кейса заново — настоящими компонентами.
+    </p>
+
+    <div class="context-top" data-reveal-group>
+      <article class="context-task">
+        <span class="s-label">Задача</span><i class="s-rule"></i>
+        <h2>
+          {taskTitle.map((line: string, index: number) => (
+            <>{index > 0 && <br />}{line}</>
+          ))}
+        </h2>
+        <p>{taskShort}</p>
+      </article>
+
+      <aside class="context-who">
+        <span class="s-label">Кому продаём</span><i class="s-rule"></i>
+        <div class="who-cards">
+          {scenarios.map((scenario: any) => (
+            <article class="who-card">
+              <span class="who-head">
+                {scenario.audience.icon && (
+                  <img
+                    class="who-icon"
+                    src={scenario.audience.icon}
+                    alt=""
+                    width="30"
+                    height="30"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <span class="p-kicker who-label">{scenario.audience.label}</span>
+              </span>
+              <h3>{scenario.title}</h3>
+              <ul>
+                {scenario.audience.bullets.map((bullet: string) => <li>{bullet}</li>)}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </aside>
+    </div>
+
+    <!-- Доказательство, а не галерея: большой кадр держит локацию и эмоцию,
+         меньший — сам объект, подпись объясняет, почему съёмка настоящая. -->
+    <div class="context-proof project-layer" data-reveal>
+      <PhotoFrame photo={lifePhoto} ratio="16 / 9" class="proof-lead" />
+      <PhotoFrame photo={assetPhoto} ratio="4 / 3" class="proof-second" />
+      <p class="proof-note">
+        <strong>{photoNote.title}</strong>
+        {photoNote.text}
+      </p>
+    </div>
+
+    <div class="context-facts project-layer">
+      <FactStrip items={objectFacts} countUp />
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Служебная строка, а не абзац: мысль про нативную пересборку нужна перед
+     сценой, но она не должна перебивать вход в неё. */
+  .context-intro {
+    max-width: 62ch;
+    margin: 0 0 clamp(48px, 6vh, 76px);
+    color: rgb(23 21 15 / 0.5);
+    font-size: 15px;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .context-top {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    column-gap: clamp(48px, 6vw, 88px);
+  }
+
+  /* Кегль подобран так, чтобы самая длинная из трёх заданных строк ровно
+     ложилась в колонку: переносы здесь часть композиции. */
+  .context-task h2 {
+    margin: 24px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(26px, 2.8vw, 35px);
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+
+  .context-task p {
+    max-width: 44ch;
+    margin: 30px 0 0;
+    color: var(--text-soft);
+    font-size: var(--font-body);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  /* Две оптики стоят рядом и одинакового веса: контраст между ними и есть
+     содержание блока. */
+  .who-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 2vw, 24px);
+    margin-top: 26px;
+  }
+
+  .who-card {
+    box-sizing: border-box;
+    border: 1px solid var(--line-ink);
+    padding: clamp(20px, 2vw, 28px);
+  }
+
+  .who-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--p-terracotta);
+  }
+
+  /* Обычная картинка, а не маска: глиф уже нарисован терракотой проекта,
+     а mask-image добавлял бы зависимость от поддержки браузером там, где
+     она ничего не даёт. */
+  .who-icon {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+  }
+
+  .who-label {
+    color: inherit;
+  }
+
+  .who-card h3 {
+    margin: 18px 0 0;
+    font-family: var(--font-display);
+    font-size: clamp(18px, 1.5vw, 21px);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  .who-card ul {
+    margin: 22px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .who-card li {
+    position: relative;
+    padding-left: 18px;
+    color: var(--text-soft);
+    font-size: var(--font-secondary);
+    line-height: 1.45;
+  }
+
+  .who-card li + li {
+    margin-top: 10px;
+  }
+
+  .who-card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--p-terracotta);
+  }
+
+  /* Кадры и подпись стоят одной строкой и выравниваются по низу: подпись —
+     часть композиции, а не хвост под картинкой. */
+  .context-proof {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr) minmax(0, 3fr);
+    align-items: end;
+    column-gap: clamp(20px, 2.4vw, 32px);
+    margin-top: clamp(72px, 9vh, 112px);
+  }
+
+  /* :global — класс уезжает в дочерний компонент, scope-метка сцены до него
+     не доходит. Меньший кадр тянется по высоте большого; width задан явно,
+     иначе PhotoFrame посчитает ширину по своему инлайновому aspect-ratio. */
+  .context-proof :global(.proof-second) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .proof-note {
+    margin: 0 0 6px;
+    color: rgb(33 27 20 / 0.62);
+    font-family: var(--font-project);
+    font-size: 14px;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  .proof-note strong {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--p-ink);
+    font-family: var(--font-project);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .context-facts {
+    margin-top: clamp(56px, 7vh, 80px);
+  }
+
+  @media (max-width: 1000px) {
+    .context-top {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .context-who {
+      margin-top: 52px;
+    }
+
+    /* Подпись уходит под кадры и занимает вторую колонку целиком. */
+    .context-proof {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: start;
+      row-gap: 26px;
+    }
+
+    .proof-note {
+      grid-column: 1 / -1;
+      max-width: 52ch;
+      margin: 0;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .who-cards {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .context-proof {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .context-proof :global(.proof-second) {
+      height: auto;
+    }
+  }
+</style>

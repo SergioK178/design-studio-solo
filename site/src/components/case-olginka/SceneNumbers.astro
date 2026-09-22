@@ -1,0 +1,154 @@
+---
+/**
+ * Сцена 5. Цифра как главный объект экрана.
+ *
+ * Цена стоит липко и занимает треть вьюпорта; справа, по мере прокрутки,
+ * проявляется лестница расстояний. Место объяснено километрами и минутами,
+ * а не словом «рядом» — это и есть весь аргумент сцены.
+ */
+interface Props {
+  presentation: any;
+}
+
+const { presentation } = Astro.props;
+const { price } = presentation;
+---
+
+<section class="scene numbers" data-bg="paper">
+  <div class="wrap">
+    <div class="s-heading" data-reveal>
+      <span class="s-label">Подача объекта</span><i class="s-rule"></i>
+      <h2>Дом продают цифры, а не эпитеты</h2>
+      <p>{price.evidence}</p>
+    </div>
+
+    <div class="numbers-body">
+      <div class="numbers-price project-layer">
+        <div class="price-sticky">
+          <span class="p-kicker price-kicker">Цена объекта</span>
+          <p class="price-value">
+            {price.value}<span class="p-unit price-unit">{price.unit}</span>
+          </p>
+          <p class="price-per">{price.perMeter}</p>
+          <p class="price-note">{price.note}</p>
+        </div>
+      </div>
+
+      <ol class="numbers-ladder project-layer" data-reveal-group>
+        {price.distances.map((item: any) => (
+          <li>
+            <strong>{item.value}</strong>
+            <span>{item.label}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Равные колонки через широкий прогал: цена и лестница расстояний — два
+     самостоятельных объекта, а не блок с подписью сбоку. */
+  .numbers-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(32px, 11vw, 176px);
+    margin-top: clamp(48px, 6vh, 72px);
+  }
+
+  .price-sticky {
+    position: sticky;
+    top: 96px;
+  }
+
+  .price-kicker {
+    color: rgb(33 27 20 / 0.5);
+  }
+
+  /* Главное число кейса. Всё остальное на экране существует, чтобы его
+     объяснить, — поэтому размер задан вьюпортом, а не шкалой. Потолок 140px:
+     выше цена перестаёт соотноситься с лестницей справа и начинает выглядеть
+     как отдельный экран. */
+  .price-value {
+    margin: 22px 0 0;
+    font-family: var(--font-project);
+    font-size: clamp(64px, 8.4vw, 140px);
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    line-height: 0.88;
+  }
+
+  .price-unit {
+    margin-left: 0.12em;
+    color: rgb(33 27 20 / 0.5);
+    font-family: var(--font-mono);
+    font-size: 0.21em;
+  }
+
+  .price-per {
+    margin: 24px 0 0;
+    color: rgb(33 27 20 / 0.62);
+    font-family: var(--font-project);
+    font-size: 17px;
+  }
+
+  .price-note {
+    max-width: 46ch;
+    margin: 28px 0 0;
+    border-top: 1px solid rgb(33 27 20 / 0.15);
+    padding-top: 26px;
+    color: rgb(33 27 20 / 0.72);
+    font-family: var(--font-project);
+    font-size: 15px;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  /* Лестница расстояний: значение крупным, назначение — подписью справа. */
+  .numbers-ladder {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid rgb(33 27 20 / 0.15);
+  }
+
+  .numbers-ladder li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 1px solid rgb(33 27 20 / 0.15);
+    padding: clamp(18px, 2.4vh, 26px) 0;
+  }
+
+  /* Половина кегля цены: расстояния — второй по важности объект сцены, но
+     соотношение «в три раза меньше» разводило две половины по разным масштабам. */
+  .numbers-ladder strong {
+    font-family: var(--font-project);
+    font-size: clamp(28px, 3.4vw, 52px);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .numbers-ladder span {
+    color: rgb(33 27 20 / 0.55);
+    font-family: var(--font-project);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-align: right;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    .numbers-body {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 56px;
+    }
+
+    .price-sticky {
+      position: static;
+    }
+  }
+</style>

@@ -7,12 +7,12 @@ import CasePreview from '../../components/CasePreview.astro';
 import { works } from '../../data/works';
 ---
 
-<Base title="Работы · 3K Studio">
+<Base title="Работы · 3D Studio">
   <Nav />
   <PageHeader eyebrow="работы" title="Работы" lead="Разные форматы, разные ниши, один подход к смете и срокам." />
   <main class="works-list" data-bg="paper">
     <div class="wrap grid" data-reveal-group>
-      {works.map((item) => <CasePreview work={item} titleTag="h2" />)}
+      {works.filter((item) => item.status === 'published').map((item) => <CasePreview work={item} titleTag="h2" />)}
     </div>
   </main>
   <SiteFooter />

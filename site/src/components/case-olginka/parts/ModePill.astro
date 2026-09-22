@@ -1,0 +1,154 @@
+---
+import Glyph from './Glyph.astro';
+
+/**
+ * Пилюля-переключатель сценария — тот же компонент, что стоит в hero живого сайта:
+ * стеклянная подложка на тёмном, активная кнопка кремовая. Не картинка, а рабочая
+ * разметка: одну и ту же пилюлю кейс показывает и в hero (сцена 1), и разобранной
+ * на части (сцена 6).
+ *
+ * Управление вынесено наружу: сцена ставит data-mode-scope на общего предка, и
+ * скрипт сцены синхронизирует все пилюли внутри одной области.
+ */
+interface Props {
+  options: { id: string; label: string; icon?: string }[];
+  active: string;
+  tone?: 'dark' | 'light';
+  /**
+   * Пилюля управляет соседними блоками. В сцене 3 обе плитки видны всегда, и
+   * кнопка только расставляет акцент — это группа переключателей с aria-pressed,
+   * а не tablist: таб обязан скрывать неактивную панель, а мы её показываем.
+   */
+  controls?: boolean;
+  ariaLabel?: string;
+  size?: 'md' | 'sm';
+}
+
+const { options, active, tone = 'dark', controls = false, ariaLabel = 'Сценарий покупки', size = 'md' } = Astro.props;
+---
+
+<div
+  class:list={['mode-pill', `tone-${tone}`, `size-${size}`]}
+  role={controls ? 'group' : undefined}
+  aria-label={ariaLabel}
+>
+  {options.map((option) => (
+    <button
+      type="button"
+      class:list={['mode-pill__btn', option.id === active && 'is-active']}
+      id={controls ? `tab-${option.id}` : undefined}
+      aria-pressed={controls ? String(option.id === active) : undefined}
+      data-mode-btn={option.id}
+    >
+      {option.icon && <Glyph name={option.icon} class="pill-icon" />}
+      <span>{option.label}</span>
+    </button>
+  ))}
+</div>
+
+<style>
+  .mode-pill {
+    display: inline-flex;
+    gap: 4px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    padding: 4px;
+  }
+
+  /* 0.55, а не 0.32: пилюля стоит поверх заката, и на светлых участках кадра
+     тонкое стекло переставало держать светлую подпись. */
+  .tone-dark {
+    border: 1px solid rgb(244 238 227 / 0.28);
+    background: rgb(12 9 16 / 0.55);
+    backdrop-filter: blur(12px);
+  }
+
+  .tone-light {
+    border: 1px solid rgb(33 27 20 / 0.16);
+    background: rgb(33 27 20 / 0.04);
+  }
+
+  .mode-pill__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    padding: 9px 18px;
+    font-family: var(--font-project);
+    font-size: clamp(13px, 1.05vw, 15px);
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color 0.25s cubic-bezier(0.25, 0.1, 0.25, 1),
+      color 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  /* :global — класс уезжает в Glyph, и scope-метка этой пилюли до него не доходит.
+     Кегль текучий: на широком мониторе пилюля растёт, и глиф обязан расти с ней.
+     У активной кнопки глиф в терракоте — режим читается раньше подписи. */
+  .mode-pill__btn :global(.pill-icon) {
+    --icon-size: clamp(20px, 1.5vw, 26px);
+  }
+
+  .mode-pill__btn.is-active :global(.pill-icon) {
+    color: var(--p-terracotta);
+  }
+
+  .size-sm .mode-pill__btn :global(.pill-icon) {
+    --icon-size: 16px;
+  }
+
+  .size-sm .mode-pill__btn {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+
+  .tone-dark .mode-pill__btn {
+    color: rgb(244 238 227 / 0.92);
+  }
+
+  .tone-light .mode-pill__btn {
+    color: rgb(33 27 20 / 0.6);
+  }
+
+  /* Цвет ховера задан явно для каждого тона. inherit брал цвет контекста, а
+     пилюля живёт внутри .project-layer с тёмным ink: на тёмном стекле подпись
+     на ховере становилась тёмной и пропадала. */
+  .tone-dark .mode-pill__btn:hover {
+    color: var(--p-paper);
+  }
+
+  .tone-light .mode-pill__btn:hover {
+    color: var(--p-ink);
+  }
+
+  /* Тон обязан стоять в селекторе: правила .tone-* задают цвет через два класса,
+     и Astro добавляет к каждому из них свою scope-метку. Без тона активная кнопка
+     проигрывала по специфичности и оставалась светлой на кремовой подложке —
+     подпись выбранного сценария сливалась с пилюлей. */
+  .tone-dark .mode-pill__btn.is-active,
+  .tone-light .mode-pill__btn.is-active {
+    background: var(--p-cream);
+    color: var(--p-ink);
+  }
+
+  .mode-pill__btn:focus-visible {
+    outline: 2px solid var(--p-amber);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 420px) {
+    .mode-pill {
+      width: 100%;
+    }
+
+    .mode-pill__btn {
+      flex: 1;
+      padding-inline: 10px;
+    }
+  }
+</style>

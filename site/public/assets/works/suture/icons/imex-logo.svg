@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 72" fill="none" role="img" aria-labelledby="imex-logo-title imex-logo-desc">
+  <title id="imex-logo-title">ИМЭКС</title>
+  <desc id="imex-logo-desc">Медицинский технологичный знак и название компании ИМЭКС</desc>
+
+  <!-- A precise geometric monogram: the outer strokes read as И/М,
+       while the central join recalls a surgical stitch. -->
+  <g aria-hidden="true">
+    <path d="M8 36 31 13 41 23 28 36 41 49 31 59 8 36Z" fill="#F5F0E8"/>
+    <path d="m70 13 23 23-23 23-10-10 13-13-13-13 10-10Z" fill="#8DD7C1"/>
+    <path d="M46 21h10v10h10v10H56v10H46V41H36V31h10V21Z" fill="#8DD7C1"/>
+    <circle cx="51" cy="36" r="3.25" fill="#F5F0E8"/>
+  </g>
+
+  <g aria-hidden="true" fill="#F5F0E8">
+    <text x="124" y="48" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="750" letter-spacing="2.2">ИМЭКС</text>
+  </g>
+</svg>

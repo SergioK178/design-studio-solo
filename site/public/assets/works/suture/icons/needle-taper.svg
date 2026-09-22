@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 48" fill="none">
+  <title>Колющая игла</title>
+  <defs><linearGradient id="m" x1="8" y1="39" x2="51" y2="20" gradientUnits="userSpaceOnUse"><stop stop-color="#7E8891"/><stop offset=".48" stop-color="#E7EBED"/><stop offset="1" stop-color="#AAB3BA"/></linearGradient></defs>
+  <path d="M8 39C18 45 37 42 46 27" stroke="url(#m)" stroke-width="3" stroke-linecap="round"/>
+  <path d="m45.8 27.2 9.8-7.3-7.2 10.2" fill="#E7EBED" stroke="#7E8891" stroke-width=".7" stroke-linejoin="round"/>
+</svg>

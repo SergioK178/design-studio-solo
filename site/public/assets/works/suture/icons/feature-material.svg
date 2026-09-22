@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <title>Тип материала</title>
+  <path d="M16 4.5c3.8 5 7.5 8.7 7.5 13.2a7.5 7.5 0 0 1-15 0C8.5 13.2 12.2 9.5 16 4.5Z" stroke="#9B82ED" stroke-width="1.7" stroke-linejoin="round"/>
+  <path d="M11.8 18.2a4.4 4.4 0 0 0 4.4 4.3" stroke="#D8CCFF" stroke-width="1.7" stroke-linecap="round"/>
+  <path d="M16 9.3v4.2" stroke="#6651B8" stroke-width="1.7" stroke-linecap="round"/>
+</svg>

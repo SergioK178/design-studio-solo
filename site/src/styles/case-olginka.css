@@ -1,0 +1,414 @@
+@import './fonts-onest.css';
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Кейс «Ольгинка»: три визуальных слоя
+
+   studio    — язык 3K: молочный/чёрный/жёлтый, Unbounded + Golos Text.
+               Шапка кейса, лейблы глав, финальный CTA.
+   project   — язык самого объекта: тёплый paper, терракота, Onest.
+               Здесь интерфейс Ольгинки пересобран нативно, а не вставлен
+               скриншотом.
+   evidence  — объяснение решений: снова язык 3K, но спокойнее студийного.
+
+   Слои чередуются намеренно. Раскатать дизайн клиента на весь кейс —
+   потерять авторство студии; оставить всё в скриншотах — потерять craft.
+
+   Палитра проекта объявлена здесь один раз (--p-*), чтобы в сценах
+   не появлялись хексы: global.css §3 запрещает их в компонентах.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.olginka-case {
+  /* Палитра донора: gh-landing/tailwind.config.ts */
+  --p-paper: #f4eee3;
+  --p-ink: #211b14;
+  --p-ink-deep: #0c0910;
+  --p-night: #1a1620;
+  --p-terracotta: #c5602e;
+  --p-terracotta-700: #a94e24;
+  --p-amber: #e8a06b;
+  --p-amber-light: #f3d9be;
+  --p-cream: #e9e2d4;
+
+  --font-project: 'Onest', sans-serif;
+
+  /* Студийная шкала кейса — одна на все сцены */
+  --font-hero: clamp(30px, 5.2vw, 49px);
+  --font-section: clamp(34px, 3.2vw, 48px);
+  --font-lead: 18px;
+  --font-body: 17px;
+  --font-secondary: 16px;
+  --font-caption: 14px;
+  --font-label: 13px;
+
+  --line-ink: rgb(23 21 15 / 0.16);
+  --text-soft: rgb(23 21 15 / 0.68);
+  --text-soft-light: rgb(244 242 236 / 0.74);
+
+  --col-gap: 24px;
+  /* Единый вертикальный ритм глав. Верхняя граница сознательно 128px, а не
+     150px: на длинной странице щедрый воздух суммируется, и кейс начинает
+     читаться дольше, чем есть. */
+  --scene-gap: clamp(88px, 9vh, 128px);
+
+  background: var(--color-paper);
+  color: var(--color-ink);
+  overflow-x: clip;
+}
+
+/* ── Слой проекта ──────────────────────────────────────────────────────
+   Ритм донора: .section-pad + .container-editorial из gh-landing/globals.css */
+.olginka-case .project-layer {
+  font-family: var(--font-project);
+  font-feature-settings: 'ss01';
+  color: var(--p-ink);
+}
+
+.olginka-case .project-layer h1,
+.olginka-case .project-layer h2,
+.olginka-case .project-layer h3,
+.olginka-case .project-layer strong,
+.olginka-case .project-layer b {
+  font-family: var(--font-project);
+  letter-spacing: -0.03em;
+}
+
+/* Кикер проекта: 11px / uppercase / широкий трекинг */
+.olginka-case .p-kicker {
+  display: block;
+  font-family: var(--font-project);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* Глиф проекта: контур в currentColor, поэтому один и тот же значок стоит и
+   терракотой на молочной карточке, и амброй на тёмной. Кегль задаётся снаружи
+   через --icon-size и держится текучим — на широком мониторе карточка растёт,
+   и значок обязан расти с ней. */
+.olginka-case .p-icon {
+  display: block;
+  flex: none;
+  width: var(--icon-size, 20px);
+  height: var(--icon-size, 20px);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Заголовок проекта — .editorial-title донора один в один */
+.olginka-case .p-title {
+  margin: 0;
+  font-family: var(--font-project);
+  font-size: clamp(40px, 6.6vw, 108px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+/* Единица измерения при крупной цифре: подпись сверху, а не рядом.
+   Главный типографический приём объекта — из About.tsx / PriceContext.tsx */
+.olginka-case .p-unit {
+  vertical-align: super;
+  margin-left: 0.1em;
+  font-size: 0.4em;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* ── Слой студии ───────────────────────────────────────────────────── */
+.olginka-case .s-label {
+  display: block;
+  color: var(--color-ochre);
+  font-family: var(--font-text);
+  font-size: var(--font-label);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.olginka-case .s-rule {
+  display: block;
+  width: 30px;
+  height: 1px;
+  margin-top: 20px;
+  background: rgb(23 21 15 / 0.3);
+}
+
+.olginka-case .s-rule--light {
+  background: rgb(244 242 236 / 0.34);
+}
+
+/* Заголовок главы: лейбл в 1–3 колонках, заголовок с 5-й. */
+.olginka-case .s-heading {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+}
+
+.olginka-case .s-heading .s-label {
+  grid-column: 1 / span 3;
+  grid-row: 1;
+}
+
+.olginka-case .s-heading .s-rule {
+  grid-column: 1 / span 3;
+  grid-row: 2;
+  align-self: start;
+}
+
+.olginka-case .s-heading h2 {
+  grid-column: 5 / -1;
+  grid-row: 1 / span 2;
+  max-width: 760px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--font-section);
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.olginka-case .s-heading p {
+  grid-column: 5 / -1;
+  grid-row: 3;
+  max-width: 620px;
+  margin: 24px 0 0;
+  color: var(--text-soft);
+  font-size: var(--font-body);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+/* ── Слой доказательств ────────────────────────────────────────────────
+   Подпись студии под нативным куском интерфейса: почему решение такое. */
+.olginka-case .evidence {
+  max-width: 68ch;
+  color: var(--text-soft);
+  font-family: var(--font-text);
+  font-size: var(--font-caption);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.olginka-case .evidence strong {
+  color: var(--color-ink);
+  font-family: var(--font-text);
+  font-weight: 600;
+}
+
+/* Мелкий служебный лейбл над разобранной частью интерфейса (сцена 6). */
+.olginka-case .part-label {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: rgb(23 21 15 / 0.45);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.olginka-case .part-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line-ink);
+}
+
+/* ── Кнопки проекта ──────────────────────────────────────────────────── */
+.olginka-case .p-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 999px;
+  padding: 17px 34px;
+  font-family: var(--font-project);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.25s cubic-bezier(0.25, 0.1, 0.25, 1),
+    color 0.25s cubic-bezier(0.25, 0.1, 0.25, 1),
+    border-color 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.olginka-case .p-btn--cream {
+  background: var(--p-cream);
+  color: var(--p-ink);
+}
+
+.olginka-case .p-btn--cream:hover {
+  background: #fff;
+}
+
+.olginka-case .p-btn--terracotta {
+  background: var(--p-terracotta);
+  color: var(--p-paper);
+}
+
+.olginka-case .p-btn--terracotta:hover {
+  background: var(--p-terracotta-700);
+}
+
+.olginka-case .p-btn--ghost {
+  border: 1px solid rgb(244 242 236 / 0.35);
+  background: transparent;
+  color: var(--p-paper);
+}
+
+.olginka-case .p-btn--ghost:hover {
+  border-color: var(--p-paper);
+}
+
+/* Текстовая ссылка проекта: подчёркивание — часть буквы, а не декор. */
+.olginka-case .p-link {
+  display: inline-block;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 3px;
+  font-family: var(--font-project);
+  font-size: 15px;
+  text-decoration: none;
+  transition: opacity 0.25s;
+}
+
+.olginka-case .p-link:hover {
+  opacity: 0.65;
+}
+
+/* ── Кнопка студии ───────────────────────────────────────────────────── */
+.olginka-case .s-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-sizing: border-box;
+  height: 52px;
+  padding: 0 20px 0 24px;
+  background: var(--color-gold);
+  color: var(--color-ink);
+  font-family: var(--font-text);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    background-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.olginka-case .s-btn:hover {
+  background: color-mix(in srgb, var(--color-gold) 86%, white);
+  transform: translateY(-1px);
+}
+
+.olginka-case .s-btn:focus-visible {
+  outline-color: var(--color-paper);
+}
+
+/* ── Фотография объекта ────────────────────────────────────────────────
+   .film-grade донора: холодный градиент поверх кадра на multiply — то, что
+   склеивает разнородные съёмки в одну плёнку. */
+.olginka-case .p-photo {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  background: var(--p-night);
+}
+
+.olginka-case .p-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.olginka-case .p-photo--graded::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: multiply;
+  background: linear-gradient(180deg, rgb(60 30 12 / 0.12), rgb(12 18 28 / 0.2));
+  pointer-events: none;
+}
+
+/* Подпись-плашка в углу кадра */
+.olginka-case .p-photo figcaption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
+  padding: 9px 16px;
+  background: rgb(26 22 32 / 0.6);
+  backdrop-filter: blur(6px);
+  color: var(--p-paper);
+  font-family: var(--font-project);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ── Ken Burns ────────────────────────────────────────────────────────
+   Единственная непрерывная анимация кейса, только на двух полноэкранных
+   кадрах (сцены 1 и 9). */
+@keyframes olginka-kb {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(-1.5%, -2%, 0);
+  }
+}
+
+.olginka-case .p-kenburns {
+  animation: olginka-kb 24s cubic-bezier(0.25, 0.1, 0.25, 1) infinite alternate;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .olginka-case .p-kenburns {
+    animation: none;
+    transform: scale(1.06);
+  }
+}
+
+/* ── Сетка сцен ──────────────────────────────────────────────────────── */
+.olginka-case .scene {
+  padding-block: var(--scene-gap);
+}
+
+.olginka-case .scene--tight {
+  padding-block: clamp(64px, 7vh, 96px);
+}
+
+.olginka-case .grid12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+}
+
+@media (max-width: 900px) {
+  .olginka-case .s-heading,
+  .olginka-case .grid12 {
+    display: block;
+  }
+
+  .olginka-case .s-heading h2 {
+    margin-top: 16px;
+  }
+
+  .olginka-case .s-heading p {
+    margin-top: 20px;
+    font-size: var(--font-secondary);
+  }
+}
