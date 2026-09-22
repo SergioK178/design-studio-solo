@@ -5,7 +5,7 @@ import Brief from '../../components/Brief.svelte';
 import SiteFooter from '../../components/SiteFooter.astro';
 ---
 
-<Base title="Разбор задачи · 3K Studio">
+<Base title="Разбор задачи · 3D Studio">
   <Nav />
   <main class="brief-page" data-bg="ink">
     <div class="wrap">
@@ -15,16 +15,28 @@ import SiteFooter from '../../components/SiteFooter.astro';
       <noscript>
         <aside>
           <h2>Если JavaScript не загрузился</h2>
-          <p>Напишите задачу свободным текстом — заявка уйдёт напрямую нам, без сторонних сервисов.</p>
+          <p>Напишите задачу свободным текстом — сохраним заявку и свяжемся по указанному контакту.</p>
           <form action="/api/lead" method="post">
             <label>
               <span class="mono">Что должно заработать?</span>
-              <textarea name="answers[freeform]" rows="6" placeholder="Сайт, каталог, Telegram, автоматизация — опишите задачу как удобно"></textarea>
+              <textarea name="other_text" rows="6" placeholder="Сайт, каталог, Telegram, автоматизация — опишите задачу как удобно"></textarea>
             </label>
-            <input type="hidden" name="version" value="v2" />
-            <input type="hidden" name="project" value="unknown" />
+            <label>
+              <span class="mono">Имя</span>
+              <input name="name" required autocomplete="name" />
+            </label>
+            <label>
+              <span class="mono">Телефон или Telegram</span>
+              <input name="phone" required autocomplete="tel" />
+            </label>
+            <input type="hidden" name="version" value="v3" />
+            {/* product/task не читаются здесь: /brief/ — статическая страница
+                (build-time Astro.url, без адаптера), один и тот же HTML отдаётся
+                для любой query string. Контекст (?product=&task=) восстанавливает
+                API по заголовку Referer — см. api/src/routes/lead.ts. */}
             <input type="text" name="hp" value="" style="display:none" tabindex="-1" autocomplete="off" />
             <input type="hidden" name="ts" value={Date.now()} />
+            <p class="consent">Отправляя форму, вы соглашаетесь с <a href="/legal/">обработкой персональных данных</a>.</p>
             <button class="fallback-link" type="submit">Отправить заявку</button>
           </form>
         </aside>
@@ -63,6 +75,15 @@ import SiteFooter from '../../components/SiteFooter.astro';
     line-height: 1.55;
   }
 
+  .consent {
+    margin: 0;
+    font-size: 12px;
+  }
+
+  .consent a {
+    color: var(--color-gold);
+  }
+
   form,
   label {
     display: grid;
@@ -86,6 +107,15 @@ import SiteFooter from '../../components/SiteFooter.astro';
     padding: 12px;
     font: 500 14px / 1.45 var(--font-text);
     resize: vertical;
+  }
+
+  input {
+    width: 100%;
+    border: 0;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding: 12px;
+    font: 500 14px / 1.45 var(--font-text);
   }
 
   .fallback-link {

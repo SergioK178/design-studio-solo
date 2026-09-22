@@ -1,6 +1,7 @@
 import type { Hono } from 'hono';
 import type { Database } from 'better-sqlite3';
 import { estimate, type Answers } from '../brief/estimate.ts';
+import { isProductSlug } from '../brief/estimate-v3.ts';
 import { allow } from '../rate-limit.ts';
 import type { sendRelay } from '../relay.ts';
 
@@ -26,6 +27,25 @@ function clip(value: unknown): string {
   return typeof value === 'string' ? value.slice(0, MAX_TEXT) : '';
 }
 
+/**
+ * Noscript-фолбэк брифа (`site/src/pages/brief/index.astro`) — статическая страница:
+ * один и тот же build-time HTML отдаётся для любой query string, поэтому product/task
+ * из `?product=&task=` нельзя прочитать на стороне Astro. Единственное место, которое
+ * реально видит per-request URL без JS, — сам API: браузер посылает Referer с формой.
+ * Доверяем ему только чтобы восстановить product/task, если форма их не прислала.
+ */
+function contextFromReferer(referer: string | undefined): { product?: string; task?: string } {
+  if (!referer) return {};
+  try {
+    const url = new URL(referer);
+    const product = url.searchParams.get('product') ?? '';
+    const task = url.searchParams.get('task') ?? '';
+    return { product: product || undefined, task: task || undefined };
+  } catch {
+    return {};
+  }
+}
+
 async function parseBody(c: { req: { header: (name: string) => string | undefined; json: <T>() => Promise<T>; formData: () => Promise<FormData> } }): Promise<LeadBody> {
   const contentType = c.req.header('Content-Type') ?? '';
   if (contentType.includes('application/json')) {
@@ -37,6 +57,11 @@ async function parseBody(c: { req: { header: (name: string) => string | undefine
   for (const [key, value] of form.entries()) {
     if (typeof value === 'string' && !['hp', 'ts'].includes(key)) answers[key] = value;
   }
+  // Noscript-форма не знает product/task (см. комментарий у contextFromReferer выше) —
+  // восстанавливаем их из Referer, свободный текст без контекста уходит как task=other.
+  const fromReferer = contextFromReferer(c.req.header('referer'));
+  if (!answers.product && fromReferer.product && isProductSlug(fromReferer.product)) answers.product = fromReferer.product;
+  if (!answers.task) answers.task = (answers.product && fromReferer.task) || 'other';
   return {
     answers,
     hp: String(form.get('hp') ?? ''),

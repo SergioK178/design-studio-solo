@@ -603,6 +603,10 @@
     font-size: clamp(24px, 2.8vw, 36px);
     font-weight: 700;
     line-height: 1.16;
+    /* Длинные названия формата в кавычках («Приложение внутри Telegram» и т.п.) —
+       одно «слово» без пробела после «: без переноса это ломает scrollWidth
+       на узких экранах (320–390px). */
+    overflow-wrap: break-word;
   }
 
   .hint {

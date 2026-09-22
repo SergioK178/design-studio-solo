@@ -4,11 +4,14 @@ import type { ProductProof } from '../data/products';
 
 interface Props {
   proof: ProductProof;
+  /** Куда ведёт CTA концепт-proof («Пройти бриф») — canonical briefHref(product) от вызывающей страницы. */
+  briefHref?: string;
 }
 
-const { proof } = Astro.props;
+const { proof, briefHref } = Astro.props;
 const isConcept = proof.status !== 'published';
 const frame = proof.frame ?? 'browser';
+const ctaHref = isConcept ? briefHref ?? proof.href : proof.href;
 
 const variantLabel: Record<ProductProof['variant'], string> = {
   'real-interface': 'реальный интерфейс',
@@ -28,7 +31,7 @@ const [main, ...details] = proof.assets;
       {isConcept && <span class="concept-badge">Концепт студии</span>}
     </div>
     <h2>{proof.title}</h2>
-    <a href={proof.href}>{isConcept ? 'Обсудить похожую задачу →' : 'Смотреть работу →'}</a>
+    <a href={ctaHref}>{isConcept ? 'Пройти бриф →' : 'Смотреть работу →'}</a>
   </div>
 
   {(proof.variant === 'real-interface' || proof.variant === 'integration-diagram') && (
@@ -99,7 +102,7 @@ const [main, ...details] = proof.assets;
   }
 
   .mono {
-    color: var(--color-blue);
+    color: var(--color-blue-legacy);
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.06em;

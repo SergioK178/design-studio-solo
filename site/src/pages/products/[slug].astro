@@ -22,7 +22,7 @@ const recommended = extensionPrices.filter((extension) => product.recommendedExt
   <Nav />
   <PageHeader eyebrow={`${product.term} · ${product.price}`} title={product.name} lead={product.summary} tone="gold" />
   <main class="product" data-bg="paper">
-    {proof && <ProofModule proof={proof} />}
+    {proof && <ProofModule proof={proof} briefHref={briefHref(product)} />}
 
     <section class="wrap gains" data-reveal>
       <span class="mono">результат</span>
