@@ -27,12 +27,12 @@ test('product pages use tiered CTA: brief for standard formats, conversation for
   // planned-продукт типового тира: страница существует, primary CTA — бриф с предзаполненной задачей
   await page.goto('/products/wholesale/');
   await expect(page.getByRole('heading', { name: 'Оптовый каталог с запросом КП' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Разобрать задачу в брифе' })).toHaveAttribute('href', '/brief/?version=v3&task=assortment');
+  await expect(page.locator('main').getByRole('link', { name: 'Пройти бриф' }).first()).toHaveAttribute('href', '/brief/?version=v3&product=wholesale&task=assortment');
 
   // дорогой кастомный продукт: primary CTA — разговор, бриф второстепенной ссылкой
   await page.goto('/products/web-service/');
-  await expect(page.getByRole('link', { name: /Обсудить задачу/ })).toHaveAttribute('href', site.telegramUrl);
-  await expect(page.getByRole('link', { name: /опишите задачу в брифе/ })).toHaveAttribute('href', '/brief/?version=v3&task=tool');
+  await expect(page.getByRole('link', { name: /Обсудить проект/ })).toHaveAttribute('href', site.telegramUrl);
+  await expect(page.getByRole('link', { name: /пройти бриф/ })).toHaveAttribute('href', '/brief/?version=v3&product=web-service&task=tool');
 });
 
 test('every /price/ row matches the brief calculator for that extension', async ({ page }) => {

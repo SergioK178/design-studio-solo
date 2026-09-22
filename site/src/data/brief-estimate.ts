@@ -1,4 +1,4 @@
-import { extensionPrices, products } from './products';
+import { extensionPrices } from './products';
 
 export interface EstimateItem {
   id: string;
@@ -50,39 +50,17 @@ const fallbackBase: BaseEstimate = {
   weeks: { min: 1, max: 3 },
 };
 
-const productBaseOverrides: Record<string, Partial<BaseEstimate>> = {
-  start: { label: 'Промо-лендинг', price: { min: 39000, max: 39000 }, weeks: { min: 1, max: 1 } },
-  landing: { label: 'Лендинг под рекламу', price: { min: 70000, max: 180000 }, weeks: { min: 1, max: 2 } },
-  quiz: { label: 'Сайт с опросом и расчётом', price: { min: 90000, max: 150000 }, weeks: { min: 1, max: 2 } },
-  company: { label: 'Корпоративный сайт', price: { min: 120000, max: 300000 }, weeks: { min: 2, max: 3 } },
-  catalog: { label: 'Каталог компании', price: { min: 180000, max: 450000 }, weeks: { min: 2, max: 4 } },
-  shop: { label: 'Интернет-магазин', price: { min: 250000, max: 700000 }, weeks: { min: 3, max: 6 } },
-  tma: { label: 'Приложение внутри Telegram', price: { min: 120000, max: 300000 }, weeks: { min: 2, max: 3 } },
-  bot: { label: 'Telegram-бот', price: { min: 50000, max: 180000 }, weeks: { min: 1, max: 3 } },
-  app: { label: 'Личный кабинет', price: { min: 350000, max: 900000 }, weeks: { min: 6, max: 12 } },
-  'web-service': { label: 'Рабочий веб-сервис', price: { min: 500000, max: 1200000 }, weeks: { min: 8, max: 16 } },
-  migration: { label: 'Перенос сайта и данных', price: { min: 70000, max: 250000 }, weeks: { min: 1, max: 3 } },
-  // Срок «по задаче» у обмена данными парсится в 0 недель — фиксируем руками.
-  'data-exchange': { weeks: { min: 1, max: 3 } },
-  support: { label: 'Поддержка и развитие', price: { min: 25000, max: 100000 }, weeks: { min: 1, max: 4 } },
-};
-
 const optionOverrides: Record<string, Partial<OptionEstimate>> = {
   rush: { percent: 0.3, weeks: { min: -1, max: -1 } },
   'integration-1c': { weeks: { min: 1, max: 3 } },
   content: { weeks: { min: 1, max: 2 } },
 };
 
-const baseEstimates: BaseEstimate[] = [
-  ...products.map((product) => ({
-    product: product.slug,
-    label: product.name,
-    price: productBaseOverrides[product.slug]?.price ?? priceRangeFromLabel(product.price),
-    weeks: productBaseOverrides[product.slug]?.weeks ?? weeksRangeFromLabel(product.term),
-    ...productBaseOverrides[product.slug],
-  })),
-  fallbackBase,
-];
+/**
+ * Legacy v2 remains only for the /price/ extension regression check. It deliberately
+ * has no product-price catalogue: public SKU pricing belongs to products.ts + Brief v3.
+ */
+const baseEstimates: BaseEstimate[] = [fallbackBase];
 
 export const optionEstimates: OptionEstimate[] = extensionPrices.map((extension) => ({
   id: extension.id,
