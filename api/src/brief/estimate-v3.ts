@@ -1,76 +1,38 @@
 /**
- * Оценка брифа v3 — зеркало site/src/data/brief-v3.ts.
- * Работает с плоскими ответами (массивы — строки через запятую),
- * как их присылает фронтенд в payloadV3().
+ * Оценка брифа v3 — плоский API-адаптер над сгенерированным снимком estimator/product данных.
+ * Числа/таблицы (SKU, форматы, надбавки) больше не мирятся руками — они приходят из
+ * generated-estimator-data.ts (AUTO-GENERATED, см. scripts/generate-brief-estimator.ts).
+ * Здесь остаётся только логика: разбор плоских ответов, дерево recommendFormatV3 и сериализация.
+ * Синхронность: `bun scripts/verify-estimate-parity.ts`.
  */
+import {
+  actionAdders,
+  dataflowAdders,
+  formats,
+  manageAdders,
+  productTaskExpectation,
+  publicProducts,
+  updateGoalPrice,
+  type FormatId,
+  type ProductSlug,
+} from './generated-estimator-data.ts';
 
 export type AnswersV3Flat = Record<string, string>;
+export type { ProductSlug } from './generated-estimator-data.ts';
+
+export function isProductSlug(value: string | undefined): value is ProductSlug {
+  return Boolean(value && value in publicProducts);
+}
 
 interface Range {
   min: number;
   max: number;
 }
 
-type FormatId = 'landing' | 'company' | 'catalog' | 'shop' | 'cabinet' | 'tool' | 'automation' | 'update' | 'custom';
-
-interface FormatDef {
-  name: string;
-  price: Range;
-  weeks: Range;
-  includesActions: string[];
-  includesManage: string[];
-  includesDataflow: string[];
-}
-
-const formats: Record<FormatId, FormatDef> = {
-  landing: { name: 'Посадочная страница', price: { min: 80000, max: 160000 }, weeks: { min: 1, max: 2 }, includesActions: ['view', 'lead'], includesManage: [], includesDataflow: ['notify', 'store'] },
-  company: { name: 'Корпоративный сайт', price: { min: 140000, max: 260000 }, weeks: { min: 2, max: 3 }, includesActions: ['view', 'lead'], includesManage: ['texts'], includesDataflow: ['notify', 'store'] },
-  catalog: { name: 'Сайт-каталог', price: { min: 220000, max: 420000 }, weeks: { min: 3, max: 5 }, includesActions: ['view', 'lead', 'pick', 'choose'], includesManage: ['texts', 'goods'], includesDataflow: ['notify', 'store'] },
-  shop: { name: 'Интернет-магазин', price: { min: 340000, max: 650000 }, weeks: { min: 4, max: 7 }, includesActions: ['view', 'lead', 'pick', 'choose', 'buy'], includesManage: ['texts', 'goods', 'orders'], includesDataflow: ['notify', 'store', 'email'] },
-  cabinet: { name: 'Сервис с личным кабинетом', price: { min: 380000, max: 850000 }, weeks: { min: 6, max: 10 }, includesActions: ['view', 'lead', 'login', 'data', 'notify'], includesManage: ['texts', 'users'], includesDataflow: ['notify', 'store'] },
-  tool: { name: 'Рабочий инструмент для команды', price: { min: 320000, max: 750000 }, weeks: { min: 5, max: 9 }, includesActions: ['view', 'login', 'data', 'notify'], includesManage: ['texts', 'users', 'orders', 'leads'], includesDataflow: ['notify', 'store'] },
-  automation: { name: 'Автоматизация процесса', price: { min: 90000, max: 240000 }, weeks: { min: 1, max: 3 }, includesActions: ['view', 'data', 'notify'], includesManage: [], includesDataflow: ['notify', 'store', 'sheet'] },
-  update: { name: 'Обновление действующего сайта', price: { min: 90000, max: 260000 }, weeks: { min: 1, max: 3 }, includesActions: ['view', 'lead'], includesManage: ['texts'], includesDataflow: ['notify', 'store'] },
-  custom: { name: 'Проект по задаче', price: { min: 90000, max: 400000 }, weeks: { min: 2, max: 5 }, includesActions: [], includesManage: [], includesDataflow: ['notify', 'store'] },
-};
-
 interface Adder {
   price: Range;
   weeks?: Range;
 }
-
-const actionAdders: Record<string, Adder> = {
-  pick: { price: { min: 25000, max: 50000 } },
-  calc: { price: { min: 25000, max: 50000 } },
-  book: { price: { min: 30000, max: 60000 } },
-  buy: { price: { min: 60000, max: 120000 }, weeks: { min: 1, max: 1 } },
-  login: { price: { min: 80000, max: 160000 }, weeks: { min: 1, max: 2 } },
-  data: { price: { min: 60000, max: 120000 }, weeks: { min: 1, max: 2 } },
-};
-
-const manageAdders: Record<string, Adder> = {
-  texts: { price: { min: 15000, max: 30000 } },
-  goods: { price: { min: 30000, max: 60000 } },
-  leads: { price: { min: 15000, max: 30000 } },
-  users: { price: { min: 50000, max: 100000 }, weeks: { min: 0, max: 1 } },
-  orders: { price: { min: 40000, max: 80000 } },
-};
-
-const dataflowAdders: Record<string, Adder> = {
-  crm: { price: { min: 25000, max: 50000 } },
-  sheet: { price: { min: 15000, max: 30000 } },
-  email: { price: { min: 15000, max: 30000 } },
-  site: { price: { min: 20000, max: 40000 } },
-  onec: { price: { min: 60000, max: 120000 }, weeks: { min: 1, max: 2 } },
-  doc: { price: { min: 30000, max: 60000 } },
-};
-
-const updateGoalPrice: Record<string, Range> = {
-  redesign: { min: 120000, max: 300000 },
-  replatform: { min: 90000, max: 250000 },
-  features: { min: 100000, max: 280000 },
-  fix: { min: 60000, max: 180000 },
-};
 
 function list(value?: string): string[] {
   return (value ?? '')
@@ -79,6 +41,11 @@ function list(value?: string): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Дерево решений — идентично site/src/data/brief-estimator.ts::recommendFormat().
+ * Не данные, а control-flow: API не может импортировать сайт-код на этапе своей сборки
+ * (см. deploy-feasibility отчёт), поэтому логика продублирована вручную и минимальна.
+ */
 export function recommendFormatV3(a: AnswersV3Flat): FormatId {
   const actions = new Set(list(a.actions));
   if (a.task === 'update') return 'update';
@@ -99,7 +66,35 @@ export function estimateV3Flat(a: AnswersV3Flat): {
   priceHigh: number;
   termLow: number;
   termHigh: number;
+  priceLabel?: string;
+  deliveryLabel?: string;
+  product?: ProductSlug;
 } {
+  if (a.product) {
+    if (!isProductSlug(a.product)) throw new Error(`Unknown product slug: ${a.product}`);
+    const product = publicProducts[a.product];
+    if (contextStillMatches(a, a.product)) {
+      return {
+        kind: recommendFormatV3(a),
+        priceLow: product.min,
+        priceHigh: product.max,
+        termLow: product.termLow,
+        termHigh: product.termHigh,
+        priceLabel: product.priceLabel,
+        deliveryLabel: product.deliveryLabel,
+        product: a.product,
+      };
+    }
+  }
+  const inferred = a.task === 'update' && a.update_goal === 'redesign'
+    ? 'redesign'
+    : a.task === 'update' && a.update_goal === 'replatform'
+      ? 'migration'
+      : undefined;
+  if (inferred) {
+    const product = publicProducts[inferred];
+    return { kind: 'update', priceLow: product.min, priceHigh: product.max, termLow: product.termLow, termHigh: product.termHigh, priceLabel: product.priceLabel, deliveryLabel: product.deliveryLabel, product: inferred };
+  }
   const format = recommendFormatV3(a);
   const def = formats[format];
   const base = format === 'update' && updateGoalPrice[a.update_goal ?? ''] ? updateGoalPrice[a.update_goal ?? ''] : def.price;
@@ -132,4 +127,10 @@ export function estimateV3Flat(a: AnswersV3Flat): {
     termLow: Math.max(1, weeksMin),
     termHigh: Math.max(Math.max(1, weeksMin), weeksMax),
   };
+}
+
+function contextStillMatches(a: AnswersV3Flat, product: ProductSlug): boolean {
+  if (!a.task) return true;
+  const expected = productTaskExpectation[product];
+  return !expected || expected === a.task;
 }

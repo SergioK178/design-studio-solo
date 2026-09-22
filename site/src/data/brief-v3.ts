@@ -6,7 +6,26 @@
  * Цена складывается из четырёх уровней (формат, действия, управление,
  * связи). Часть ответов не двигает цену, а помечает проект для ручной
  * оценки — см. manualFlags().
+ *
+ * Первый шаг — те же 5 групп, что в каталоге (`productGroups`), затем уточнение
+ * задачи внутри группы. База цены/срока форматов с одноимённым продуктом берётся
+ * из products.ts. API-зеркало: api/src/brief/estimate-v3.ts (parity: scripts/verify-estimate-parity.ts).
  */
+
+import { productGroups, productPriceLabel, productTermLabel, products, type Product, type ProductSlug } from './products';
+import {
+  computeEstimate,
+  contextStillMatches as contextStillMatchesTask,
+  formatBase,
+  formatGroup,
+  formatProduct,
+  recommendFormat as recommendFormatCore,
+  type FormatId,
+  type Range,
+} from './brief-estimator';
+
+export { formatProduct } from './brief-estimator';
+export type { FormatId } from './brief-estimator';
 
 export interface ChoiceV3 {
   id: string;
@@ -15,6 +34,8 @@ export interface ChoiceV3 {
   doc?: string;
   /** Взаимоисключающий вариант в множественном выборе. */
   exclusive?: boolean;
+  /** Для задач: группа первого шага (id группы каталога или 'other'). */
+  group?: string;
 }
 
 export interface QuestionV3 {
@@ -28,6 +49,7 @@ export interface QuestionV3 {
 }
 
 export type StepId =
+  | 'group'
   | 'task'
   | 'updateGoal'
   | 'otherText'
@@ -40,6 +62,10 @@ export type StepId =
   | 'budget';
 
 export interface AnswersV3 {
+  /** Optional exact SKU from a product page. Generic /brief/ intentionally leaves it empty. */
+  product: ProductSlug | '';
+  /** Группа первого шага; для «Другая задача» и групп с одной задачей задача выставляется сама. */
+  group: string;
   task: string;
   updateGoal: string;
   otherText: string;
@@ -55,6 +81,8 @@ export interface AnswersV3 {
 
 export function emptyAnswers(): AnswersV3 {
   return {
+    product: '',
+    group: '',
     task: '',
     updateGoal: '',
     otherText: '',
@@ -71,21 +99,31 @@ export function emptyAnswers(): AnswersV3 {
 
 export const questionsV3: QuestionV3[] = [
   {
-    id: 'task',
+    id: 'group',
     stage: 1,
     stageName: 'Задача',
     title: 'Какую задачу должен решать проект?',
-    hint: 'Формат предложим сами — по ответам, а не по названию.',
+    hint: 'Направления те же, что в каталоге решений. Формат предложим сами — по ответам, а не по названию.',
     choices: [
-      { id: 'launch', label: 'Запустить новое предложение', doc: 'запустить новое предложение' },
-      { id: 'present', label: 'Представить компанию и услуги', doc: 'представить компанию и услуги' },
-      { id: 'assortment', label: 'Показать ассортимент', doc: 'показать ассортимент' },
-      { id: 'sell', label: 'Продавать товары онлайн', doc: 'продавать товары онлайн' },
-      { id: 'cabinet', label: 'Дать клиентам личный кабинет', doc: 'дать клиентам личный кабинет' },
-      { id: 'tool', label: 'Создать рабочий инструмент для сотрудников', doc: 'создать рабочий инструмент для сотрудников' },
-      { id: 'manual', label: 'Убрать повторяющуюся ручную работу', doc: 'убрать повторяющуюся ручную работу' },
-      { id: 'update', label: 'Обновить существующий сайт или сервис', doc: 'обновить существующий сайт' },
-      { id: 'other', label: 'Другая задача', doc: 'решить нестандартную задачу' },
+      ...productGroups.map((g) => ({ id: g.id, label: g.title })),
+      { id: 'other', label: 'Другая задача или нужна помощь с выбором' },
+    ],
+  },
+  {
+    id: 'task',
+    stage: 1,
+    stageName: 'Задача',
+    title: 'Что именно нужно сделать?',
+    choices: [
+      { id: 'launch', group: 'sites', label: 'Запустить новое предложение', doc: 'запустить новое предложение' },
+      { id: 'present', group: 'sites', label: 'Представить компанию и услуги', doc: 'представить компанию и услуги' },
+      { id: 'assortment', group: 'sales', label: 'Показать ассортимент', doc: 'показать ассортимент' },
+      { id: 'sell', group: 'sales', label: 'Продавать товары онлайн', doc: 'продавать товары онлайн' },
+      { id: 'cabinet', group: 'apps', label: 'Дать клиентам личный кабинет', doc: 'дать клиентам личный кабинет' },
+      { id: 'tool', group: 'apps', label: 'Создать рабочий инструмент для сотрудников', doc: 'создать рабочий инструмент для сотрудников' },
+      { id: 'manual', group: 'automation', label: 'Убрать повторяющуюся ручную работу', doc: 'убрать повторяющуюся ручную работу' },
+      { id: 'update', group: 'development', label: 'Обновить существующий сайт или сервис', doc: 'обновить существующий сайт' },
+      { id: 'other', group: 'other', label: 'Другая задача', doc: 'решить нестандартную задачу' },
     ],
   },
   {
@@ -220,223 +258,136 @@ export const questionsV3: QuestionV3[] = [
 
 export const questionById = Object.fromEntries(questionsV3.map((q) => [q.id, q])) as Record<StepId, QuestionV3>;
 
-/* ---------- Рекомендация формата ---------- */
-
-export type FormatId =
-  | 'landing'
-  | 'company'
-  | 'catalog'
-  | 'shop'
-  | 'cabinet'
-  | 'tool'
-  | 'automation'
-  | 'update'
-  | 'custom';
-
-interface Range {
-  min: number;
-  max: number;
+/** Конкретные задачи группы: 2+ — показываем уточняющий шаг, одна — задача выбирается сама. */
+export function tasksOfGroup(group: string): ChoiceV3[] {
+  return questionById.task.choices.filter((c) => c.group === group);
 }
 
-interface FormatDef {
-  id: FormatId;
+export function groupOfTask(task: string): string {
+  return questionById.task.choices.find((c) => c.id === task)?.group ?? '';
+}
+
+/** Последовательность шагов зависит от группы и задачи. */
+export function stepSequence(a: AnswersV3): StepId[] {
+  return [
+    'group',
+    // Exact product links already carry a compatible task; do not make quiz (catalog group,
+    // launch task) collapse back into a generic choice. Products without a task still ask it.
+    ...(tasksOfGroup(a.group).length > 1 && !(a.product && a.task) ? (['task'] as const) : []),
+    ...(a.task === 'update' ? (['updateGoal'] as const) : []),
+    ...(a.task === 'other' ? (['otherText'] as const) : []),
+    'actions',
+    'content',
+    'manage',
+    'dataflow',
+    'have',
+    'deadline',
+    'budget',
+  ];
+}
+
+/* ---------- Рекомендация формата ---------- */
+
+/** Содержимое формата (UI-текст): числа (price/weeks/includes*) приходят из brief-estimator.ts. */
+interface FormatContent {
   /** Именительный падеж: «корпоративный сайт». */
   name: string;
   /** Родительный падеж для «Рекомендуем начать с …». */
   genitive: string;
   lead: string;
-  price: Range;
-  weeks: Range;
   core: string[];
   /** Что часто добавляют вторым этапом (показываем, если не выбрано сейчас). */
   later: string[];
-  /** Действия и управление, уже входящие в базу формата. */
+}
+
+interface FormatDef extends FormatContent {
+  id: FormatId;
+  price: Range;
+  weeks: Range;
   includesActions: string[];
   includesManage: string[];
   includesDataflow: string[];
 }
 
-export const formats: Record<FormatId, FormatDef> = {
+const formatContent: Record<FormatId, FormatContent> = {
   landing: {
-    id: 'landing',
     name: 'посадочная страница',
     genitive: 'посадочной страницы',
     lead: 'Одна собранная страница представит предложение, снимет вопросы и будет приводить заявки.',
-    price: { min: 70000, max: 160000 },
-    weeks: { min: 1, max: 2 },
     core: ['структура и тексты', 'дизайн', 'адаптивная вёрстка', 'форма заявки'],
     later: ['передача заявок в систему учёта', 'вторая страница под другой сегмент'],
-    includesActions: ['view', 'lead'],
-    includesManage: [],
-    includesDataflow: ['notify', 'store'],
   },
   company: {
-    id: 'company',
     name: 'корпоративный сайт',
     genitive: 'корпоративного сайта',
     lead: 'Он представит услуги, соберёт заявки и позволит самостоятельно обновлять основные разделы.',
-    price: { min: 120000, max: 260000 },
-    weeks: { min: 2, max: 3 },
     core: ['структура', 'дизайн', 'адаптивная разработка', 'формы', 'панель управления'],
     later: ['передача заявок в систему учёта', 'раздел материалов'],
-    includesActions: ['view', 'lead'],
-    includesManage: ['texts'],
-    includesDataflow: ['notify', 'store'],
   },
   catalog: {
-    id: 'catalog',
     name: 'сайт-каталог',
     genitive: 'сайта-каталога',
     lead: 'Покажет ассортимент с подбором и фильтрами, соберёт запросы и позволит самим обновлять позиции.',
-    price: { min: 180000, max: 420000 },
-    weeks: { min: 3, max: 5 },
     core: ['структура и дизайн', 'каталог с фильтрами', 'импорт базы позиций', 'формы запроса', 'панель управления'],
     later: ['онлайн-оплата и корзина', 'обмен с 1С'],
-    includesActions: ['view', 'lead', 'pick', 'choose'],
-    includesManage: ['texts', 'goods'],
-    includesDataflow: ['notify', 'store'],
   },
   shop: {
-    id: 'shop',
     name: 'интернет-магазин',
     genitive: 'интернет-магазина',
     lead: 'Возьмёт на себя витрину, корзину, оплату и заказы — с управлением товарами и статусами.',
-    price: { min: 250000, max: 650000 },
-    weeks: { min: 4, max: 7 },
     core: ['витрина и карточки товаров', 'корзина и оформление заказа', 'онлайн-оплата', 'панель управления товарами и заказами'],
     later: ['обмен с 1С', 'программа лояльности и рассылки'],
-    includesActions: ['view', 'lead', 'pick', 'choose', 'buy'],
-    includesManage: ['texts', 'goods', 'orders'],
-    includesDataflow: ['notify', 'store', 'email'],
   },
   cabinet: {
-    id: 'cabinet',
     name: 'сервис с личным кабинетом',
     genitive: 'сервиса с личным кабинетом',
     lead: 'Даст каждому клиенту свой кабинет: данные, документы и действия — в одном месте.',
-    price: { min: 350000, max: 850000 },
-    weeks: { min: 6, max: 10 },
     core: ['сценарии пользователя', 'кабинет и вход', 'роли и доступы', 'панель управления'],
     later: ['уведомления и рассылки', 'передача заявок в систему учёта'],
-    includesActions: ['view', 'lead', 'login', 'data', 'notify'],
-    includesManage: ['texts', 'users'],
-    includesDataflow: ['notify', 'store'],
   },
   tool: {
-    id: 'tool',
     name: 'рабочий инструмент для команды',
     genitive: 'рабочего инструмента для команды',
     lead: 'Соберёт рабочий процесс в один инструмент вместо ручных таблиц и переписок.',
-    price: { min: 500000, max: 1200000 },
-    weeks: { min: 5, max: 9 },
     core: ['разбор процесса', 'интерфейс для сотрудников', 'роли и доступы', 'история изменений'],
     later: ['отчёты и выгрузки', 'обмен с 1С'],
-    includesActions: ['view', 'login', 'data', 'notify'],
-    includesManage: ['texts', 'users', 'orders', 'leads'],
-    includesDataflow: ['notify', 'store'],
   },
   automation: {
-    id: 'automation',
     name: 'автоматизация процесса',
     genitive: 'автоматизации процесса',
     lead: 'Уберёт ручную работу: процесс будет выполняться по понятным правилам без постоянного участия.',
-    price: { min: 80000, max: 600000 },
-    weeks: { min: 1, max: 3 },
     core: ['разбор процесса и правил', 'сценарий автоматизации', 'запуск и контроль ошибок'],
     later: ['следующий процесс по той же схеме'],
-    includesActions: ['view', 'data', 'notify'],
-    includesManage: [],
-    includesDataflow: ['notify', 'store', 'sheet'],
   },
   update: {
-    id: 'update',
     name: 'обновление действующего сайта',
     genitive: 'обновления действующего сайта',
     lead: 'Сохраним рабочее, уберём устаревшее и переведём сайт в состояние, которое снова работает на вас.',
-    price: { min: 70000, max: 260000 },
-    weeks: { min: 1, max: 3 },
     core: ['аудит текущего сайта', 'план переноса без потери адресов', 'обновлённые страницы', 'панель управления'],
     later: ['новые разделы и сценарии'],
-    includesActions: ['view', 'lead'],
-    includesManage: ['texts'],
-    includesDataflow: ['notify', 'store'],
   },
   custom: {
-    id: 'custom',
     name: 'проект по задаче',
     genitive: 'разбора задачи со студией',
     lead: 'По ответам задача шире типовых форматов — разберём её лично и предложим точный состав работ.',
-    price: { min: 90000, max: 400000 },
-    weeks: { min: 2, max: 5 },
     core: ['разбор задачи', 'прототип решения', 'план работ по этапам'],
     later: [],
-    includesActions: [],
-    includesManage: [],
-    includesDataflow: ['notify', 'store'],
   },
 };
 
+/**
+ * `formats` объединяет UI-контент (formatContent) с числами и правилами (formatBase) из
+ * brief-estimator.ts — единственного источника price/weeks/includes* для сайта и генератора API.
+ */
+export const formats: Record<FormatId, FormatDef> = Object.fromEntries(
+  (Object.keys(formatContent) as FormatId[]).map((id) => [id, { id, ...formatContent[id], ...formatBase[id] }]),
+) as Record<FormatId, FormatDef>;
+
 export function recommendFormat(a: AnswersV3): FormatId {
-  const actions = new Set(a.actions);
-  if (a.task === 'update') return 'update';
-  if (a.task === 'manual') return 'automation';
-  if (a.task === 'tool') return 'tool';
-  if (a.task === 'sell' || actions.has('buy')) return 'shop';
-  if (a.task === 'cabinet') return 'cabinet';
-  if (a.task === 'assortment' || actions.has('choose')) return 'catalog';
-  if (actions.has('login') || actions.has('data')) return 'cabinet';
-  if (a.task === 'launch') return 'landing';
-  if (a.task === 'present') return 'company';
-  return 'custom';
+  return recommendFormatCore(a.task, a.actions);
 }
 
 /* ---------- Расчёт ориентира ---------- */
-
-interface Adder {
-  price: Range;
-  weeks?: Range;
-}
-
-const actionAdders: Record<string, Adder> = {
-  pick: { price: { min: 25000, max: 50000 } },
-  calc: { price: { min: 25000, max: 50000 } },
-  book: { price: { min: 30000, max: 60000 } },
-  buy: { price: { min: 60000, max: 120000 }, weeks: { min: 1, max: 1 } },
-  login: { price: { min: 80000, max: 160000 }, weeks: { min: 1, max: 2 } },
-  data: { price: { min: 60000, max: 120000 }, weeks: { min: 1, max: 2 } },
-};
-
-const manageAdders: Record<string, Adder> = {
-  texts: { price: { min: 15000, max: 30000 } },
-  goods: { price: { min: 30000, max: 60000 } },
-  leads: { price: { min: 15000, max: 30000 } },
-  users: { price: { min: 50000, max: 100000 }, weeks: { min: 0, max: 1 } },
-  orders: { price: { min: 40000, max: 80000 } },
-};
-
-const dataflowAdders: Record<string, Adder> = {
-  crm: { price: { min: 25000, max: 50000 } },
-  sheet: { price: { min: 15000, max: 30000 } },
-  email: { price: { min: 15000, max: 30000 } },
-  site: { price: { min: 20000, max: 40000 } },
-  onec: { price: { min: 60000, max: 120000 }, weeks: { min: 1, max: 2 } },
-  doc: { price: { min: 30000, max: 60000 } },
-};
-
-const updateGoalPrice: Record<string, Range> = {
-  redesign: { min: 120000, max: 300000 },
-  replatform: { min: 90000, max: 250000 },
-  features: { min: 100000, max: 280000 },
-  fix: { min: 60000, max: 180000 },
-};
-
-const budgetCeiling: Record<string, number> = {
-  b100: 100000,
-  b250: 250000,
-  b500: 500000,
-  b900: 900000,
-  bmax: Number.POSITIVE_INFINITY,
-};
 
 const dataflowLabels: Record<string, string> = {
   crm: 'передача заявок в систему учёта',
@@ -458,11 +409,16 @@ export interface BriefResultV3 {
   weeksHigh: number;
   priceLabel: string;
   weeksLabel: string;
+  /** Public delivery string; unlike weeksLabel it can be workdays, ongoing or qualified. */
+  deliveryLabel: string;
+  productSlug?: ProductSlug;
   core: string[];
   later: string[];
   reason: string;
   manual: string[];
   plan: 'full' | 'core' | 'staged' | 'open';
+  /** Куда вести из результата: страница продукта либо группа каталога; нет — у «своей задачи». */
+  link?: { href: string; label: string };
 }
 
 function weeksWord(n: number): string {
@@ -505,46 +461,27 @@ export function manualFlags(a: AnswersV3, format: FormatId): string[] {
 }
 
 export function estimateV3(a: AnswersV3): BriefResultV3 {
-  const format = recommendFormat(a);
+  const directProduct = products.find((item) => item.slug === a.product);
+  if (directProduct && contextStillMatchesTask(a.task, directProduct.slug)) return productContextResult(a, directProduct);
+  const inferredUpdateProduct = a.task === 'update' && a.updateGoal === 'redesign'
+    ? products.find((item) => item.slug === 'redesign')
+    : a.task === 'update' && a.updateGoal === 'replatform'
+      ? products.find((item) => item.slug === 'migration')
+      : undefined;
+  if (inferredUpdateProduct) return productContextResult(a, inferredUpdateProduct, false);
+
+  const numeric = computeEstimate(a);
+  const format = numeric.format;
   const def = formats[format];
-
-  let base = def.price;
-  if (format === 'update' && updateGoalPrice[a.updateGoal]) base = updateGoalPrice[a.updateGoal];
-
-  let priceMin = base.min;
-  let priceMax = base.max;
-  let weeksMin = def.weeks.min;
-  let weeksMax = def.weeks.max;
-
-  const addFrom = (ids: string[], included: string[], adders: Record<string, Adder>) => {
-    for (const id of ids) {
-      if (included.includes(id)) continue;
-      const adder = adders[id];
-      if (!adder) continue;
-      priceMin += adder.price.min;
-      priceMax += adder.price.max;
-      weeksMin += adder.weeks?.min ?? 0;
-      weeksMax += adder.weeks?.max ?? 0;
-    }
-  };
-
-  addFrom(a.actions, def.includesActions, actionAdders);
-  addFrom(a.manage, def.includesManage, manageAdders);
-  addFrom(a.dataflow, def.includesDataflow, dataflowAdders);
+  const priceMin = numeric.priceMin;
+  const priceMax = numeric.priceMax;
+  const weeksMin = numeric.weeksMin;
+  const weeksMax = numeric.weeksMax;
+  const plan = numeric.plan;
 
   // «В основе» — база формата плюс выбранные связи, которые делаем сразу.
   const core = [...def.core];
   const selectedFlows = a.dataflow.filter((id) => dataflowLabels[id] && !def.includesDataflow.includes(id));
-
-  // Комплектация по бюджету: бюджет не двигает цену, но решает,
-  // что войдёт в первый запуск, а что отложим.
-  const ceiling = budgetCeiling[a.budget];
-  let plan: BriefResultV3['plan'] = 'open';
-  if (ceiling !== undefined) {
-    if (ceiling >= priceMax) plan = 'full';
-    else if (ceiling >= priceMin) plan = 'core';
-    else plan = 'staged';
-  }
 
   const later: string[] = [];
   if (plan === 'staged' || plan === 'core') {
@@ -560,10 +497,29 @@ export function estimateV3(a: AnswersV3): BriefResultV3 {
 
   const reason = buildReason(a, def);
 
+  // Публичное название — как в каталоге: продукт (точное соответствие) или группа (агрегированный класс).
+  const product = a.task === 'update' && a.updateGoal === 'redesign'
+    ? products.find((p) => p.slug === 'redesign')
+    : a.task === 'update' && a.updateGoal === 'replatform'
+      ? products.find((p) => p.slug === 'migration')
+      : products.find((p) => p.slug === formatProduct[format]);
+  const group = productGroups.find((g) => g.id === formatGroup[format]);
+  const formatName = product?.name ?? group?.title ?? def.name;
+  const link = product
+    ? { href: `/products/${product.slug}/`, label: `Страница продукта «${product.name}»` }
+    : group
+      ? { href: `/products/#${group.id}`, label: `Направление «${group.title}» в каталоге` }
+      : undefined;
+
   return {
     format,
-    formatName: def.name,
-    title: format === 'custom' ? 'Задачу стоит разобрать вместе' : `Рекомендуем начать с ${def.genitive}`,
+    formatName,
+    title:
+      format === 'custom'
+        ? 'Задачу стоит разобрать вместе'
+        : product || group
+          ? `Рекомендуем начать с ${product ? '' : 'направления '}«${formatName}»`
+          : `Рекомендуем начать с ${def.genitive}`,
     lead: def.lead,
     priceLow: priceMin,
     priceHigh: priceMax,
@@ -571,11 +527,47 @@ export function estimateV3(a: AnswersV3): BriefResultV3 {
     weeksHigh: weeksMax,
     priceLabel: priceLabelV3(priceMin, priceMax),
     weeksLabel: weeksLabelV3(weeksMin, weeksMax),
+    deliveryLabel: weeksLabelV3(weeksMin, weeksMax),
     core,
     later,
     reason,
     manual: manualFlags(a, format),
     plan,
+    link,
+  };
+}
+
+function productContextResult(a: AnswersV3, product: Product, direct = true): BriefResultV3 {
+  const price = product.pricing;
+  const delivery = product.delivery;
+  const weeksLow = delivery.kind === 'weeks-range' ? delivery.min! : 0;
+  const weeksHigh = delivery.kind === 'weeks-range' ? delivery.max! : 0;
+  const format = recommendFormat(a);
+  return {
+    format,
+    formatName: product.name,
+    title: direct ? `Вы выбрали «${product.name}»` : `Рекомендуем начать с «${product.name}»`,
+    lead: product.slug === 'web-service'
+      ? 'Публичная вилка относится к v1 одной ключевой бизнес-цепочки. Более сложную систему оценим отдельно, ориентир — от 1,7 млн ₽.'
+      : 'Покажем состав работ и уточним границы scope до договора.',
+    priceLow: price.min,
+    priceHigh: price.max,
+    weeksLow,
+    weeksHigh,
+    priceLabel: productPriceLabel(product),
+    weeksLabel: productTermLabel(product),
+    deliveryLabel: productTermLabel(product),
+    productSlug: product.slug,
+    core: product.detail?.includes ?? [],
+    later: [],
+    reason: direct
+      ? 'Вы пришли из конкретного формата — сохраняем его публичную цену и срок, пока задача остаётся в его рамках.'
+      : 'По выбранной цели это конкретный публичный формат, поэтому показываем его цену и срок.',
+    manual: product.slug === 'data-exchange'
+      ? ['обследование: API, 1С, legacy-системы и качество данных']
+      : ['scope и материалы уточним до договора'],
+    plan: 'open',
+    link: { href: `/products/${product.slug}/`, label: `Страница продукта «${product.name}»` },
   };
 }
 
@@ -603,7 +595,7 @@ function buildReason(a: AnswersV3, def: FormatDef): string {
       parts.push('Инструмент нужен сотрудникам: здесь важны роли, история изменений и скорость работы, а не витрина.');
       break;
     case 'automation':
-      parts.push('Задача не про сайт, а про процесс: дешевле и быстрее автоматизировать его напрямую.');
+      parts.push('Задача не про сайт, а про процесс: проще и быстрее автоматизировать его напрямую.');
       break;
     case 'update':
       parts.push('Основа уже есть — разумнее развить её, чем строить заново и терять накопленное.');
@@ -630,6 +622,10 @@ function docFragments(question: QuestionV3, selected: string[]): string[] {
 export function documentLines(a: AnswersV3): string[] {
   const lines: string[] = [];
 
+  if (a.group && a.group !== 'other') {
+    const group = questionById.group.choices.find((c) => c.id === a.group);
+    if (group) lines.push(`Направление: ${group.label.toLowerCase()}.`);
+  }
   if (a.task) {
     let line = `Нужно ${taskDocs[a.task]}`;
     if (a.task === 'update' && a.updateGoal) {
@@ -676,6 +672,7 @@ export function documentLines(a: AnswersV3): string[] {
 export function payloadV3(a: AnswersV3): Record<string, string> {
   return {
     version: 'v3',
+    product: a.product,
     task: a.task,
     update_goal: a.updateGoal,
     other_text: a.otherText,
@@ -701,6 +698,7 @@ export function studioSummary(a: AnswersV3, result: BriefResultV3): string {
 
   return [
     result.formatName[0].toUpperCase() + result.formatName.slice(1),
+    a.group && a.group !== 'other' ? line('Направление', questionById.group.choices.find((c) => c.id === a.group)?.label ?? '') : '',
     line('Задача', taskDocs[a.task] ?? ''),
     a.otherText.trim() ? line('Описание', a.otherText.trim()) : '',
     line('Действия', acts.join(', ')),
