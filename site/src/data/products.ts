@@ -1,4 +1,9 @@
 export type ProductGroup = 'launch' | 'company' | 'commerce' | 'apps' | 'automation' | 'development';
+export type ProductSlug =
+  | 'start' | 'landing' | 'quiz' | 'company' | 'catalog' | 'shop' | 'wholesale'
+  | 'migration' | 'event' | 'expert' | 'booking' | 'multi-landing' | 'redesign'
+  | 'tma' | 'bot' | 'app' | 'web-service' | 'leads-inbox' | 'data-exchange'
+  | 'documents' | 'support';
 export type ProductStatus = 'published' | 'planned';
 
 export interface ProjectStep {
@@ -44,8 +49,8 @@ export interface Product {
   name: string;
   group: ProductGroup;
   summary: string;
-  price: string;
-  term: string;
+  pricing: ProductPricing;
+  delivery: ProductDelivery;
   status: ProductStatus;
   featured?: boolean;
   icon?: string;
@@ -58,6 +63,46 @@ export interface Product {
    */
   cta?: 'brief' | 'discuss';
 }
+
+export interface ProductPricing {
+  kind: 'fixed' | 'range' | 'monthly-range';
+  min: number;
+  max: number;
+}
+
+export interface ProductDelivery {
+  kind: 'workdays-range' | 'weeks-range' | 'ongoing';
+  min?: number;
+  max?: number;
+  qualifier?: string;
+}
+
+/** Canonical public pricing v1. Display text is formatted from these numeric values. */
+export const publicPricing: Record<ProductSlug, { pricing: ProductPricing; delivery: ProductDelivery }> = {
+  start: { pricing: { kind: 'fixed', min: 49000, max: 49000 }, delivery: { kind: 'workdays-range', min: 5, max: 7 } },
+  landing: { pricing: { kind: 'range', min: 100000, max: 200000 }, delivery: { kind: 'weeks-range', min: 2, max: 3 } },
+  quiz: { pricing: { kind: 'range', min: 120000, max: 190000 }, delivery: { kind: 'weeks-range', min: 2, max: 3 } },
+  company: { pricing: { kind: 'range', min: 220000, max: 450000 }, delivery: { kind: 'weeks-range', min: 4, max: 6 } },
+  catalog: { pricing: { kind: 'range', min: 300000, max: 650000 }, delivery: { kind: 'weeks-range', min: 5, max: 8 } },
+  shop: { pricing: { kind: 'range', min: 450000, max: 900000 }, delivery: { kind: 'weeks-range', min: 8, max: 12 } },
+  wholesale: { pricing: { kind: 'range', min: 300000, max: 600000 }, delivery: { kind: 'weeks-range', min: 5, max: 8 } },
+  migration: { pricing: { kind: 'range', min: 100000, max: 250000 }, delivery: { kind: 'weeks-range', min: 2, max: 4 } },
+  event: { pricing: { kind: 'range', min: 110000, max: 220000 }, delivery: { kind: 'weeks-range', min: 2, max: 3 } },
+  expert: { pricing: { kind: 'range', min: 150000, max: 350000 }, delivery: { kind: 'weeks-range', min: 3, max: 5 } },
+  booking: { pricing: { kind: 'range', min: 240000, max: 480000 }, delivery: { kind: 'weeks-range', min: 4, max: 6 } },
+  'multi-landing': { pricing: { kind: 'range', min: 200000, max: 400000 }, delivery: { kind: 'weeks-range', min: 3, max: 5 } },
+  redesign: { pricing: { kind: 'range', min: 180000, max: 400000 }, delivery: { kind: 'weeks-range', min: 4, max: 6 } },
+  tma: { pricing: { kind: 'range', min: 220000, max: 450000 }, delivery: { kind: 'weeks-range', min: 4, max: 6 } },
+  bot: { pricing: { kind: 'range', min: 90000, max: 240000 }, delivery: { kind: 'weeks-range', min: 2, max: 4 } },
+  app: { pricing: { kind: 'range', min: 650000, max: 1300000 }, delivery: { kind: 'weeks-range', min: 8, max: 14 } },
+  'web-service': { pricing: { kind: 'range', min: 800000, max: 1700000 }, delivery: { kind: 'weeks-range', min: 10, max: 16 } },
+  'leads-inbox': { pricing: { kind: 'range', min: 80000, max: 190000 }, delivery: { kind: 'weeks-range', min: 2, max: 3 } },
+  'data-exchange': { pricing: { kind: 'range', min: 180000, max: 480000 }, delivery: { kind: 'weeks-range', min: 3, max: 6, qualifier: 'после обследования' } },
+  documents: { pricing: { kind: 'range', min: 120000, max: 300000 }, delivery: { kind: 'weeks-range', min: 2, max: 4 } },
+  support: { pricing: { kind: 'monthly-range', min: 40000, max: 120000 }, delivery: { kind: 'ongoing', qualifier: 'по SLA / постоянно' } },
+};
+
+function publicMeta(slug: ProductSlug) { return publicPricing[slug]; }
 
 export interface ProductGroupMeta {
   id: ProductGroup;
@@ -80,8 +125,7 @@ const siteProducts: Product[] = [
     name: 'Промо-лендинг',
     group: 'launch',
     summary: 'Одна страница по типовой структуре, форма заявки. Жёсткие рамки — поэтому такая цена.',
-    price: '39 000 ₽ фикс',
-    term: '5 рабочих дней',
+    ...publicMeta('start'),
     status: 'published',
     featured: true,
     icon: 'promo',
@@ -109,16 +153,15 @@ const siteProducts: Product[] = [
     name: 'Лендинг под рекламу',
     group: 'launch',
     summary: 'Страница под рекламу, понятная заявка, аналитика и передача обращений менеджеру.',
-    price: '70–180 тыс. ₽',
-    term: '1–2 недели',
+    ...publicMeta('landing'),
     status: 'published',
     featured: true,
     icon: 'landing',
     detail: {
       audience: 'Для рекламы, продаж и заявок, которые должны сразу попадать в работу.',
-      includes: ['лендинг', 'формы', 'передача заявок в систему учёта', 'базовая аналитика', 'обучение менеджера'],
-      excludes: ['каталог товаров', 'личные кабинеты', 'сложная ERP-логика'],
-      note: 'Цена зависит от интеграций и готовности контента.',
+      includes: ['1 страница, индивидуальный дизайн', '1–2 формы', 'простая передача заявок в одну систему учёта', 'базовая аналитика'],
+      excludes: ['каталог товаров', 'личные кабинеты', 'сложная ERP-логика', 'CRM с несколькими формами и правилами маршрутизации'],
+      note: 'Цена зависит от числа блоков и форм, готовности контента. На верхней границе — до 10–12 блоков, 2–3 формы.',
     },
     proof: {
       variant: 'real-interface',
@@ -138,8 +181,7 @@ const siteProducts: Product[] = [
     name: 'Квиз-лендинг',
     group: 'launch',
     summary: 'Опросник вместо формы — точнее заявки, выше конверсия из рекламы.',
-    price: '90–150 тыс. ₽',
-    term: '1–2 недели',
+    ...publicMeta('quiz'),
     status: 'published',
     featured: true,
     icon: 'quiz',
@@ -168,16 +210,15 @@ const siteProducts: Product[] = [
     name: 'Корпоративный сайт',
     group: 'company',
     summary: '5–10 страниц: услуги, цены, о компании, контакты.',
-    price: '120–300 тыс. ₽',
-    term: '2–3 недели',
+    ...publicMeta('company'),
     status: 'published',
     featured: true,
     icon: 'company',
     detail: {
       audience: 'Для компании, которой нужны несколько страниц, услуги, цены и понятный маршрут заявки.',
-      includes: ['5–10 страниц', 'структура услуг', 'контакты', 'форма заявки', 'базовая аналитика'],
+      includes: ['5–6 страниц, 2–3 шаблона', 'структура услуг', 'контакты', 'форма заявки', 'базовая аналитика'],
       excludes: ['каталог товаров', 'интернет-магазин', 'сложные интеграции без отдельной оценки'],
-      note: 'Цена зависит от количества страниц и готовности контента.',
+      note: 'Цена зависит от количества страниц и готовности контента: на верхней границе — до 10 страниц и 4–5 шаблонов. Больше 10 страниц — через дополнение extra-page; каталог из ~30+ позиций с фильтрами — это уже catalog.',
     },
     proof: {
       variant: 'real-interface',
@@ -197,16 +238,15 @@ const siteProducts: Product[] = [
     name: 'Каталог компании',
     group: 'commerce',
     summary: 'Витрина продукции с фильтрами и запросом предложения. В цене — панель управления и перенос данных.',
-    price: '180–450 тыс. ₽',
-    term: '2–4 недели',
+    ...publicMeta('catalog'),
     status: 'published',
     featured: true,
     icon: 'catalog',
     detail: {
       audience: 'Для поставщиков и дистрибьюторов, где важны позиции, фильтры и управление каталогом.',
-      includes: ['структура каталога', 'перенос данных', 'панель управления', 'заявки', 'базовые фильтры'],
-      excludes: ['онлайн-оплату', 'складской учёт', 'личный кабинет покупателя'],
-      note: 'Если данных много и они грязные, сначала оцениваем перенос.',
+      includes: ['до ~200 позиций', 'импорт из одного чистого источника', 'панель управления', 'заявки', 'базовые фильтры'],
+      excludes: ['онлайн-оплату', 'складской учёт', 'личный кабинет покупателя', 'двусторонний обмен с 1С (это data-exchange)'],
+      note: 'На верхней границе — до 1–2 тыс. позиций с фасетными фильтрами. Если данных много и они грязные, сначала оцениваем перенос.',
     },
     proof: {
       variant: 'management',
@@ -225,16 +265,15 @@ const siteProducts: Product[] = [
     name: 'Интернет-магазин',
     group: 'commerce',
     summary: 'Каталог, корзина, оплата и доставка. В цене — панель управления и работа с данными.',
-    price: '250–700 тыс. ₽',
-    term: '3–6 недель',
+    ...publicMeta('shop'),
     status: 'published',
     featured: true,
     icon: 'shop',
     detail: {
       audience: 'Для розничных продаж, где нужны каталог, корзина, оплата и доставка.',
-      includes: ['каталог', 'корзина', 'оформление заказа', 'оплата', 'доставка'],
-      excludes: ['маркетплейс-логику', 'мультивендорность', 'сложный складской учёт без отдельной оценки'],
-      note: 'Перед стартом фиксируем источники данных, оплату и доставку.',
+      includes: ['до ~300 товаров', 'корзина', 'оформление заказа', '1 способ оплаты', '1–2 способа доставки', 'статусы заказа и письма'],
+      excludes: ['маркетплейс-логику', 'мультивендорность', 'сложный складской учёт без отдельной оценки', 'двусторонний обмен с 1С (это data-exchange)'],
+      note: 'На верхней границе — до 2–3 тыс. товаров, варианты, 2–3 способа доставки, промокоды. Перед стартом фиксируем источники данных, оплату и доставку.',
     },
     proof: {
       variant: 'scenario',
@@ -255,14 +294,13 @@ const siteProducts: Product[] = [
     name: 'Оптовый каталог с запросом КП',
     group: 'commerce',
     summary: 'Позиции, цены и условия для оптовых покупателей — вместо корзины заявка на коммерческое предложение.',
-    price: '150–320 тыс. ₽',
-    term: '2–4 недели',
+    ...publicMeta('wholesale'),
     status: 'planned',
     detail: {
       audience: 'Для оптовых продаж, где покупатель не платит картой, а собирает позиции и запрашивает коммерческое предложение.',
-      includes: ['структура каталога', 'позиции с ценами и условиями', 'сбор позиций в заявку на КП', 'панель управления', 'уведомления менеджеру'],
-      excludes: ['онлайн-оплату', 'личный кабинет покупателя', 'складской учёт'],
-      note: 'Если цены зависят от типа покупателя или объёма, сначала фиксируем правила показа цен.',
+      includes: ['всё, что входит в catalog', 'позиции с ценами и условиями', 'сбор позиций в заявку на КП', 'одно правило показа цен'],
+      excludes: ['онлайн-оплату', 'личный кабинет покупателя (это app)', 'складской учёт', 'двусторонний обмен с 1С (это data-exchange)'],
+      note: 'Если цены зависят от типа покупателя или объёма, сначала фиксируем правила показа цен. На верхней границе — до 1–2 тыс. позиций и несколько правил по типам клиентов.',
     },
     proof: {
       variant: 'real-interface',
@@ -281,8 +319,7 @@ const siteProducts: Product[] = [
     name: 'Переезд с конструктора',
     group: 'development',
     summary: 'С Tilda/Wix на свой код — без потери позиций, без подписок.',
-    price: '70–250 тыс. ₽',
-    term: '1–3 недели',
+    ...publicMeta('migration'),
     status: 'published',
     featured: true,
     icon: 'migration',
@@ -315,14 +352,13 @@ const siteProducts: Product[] = [
     name: 'Лендинг мероприятия/курса',
     group: 'launch',
     summary: 'Программа, спикеры, регистрация, оплата или заявка.',
-    price: '70–180 тыс. ₽',
-    term: '1–2 недели',
+    ...publicMeta('event'),
     status: 'planned',
     detail: {
       audience: 'Для события или курса, где страница должна собрать регистрации к конкретной дате.',
-      includes: ['программа и спикеры', 'регистрация или заявка', 'оплата или бронь места', 'напоминания участникам', 'базовая аналитика'],
+      includes: ['программа и спикеры', 'регистрация или заявка', 'напоминания участникам', 'базовая аналитика'],
       excludes: ['личный кабинет участника', 'платформу для проведения занятий', 'рассылки после события без отдельной оценки'],
-      note: 'Срок считаем от даты события назад — стартуем так, чтобы страница успела отработать анонс.',
+      note: 'Оплата или бронь места — на верхней границе диапазона, не в базовом объёме. Срок считаем от даты события назад — стартуем так, чтобы страница успела отработать анонс.',
     },
     recommendedExtensions: ['online-payment', 'crm', 'analytics', 'rush'],
   },
@@ -331,8 +367,7 @@ const siteProducts: Product[] = [
     name: 'Сайт эксперта',
     group: 'company',
     summary: 'Услуги, кейсы, публикации и запись на консультацию.',
-    price: '90–250 тыс. ₽',
-    term: '1–3 недели',
+    ...publicMeta('expert'),
     status: 'planned',
     detail: {
       audience: 'Для частного специалиста, которому нужно показать опыт и получать записи на консультацию — а не просто «сайт-визитку».',
@@ -347,8 +382,7 @@ const siteProducts: Product[] = [
     name: 'Сайт с онлайн-записью',
     group: 'company',
     summary: 'Услуги, расписание, запись и уведомления.',
-    price: '130–350 тыс. ₽',
-    term: '2–4 недели',
+    ...publicMeta('booking'),
     status: 'planned',
     detail: {
       audience: 'Для услуг по расписанию — когда запись должна работать сама, без администратора на телефоне.',
@@ -374,8 +408,7 @@ const siteProducts: Product[] = [
     name: 'Мультилендинг',
     group: 'company',
     summary: 'Несколько посадочных страниц под разные аудитории или кампании.',
-    price: '140–380 тыс. ₽',
-    term: '2–4 недели',
+    ...publicMeta('multi-landing'),
     status: 'planned',
     detail: {
       audience: 'Когда одно предложение нужно показывать по-разному нескольким аудиториям или рекламным кампаниям.',
@@ -390,8 +423,7 @@ const siteProducts: Product[] = [
     name: 'Редизайн',
     group: 'development',
     summary: 'Обновление структуры, визуала и ключевых сценариев существующего сайта.',
-    price: '100–300 тыс. ₽',
-    term: '2–4 недели',
+    ...publicMeta('redesign'),
     status: 'planned',
     detail: {
       audience: 'Когда сайт есть, но выглядит устаревшим или не приводит заявки — и его пора перестраивать, а не латать.',
@@ -410,16 +442,15 @@ export const products: Product[] = [
     name: 'Приложение внутри Telegram',
     group: 'apps',
     summary: 'Полноценные экраны внутри Telegram: каталог, запись или заявки — не переписка с ботом.',
-    price: '120–300 тыс. ₽',
-    term: '2–3 недели',
+    ...publicMeta('tma'),
     status: 'published',
     featured: true,
     icon: 'tma',
     detail: {
       audience: 'Когда каталог, запись или заявка должны жить прямо внутри Telegram.',
-      includes: ['сценарий приложения', 'экраны внутри Telegram', 'заявки или запись', 'связь с ботом'],
-      excludes: ['отдельное мобильное приложение', 'функции, недоступные внутри Telegram'],
-      note: 'Сначала определяем, что пользователь делает внутри Telegram.',
+      includes: ['1 сценарий, 4–6 экранов', 'заявки или запись', 'связь с ботом', 'простая панель позиций/слотов'],
+      excludes: ['отдельное мобильное приложение', 'функции, недоступные внутри Telegram', 'профили, документы и статусы (это app)'],
+      note: 'На верхней границе — 2 сценария и роль администратора. Сначала определяем, что пользователь делает внутри Telegram.',
     },
     proof: {
       variant: 'scenario',
@@ -440,8 +471,7 @@ export const products: Product[] = [
     name: 'Telegram-бот',
     group: 'apps',
     summary: 'Диалог в чате: заявки, уведомления, команды и передача обращений менеджеру.',
-    price: '50–180 тыс. ₽',
-    term: '1–3 недели',
+    ...publicMeta('bot'),
     status: 'planned',
     detail: {
       audience: 'Когда с клиентом достаточно диалога в чате: заявки, типовые вопросы, уведомления — без экранов приложения.',
@@ -456,15 +486,14 @@ export const products: Product[] = [
     name: 'Личный кабинет',
     group: 'apps',
     summary: 'Закрытая система для клиентов: профиль, документы, история заявок и статусы.',
-    price: '350–900 тыс. ₽',
-    term: 'от 6 недель',
+    ...publicMeta('app'),
     status: 'planned',
     cta: 'discuss',
     detail: {
       audience: 'Когда клиентам нужен доступ к своим документам, заявкам и статусам — а менеджерам меньше звонков «что с моим заказом».',
-      includes: ['вход и профили клиентов', 'документы и история заявок', 'статусы и уведомления', 'панель для сотрудников', 'права доступа'],
+      includes: ['одна цепочка (заявка/документ → статус)', '2 роли, вход и профиль', 'история и уведомления', '1 источник данных'],
       excludes: ['мобильное приложение в сторах', 'биллинг и сложные тарифы без отдельной оценки', 'интеграции с внутренними системами без обследования'],
-      note: 'Проект начинается с обследования: какие данные показываем, откуда они берутся и кто за них отвечает.',
+      note: 'На верхней границе — до 3 ролей, 2 источника данных, документы по правилам. Несколько независимых процессов — это уже web-service. Проект начинается с обследования: какие данные показываем, откуда они берутся и кто за них отвечает.',
       steps: [
         { title: 'Обследование', note: 'Какие данные показываем клиентам, откуда они берутся и кто за них отвечает.' },
         { title: 'Прототип', note: 'Ключевые экраны кабинета на кликабельном прототипе — до разработки.' },
@@ -479,15 +508,14 @@ export const products: Product[] = [
     name: 'Рабочий веб-сервис',
     group: 'apps',
     summary: 'Роли, бизнес-процессы, статусы, отчёты, уведомления и интеграции для работы команды.',
-    price: '500–1 200 тыс. ₽',
-    term: 'от 8 недель',
+    ...publicMeta('web-service'),
     status: 'planned',
     cta: 'discuss',
     detail: {
       audience: 'Когда команда работает в таблицах и переписке, а нужен единый инструмент с ролями, статусами и отчётами.',
-      includes: ['обследование процесса', 'роли и права', 'рабочие сценарии и статусы', 'отчёты и уведомления', 'интеграции с рабочими системами'],
+      includes: ['обследование процесса', '1–2 роли, 3–5 сценариев', '0–1 интеграция', 'отчёты и уведомления'],
       excludes: ['замену бухгалтерии и складского учёта', 'внедрение «всего и сразу» одним этапом', 'мобильное приложение в сторах'],
-      note: 'Первый этап — обследование и прототип ключевого сценария; после него фиксируем состав и цену этапов.',
+      note: 'На верхней границе — 3–4 роли, 8–12 сценариев, 2–3 интеграции. Несколько процессов или подсистем — индивидуальная оценка, ориентир — от 1,7 млн ₽. Первый этап — обследование и прототип сценария.',
       steps: [
         { title: 'Обследование процесса', note: 'Как команда работает сейчас, где теряются время и данные.' },
         { title: 'Прототип', note: 'Ключевой сценарий на кликабельных экранах — по нему фиксируем состав и цену этапов.' },
@@ -502,8 +530,7 @@ export const products: Product[] = [
     name: 'Заявки в одну систему',
     group: 'automation',
     summary: 'Обращения с сайта, почты и мессенджеров сами попадают в систему учёта и уведомляют менеджера.',
-    price: '40–120 тыс. ₽',
-    term: '1–2 недели',
+    ...publicMeta('leads-inbox'),
     status: 'planned',
     detail: {
       audience: 'Когда обращения приходят с сайта, почты и из мессенджеров — и часть из них теряется по дороге.',
@@ -518,8 +545,7 @@ export const products: Product[] = [
     name: 'Обмен данными между системами',
     group: 'automation',
     summary: 'Каталог, остатки, цены и заказы синхронизируются между сайтом, 1С и таблицами без ручного переноса.',
-    price: '80–200 тыс. ₽',
-    term: 'по задаче',
+    ...publicMeta('data-exchange'),
     status: 'planned',
     detail: {
       audience: 'Когда каталог, остатки или заказы переносятся между системами вручную — и на этом теряются время и точность.',
@@ -534,8 +560,7 @@ export const products: Product[] = [
     name: 'Документы и отчёты по шаблону',
     group: 'automation',
     summary: 'Счета, договоры и регулярные отчёты собираются из рабочих данных автоматически.',
-    price: '60–180 тыс. ₽',
-    term: '1–3 недели',
+    ...publicMeta('documents'),
     status: 'planned',
     detail: {
       audience: 'Когда счета, договоры или регулярные отчёты собираются вручную из одних и тех же рабочих данных.',
@@ -550,15 +575,14 @@ export const products: Product[] = [
     name: 'Поддержка и развитие',
     group: 'development',
     summary: 'Правки, новые блоки, контроль работоспособности и развитие после запуска.',
-    price: '25–100 тыс. ₽ / месяц',
-    term: 'по договорённости',
+    ...publicMeta('support'),
     status: 'planned',
     cta: 'discuss',
     detail: {
       audience: 'Когда сайт или сервис запущен и должен работать стабильно, а задачи на доработку появляются каждый месяц.',
       includes: ['контроль работоспособности', 'правки и новые блоки в рамках пакета', 'приоритет перед разовыми задачами', 'ежемесячный отчёт о сделанном'],
       excludes: ['круглосуточное дежурство', 'поддержку систем, которые делали не мы, без предварительного аудита', 'крупные новые разделы — они оцениваются отдельно'],
-      note: 'Объём пакета подбираем по реальному потоку задач; внутри пакета ставка часа ниже публичной.',
+      note: 'Пакет определяют SLA, время реакции, приоритет и объём задач в месяц — не почасовая ставка.',
       steps: [
         { title: 'Аудит проекта', note: 'Что берём на поддержку и в каком состоянии оно сейчас.' },
         { title: 'Пакет', note: 'Объём часов, приоритеты и порядок постановки задач.' },
@@ -651,19 +675,19 @@ export const detailedProducts = products.filter((product) => product.detail);
 export const extensionPrices: ExtensionPrice[] = [
   { id: 'extra-page', name: 'Страница на готовом шаблоне', price: 'от 12 000 ₽', term: '+1–2 дня', description: 'Новая страница на уже согласованном шаблоне без новой композиции.', appliesTo: ['launch', 'company', 'commerce'] },
   { id: 'unique-page', name: 'Новый шаблон страницы', price: 'от 25 000 ₽', term: '+2–4 дня', description: 'Отдельная структура и уникальный дизайн нового типа страницы.', appliesTo: ['launch', 'company', 'commerce'] },
-  { id: 'crm', name: 'Передача заявок в систему учёта', price: '25–80 тыс. ₽', term: '2–5 дней', description: 'Заявки автоматически попадают в amoCRM, Битрикс24 или другую систему учёта. Цена растёт с количеством форм, направлений и правил обработки.', appliesTo: ['launch', 'company', 'commerce', 'apps', 'automation'] },
-  { id: 'analytics', name: 'Настройка аналитики', price: '15–40 тыс. ₽', term: '1–2 дня', description: 'События, цели и проверка маршрута заявки.', appliesTo: ['launch', 'company', 'commerce', 'apps'] },
+  { id: 'crm', name: 'Передача заявок в систему учёта', price: '25–80 тыс. ₽', term: '2–5 дней', description: 'Правила обработки, несколько форм и направлений или маршрутизация заявок между несколькими CRM. Простая передача в одну систему уже входит в продукт.', appliesTo: ['launch', 'company', 'commerce', 'apps', 'automation'] },
+  { id: 'analytics', name: 'Настройка аналитики', price: '15–40 тыс. ₽', term: '1–2 дня', description: 'Расширенная аналитика: события, e-commerce, сквозная аналитика. Базовая аналитика (цели, проверка маршрута заявки) уже входит в продукт.', appliesTo: ['launch', 'company', 'commerce', 'apps'] },
   { id: 'second-language', name: 'Вторая языковая версия', price: '40–90 тыс. ₽', term: '3–7 дней', description: 'Дублирование структуры и настройка переключения языка.', appliesTo: ['company', 'commerce'] },
   { id: 'online-payment', name: 'Онлайн-оплата', price: '30–80 тыс. ₽', term: '3–7 дней', description: 'Подключение оплаты и проверка её прохождения. Верхняя граница — сценарий с подтверждениями, ошибками и уведомлениями.', appliesTo: ['launch', 'commerce', 'apps'] },
-  { id: 'online-booking', name: 'Онлайн-запись', price: '45–130 тыс. ₽', term: '3–10 дней', description: 'Запись на услуги, выбор времени и уведомления.', appliesTo: ['company', 'apps'] },
+  { id: 'online-booking', name: 'Онлайн-запись', price: '30–70 тыс. ₽', term: '3–10 дней', description: 'Подключение внешнего сервиса записи. Собственные правила расписания (сотрудники, перерывы, несколько точек) — это продукт booking.', appliesTo: ['company', 'apps'] },
   { id: 'blog', name: 'Раздел статей', price: '35–70 тыс. ₽', term: '3–5 дней', description: 'Раздел материалов с шаблоном статьи и списком публикаций.', appliesTo: ['company'] },
-  { id: 'quiz', name: 'Опрос и расчёт', price: '40–90 тыс. ₽', term: '3–5 дней', description: 'Пошаговые вопросы вместо обычной формы.', appliesTo: ['launch'] },
-  { id: 'integration-1c', name: 'Обмен данными с 1С', price: '70–220 тыс. ₽', term: 'по задаче', description: 'Обмен каталогом, остатками, ценами или заказами.', appliesTo: ['commerce', 'automation'] },
+  { id: 'quiz', name: 'Опрос и расчёт', price: '30–60 тыс. ₽', term: '3–5 дней', description: 'Расширение лендинга пошаговым опросом. Полноценный квиз с ветвлением и расчётом — отдельный продукт quiz.', appliesTo: ['launch'] },
+  { id: 'integration-1c', name: 'Обмен данными с 1С', price: '60–140 тыс. ₽', term: 'по задаче', description: 'Односторонний импорт каталога, остатков или цен из 1С. Двусторонний обмен или несколько потоков — это продукт data-exchange.', appliesTo: ['commerce', 'automation'] },
   { id: 'content', name: 'Наполнение и перенос материалов', price: '30–140 тыс. ₽', term: 'по объёму', description: 'Структура, тексты и подготовка материалов для запуска.', appliesTo: ['launch', 'company', 'commerce', 'apps'] },
   { id: 'workflow', name: 'Связывание нескольких сервисов', price: '50–180 тыс. ₽', term: 'по задаче', description: 'Передача данных между сайтом, таблицами, почтой и рабочими системами — со сценарием, обработкой ошибок и контролем результата.', appliesTo: ['automation', 'apps', 'commerce'] },
   { id: 'ai-processing', name: 'Разбор и проверка данных', price: '60–220 тыс. ₽', term: 'по задаче', description: 'Разобрать документы, классифицировать обращения, подготовить описания или проверить данные по согласованным правилам.', appliesTo: ['automation', 'apps'] },
   { id: 'rush', name: 'Срочность', price: '+30%', term: 'срок фиксируется отдельно', description: 'Приоритетная сборка в сжатые сроки.', appliesTo: ['launch', 'company', 'commerce', 'apps', 'automation'] },
-  { id: 'hourly', name: 'Час отдельных доработок', price: '5 000 ₽', term: 'без срока', description: 'Публичная ставка для разовых задач; внутри пакета поддержки ставка может быть ниже.', appliesTo: ['development'] },
+  { id: 'hourly', name: 'Час отдельных доработок', price: '5 000 ₽', term: 'без срока', description: 'Публичная ставка для разовых задач вне пакета поддержки.', appliesTo: ['development'] },
 ];
 
 /** Слаг продукта → задача первого этапа брифа v3. Нет уверенного соответствия — без предзаполнения. */
@@ -693,4 +717,47 @@ export function briefHref(product: Product | string): string {
   const slug = typeof product === 'string' ? product : product.slug;
   const task = briefTaskBySlug[slug];
   return task ? `/brief/?version=v3&task=${task}` : '/brief/';
+}
+
+export interface ProductRange {
+  min: number;
+  max: number;
+}
+
+function amountLabel(value: number): string {
+  if (value >= 1_000_000) {
+    const millions = value / 1_000_000;
+    return `${Number.isInteger(millions) ? millions : millions.toFixed(1).replace('.', ',')} млн`;
+  }
+  return `${value / 1000} тыс.`;
+}
+
+export function productPriceLabel(product: Pick<Product, 'pricing'>): string {
+  const { kind, min, max } = product.pricing;
+  if (kind === 'fixed') return `${new Intl.NumberFormat('ru-RU').format(min)} ₽ фикс`;
+  const range = `${amountLabel(min)}–${amountLabel(max)} ₽`;
+  return kind === 'monthly-range' ? `${range}/мес.` : range;
+}
+
+export function productTermLabel(product: Pick<Product, 'delivery'>): string {
+  const { kind, min, max, qualifier } = product.delivery;
+  if (kind === 'ongoing') return qualifier ?? 'по SLA / постоянно';
+  const unit = kind === 'workdays-range' ? 'раб. дней' : 'нед.';
+  const range = min === max ? `${min} ${unit}` : `${min}–${max} ${unit}`;
+  return qualifier ? `${range} ${qualifier}` : range;
+}
+
+/** Numeric public product range for estimates; never parse display copy. */
+export function productPriceRange(slug: ProductSlug): ProductRange {
+  const product = products.find((p) => p.slug === slug);
+  if (!product) throw new Error(`products.ts: нет продукта "${slug}"`);
+  return { min: product.pricing.min, max: product.pricing.max };
+}
+
+/** Weeks-only delivery for generic V3 formats. Direct product context uses productTermLabel(). */
+export function productWeeks(slug: ProductSlug): ProductRange {
+  const product = products.find((p) => p.slug === slug);
+  if (!product) throw new Error(`products.ts: нет продукта "${slug}"`);
+  if (product.delivery.kind !== 'weeks-range') throw new Error(`products.ts: срок "${slug}" не измеряется неделями`);
+  return { min: product.delivery.min!, max: product.delivery.max! };
 }

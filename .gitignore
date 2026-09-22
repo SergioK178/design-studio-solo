@@ -33,3 +33,9 @@ Thumbs.db
 .vscode/
 *.swp
 .vercel
+
+# Внутренняя модель расчёта PRICING_REVIEW.md: исходники храним, результаты — нет.
+scripts/pricing-model/output.txt
+scripts/pricing-model/output-sanity.txt
+scripts/pricing-model/data.json
+scripts/pricing-model/__pycache__/
