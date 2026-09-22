@@ -1,107 +1,62 @@
-# 3D Studio repository
+# 3D Studio — agent entry point
 
-Постоянная инструкция для coding agents. Исходное состояние — `AUDIT.md` (технический аудит) и `PRODUCT_AUDIT.md` (продуктовый). Не повторяй их, читай точечно.
+Brand: 3D Studio (previous public name 3K Studio — do not reintroduce; internal legacy identifiers may stay 3K unless migration is explicitly requested).
 
-## Brand
-- Public brand: 3D Studio.
-- Previous public name: 3K Studio; do not introduce it in new UI/content.
-- Internal legacy identifiers may remain 3K unless explicitly requested to migrate.
-
-## Pricing & delivery estimates
-- Current prices and delivery terms are temporarily frozen.
-- Do not strategically reprice products during unrelated implementation tasks.
-- A dedicated pricing pass will estimate real production effort, capacity and margin before changing public values.
-- If a pricing/term inconsistency is discovered, report it instead of guessing a correction.
-
-## Architecture
+## Stack & repo shape
 - `site/` — Astro 5 static frontend (Svelte 5 islands, Tailwind 4)
-- `api/` — Hono API + SQLite (заявки, черновики брифа, `/admin`)
-- `relay/` — Cloudflare Worker, Telegram-уведомления
-- `infra/` — VPS / Caddy / Ansible / Quadlet, деплой
-- Целевой прод — **частный VPS** (не Vercel). Caddy: статика + `/api/*` + `/admin/*`
-- Фронтенд и API общаются только через `/api/*`
+- `api/` — Hono API + SQLite (leads, brief drafts, `/admin`)
+- `relay/` — Cloudflare Worker, Telegram notifications
+- `infra/` — VPS / Caddy / Ansible / Quadlet, deploy runbook (code-complete, no live VPS provisioned yet)
+- `scripts/` — pricing model, brief-estimator generator/parity checks, asset validation
+- Frontend and API talk only through `/api/*`
 
 ## Deployment
-- Production: private VPS.
-- Vercel intentionally remains for preview/staging and sharing WIP — не удалять его конфигурацию.
-- Поведение `/api/*` в проде проверяется на VPS, не на Vercel preview.
+- Production target: private VPS (see `infra/DEPLOY.md`). Not provisioned yet — see `docs/project-state.md`.
+- Vercel stays for preview/staging and sharing WIP — do not remove its config.
+- `/api/*` behavior in prod is verified on the VPS, not on Vercel preview.
 
-## Browser verification
-- Playwright MCP — основной инструмент проверки браузера/UI. Ad-hoc Playwright CLI-скрипты не создавать.
-- Существующие e2e specs сохранены как regression-активы; полный e2e после каждого UI-изменения не гонять без нужды.
-- Типовая UI-проверка: 1) build, 2) walkthrough через Playwright MCP, 3) console/network где релевантно.
+## What to read by task type
+| Task touches | Read |
+|---|---|
+| Pricing, brief estimator, products.ts | `docs/project-state.md` (Frozen decisions), this file's Canonical sources |
+| API routes, lead/draft flow, relay, deploy | `docs/architecture.md` |
+| Visual/UI, tokens, layout, motion | `docs/design.md` |
+| "What's already done / in flight / open" | `docs/project-state.md` |
+| Deep historical rationale (rare) | `AUDIT.md`, `PRODUCT_AUDIT.md`, `DESIGN_AUDIT.md`, `DESIGN_MEASUREMENTS.md`, `DESIGN_OPPORTUNITIES.md`, `DESIGN-SYSTEM-V1.md`, `PRICING_REVIEW.md` — deep reference only, not default reading |
 
-## Product decisions
-- Сайт целиком НЕ переписываем; сохраняем оболочку и дизайн-направление
-- Сохраняем страницы продуктов и бриф
-- Кейсы заморожены: не рефакторить и не мигрировать без явной просьбы
-- Никаких выдуманных метрик, отзывов, результатов кейсов и клиентских утверждений
-- В клиентских текстах: без упоминаний ИИ-агентов и без «дёшево»
+## Canonical sources
+- Products/pricing (public price, term): `site/src/data/products.ts`
+- Brief estimator domain logic: `site/src/data/brief-estimator.ts`
+- Brief questions/UX copy: `site/src/data/brief-v3.ts`
+- Generated API estimator snapshot: `api/src/brief/generated-estimator-data.ts` — **AUTO-GENERATED, do not edit manually**
+- Generator: `scripts/generate-brief-estimator.ts` (`bun scripts/generate-brief-estimator.ts`)
+- Parity check: `scripts/verify-estimate-parity.ts` — run after any pricing/formula edit
+- Design: `docs/design.md` (compact); `DESIGN-SYSTEM-V1.md` is the deep reference, not default reading
 
-## Portfolio / future content rules
-- The studio may publicly offer products even when no dedicated public case exists.
-- Missing case ≠ unsupported capability. Do not hide a service solely because there is no public case.
-- The hero is allowed to showcase both real work and genuine studio capabilities/products.
-- Preserve planned/future content structures (data, slots) unless explicitly asked to remove them.
-- Never expose implementation placeholders such as `asset pending`, raw asset keys or unfinished labels to normal production visitors: omit the item from production rendering, do not delete it from the data model, and do not invent images/cases to fill it.
-- A section explicitly presented as completed/working projects must contain actual projects, not future capability placeholders.
+## Hard rules
+- Pricing values (v1) and delivery terms are owner-approved — do not reprice or adjust formulas without explicit scope; report inconsistencies instead of guessing a fix.
+- Cases (`case-olginka`/guest-house, `case-sutures`/suture, `CatalogCase`, `ShowroomCase`) are frozen — do not refactor/migrate without explicit request; no new case-specific design systems.
+- No fabricated metrics, testimonials, case results, or client claims.
+- No internal agent/production economics (hours, acceleration, cost model) in public copy.
+- No AI-slop decorative pseudo-tech: no fake telemetry, dot grids, terminals, coordinates, generic 3D/WebGL spectacle, glassmorphism, gradient mesh (full list: `docs/design.md`).
+- `api/src/brief/generated-estimator-data.ts` is generated — edit the source (`brief-estimator.ts`/`products.ts`) and regenerate, never the snapshot.
+- Inspect before edit; smallest coherent diff; reuse existing components/data over new abstractions.
+- Never discard another agent's dirty/uncommitted work without checking `git status` first.
+- Do not commit unless explicitly asked.
+- Playwright MCP is the browser/UI verification tool — no ad-hoc Playwright CLI scripts; don't run the full e2e suite unless relevant.
 
-## Target public structure
-```
-/
-products/
-products/[slug]/
-cases/
-cases/[slug]/
-brief/
-legal/
-```
-- `/lab` — вне основной структуры (убран из навигации, статья осталась как архив)
-- `/price` со временем становится «дополнениями/опциями» внутри продуктов; сейчас в меню он называется «Дополнения»
+## Commands
+- Frontend: `cd site && bun run build`, `bun run test:e2e` (Playwright; hardcoded chromium path — see `docs/project-state.md` known issues)
+- API: `cd api && npm test` (vitest), `npm run build`
+- Pricing/brief sync: `bun scripts/verify-estimate-parity.ts` (site+api pricing parity), `bun scripts/verify-pricing-parity.ts` (pricing-model vs products.ts)
+- Do not run destructive migrations; never delete local `api/data/app.db`
 
-## Product grouping direction
-Одна таксономия для главной, каталога и брифа:
-1. Сайты
-2. Каталоги и продажи
-3. Приложения и системы
-4. Автоматизация и интеграции
-5. Развитие существующего
+## Git / worktree discipline
+- Small, reviewable diffs; no unrelated refactors bundled with a task.
+- Before any command that could discard uncommitted work, run `git status` first.
+- Confirm before destructive or shared-state actions (force-push, resetting branches, deploying).
 
-Группы — навигация. Текущие 21 SKU не удалять ради группировки.
-
-## CTA vocabulary
-Только три смысла:
-- «Пройти бриф» — ведёт на `/brief/`
-- «Обсудить проект» — Telegram / прямой разговор
-- «Смотреть работу» — переход к кейсу
-
-Не плодить синонимы («Разобрать задачу» и т.п.).
-
-## Cases
-- Страницы кейсов пока могут быть большими и штучными
-- `suture` и `guest-house` — flagship-кейсы (в рабочем дереве, могут быть не закоммичены)
-- StandardCase-миграцию не начинать без явной просьбы
-- Не создавать новые case-specific дизайн-системы
-
-## Development principles
-- Удаление и упрощение лучше новой архитектуры
-- Сохранять работающее поведение; без несвязанных рефакторингов
-- Переиспользовать существующие компоненты и данные
-- Держать изменения проверяемыми (маленькие диффы)
-- После изменений запускать релевантные сборку и тесты: `cd site && bun run build`, `bun run test:e2e`; для API — тесты в `api/`
-- Не запускать деструктивные миграции; локальную БД `api/data/app.db` не удалять
-
-## Prices & brief
-- Canonical публичная цена/срок продукта — `site/src/data/products.ts` (`price`, `term`). Бриф берёт базу форматов оттуда (`brief-v3.ts`), не копирует числа.
-- API (`api/src/brief/estimate-v3.ts`) — ручное зеркало брифа (деплой API не видит `site/`). Синхронность держит `bun scripts/verify-estimate-parity.ts` — запускать после любой правки цен/формул.
-- Бриф: 1-й шаг = 5 групп каталога (+ «Другая задача»), внутри группы — уточнение задачи. Product→brief: `briefHref()` (`?task=` или `?group=`).
-
-## Known issues (из AUDIT.md, актуально на 2026-09-20)
-- API не развёрнут в проверенном окружении: `POST /api/draft|lead` → 404, деплой API в CI отключён (`if: false`)
-- SQLite `-wal`/`-shm` были закоммичены (есть в истории `origin/main`, коммит `9f65cbc`); из индекса убраны, историю не переписывали
-- `scripts/validate-assets.ts` падает: манифест ссылается на отсутствующие ассеты
-- Остаточные числовые конфликты (automation/update, `brief-estimate.ts` v2 — легаси только для e2e `/price/`) — см. отчёт прохода
-- Видимые заглушки ассетов: `AssetSlot` в проде их скрывает, но у части продуктов после этого останутся пустые места
-- Метрики `/lab` (`/api/metrics/*`) не работают; виджет и `Metrics.svelte` удалены, API-эндпоинты оставлены
-- e2e: `playwright.config.ts` жёстко прописывает путь к chromium-1228; если его нет — `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=~/.cache/ms-playwright/chromium-<версия>/chrome-linux64/chrome`. Зависший `astro preview` на :4321 подхватывается (`reuseExistingServer`) и вешает тесты — проверять порт перед запуском
-- Реализации кейсов (`case-olginka`, `case-sutures`, `CatalogCase`, `ShowroomCase`) намеренно не трогаем
+## Further reading
+- `docs/project-state.md` — done / current / known issues / next / frozen decisions
+- `docs/architecture.md` — system shape, data flow, generated-vs-source boundary
+- `docs/design.md` — compact design-system-v1 working reference
