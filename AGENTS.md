@@ -22,6 +22,7 @@ Brand: 3D Studio (previous public name 3K Studio — do not reintroduce; interna
 | API routes, lead/draft flow, relay, deploy | `docs/architecture.md` |
 | Visual/UI, tokens, layout, motion | `docs/design.md` |
 | "What's already done / in flight / open" | `docs/project-state.md` |
+| Offer / positioning / engagement decisions | `docs/offer-strategy.md` |
 | Deep historical rationale (rare) | `AUDIT.md`, `PRODUCT_AUDIT.md`, `DESIGN_AUDIT.md`, `DESIGN_MEASUREMENTS.md`, `DESIGN_OPPORTUNITIES.md`, `DESIGN-SYSTEM-V1.md`, `PRICING_REVIEW.md` — deep reference only, not default reading |
 
 ## Canonical sources
