@@ -22,6 +22,7 @@ import {
   formatGroup,
   formatProduct,
   recommendFormat as recommendFormatCore,
+  startScopeStillFits,
   type DirectOverflow,
   type FormatId,
   type Range,
@@ -494,7 +495,11 @@ export function manualFlags(a: AnswersV3, format: FormatId): string[] {
 
 export function estimateV3(a: AnswersV3): BriefResultV3 {
   const directProduct = products.find((item) => item.slug === a.product);
-  if (directProduct && contextStillMatchesTask(a.task, directProduct.slug)) return productContextResult(a, directProduct);
+  // `start` — единственный direct SKU, у которого scope может вырасти за рамки компактного
+  // сайта прямо внутри его собственного контекста (buy/booking/login/каталог/интеграции):
+  // тогда отпускаем pin и даём ответам пройти через обычную recommendation logic ниже.
+  const directProductInScope = directProduct && (directProduct.slug !== 'start' || startScopeStillFits(a));
+  if (directProductInScope && contextStillMatchesTask(a.task, directProduct.slug)) return productContextResult(a, directProduct);
   const inferredUpdateProduct = a.task === 'update' && a.updateGoal === 'redesign'
     ? products.find((item) => item.slug === 'redesign')
     : a.task === 'update' && a.updateGoal === 'replatform'

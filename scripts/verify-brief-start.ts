@@ -1,8 +1,9 @@
 /**
- * Представительные тесты для fitsStartProduct() (site + api): подтверждают, что generic Brief
- * маршрутизирует компактную задачу «сайт для бизнеса» в canonical SKU `start`, а любой сигнал
- * корзины/booking/кабинета/интеграций/каталога или прямой ?product=start-контекст ведут себя как
- * ожидается. Не проверяет цены/формулы — для этого есть scripts/verify-estimate-parity.ts.
+ * Представительные тесты для fitsStartProduct() и startScopeStillFits() (site + api):
+ * подтверждают, что generic Brief маршрутизирует компактную задачу «сайт для бизнеса» в
+ * canonical SKU `start`, а прямой ?product=start-контекст остаётся start для простого scope
+ * и отпускается, когда ответы явно выходят за его рамки (корзина/booking/кабинет/интеграции).
+ * Не проверяет цены/формулы — для этого есть scripts/verify-estimate-parity.ts.
  * Запуск: `bun scripts/verify-brief-start.ts` (без сети и БД; exit 1 при расхождении).
  */
 import { emptyAnswers, estimateV3, payloadV3, type AnswersV3 } from '../site/src/data/brief-v3.ts';
@@ -66,6 +67,16 @@ checkNotStart('канонический baseline формата landing (content
   task: 'launch',
   actions: ['view', 'lead'],
 });
+
+/* ---------- direct ?product=start: scope release when it clearly outgrows the SKU ---------- */
+const directStart = (extra: Partial<AnswersV3>): AnswersV3 => ({ ...emptyAnswers(), product: 'start', task: 'launch', ...extra });
+
+checkStart('direct start + simple lead site', directStart({ actions: ['view', 'lead'] }));
+checkStart('direct start + content tbd', directStart({ content: ['tbd'], have: ['idea'] }));
+checkNotStart('direct start + buy', directStart({ actions: ['view', 'lead', 'buy'] }));
+checkNotStart('direct start + full booking', directStart({ actions: ['view', 'lead', 'book'] }));
+checkNotStart('direct start + login/cabinet', directStart({ actions: ['view', 'lead', 'login'] }));
+checkNotStart('direct start + 1С/integration', directStart({ dataflow: ['onec'] }));
 
 /* ---------- 7. idea + tbd → оценка остаётся, появляется clarification flag ---------- */
 {

@@ -323,6 +323,26 @@ export function fitsStartProduct(a: StartFitInput): boolean {
   return true;
 }
 
+/** Прямой SKU-контекст `start` отпускается, если ответ явно про другой продукт (корзина/booking/кабинет/каталог/интеграции). */
+const startHardExclusionActions = new Set(['buy', 'book', 'login', 'data', 'choose']);
+
+/**
+ * Отдельный предикат для уже зафиксированного `?product=start`-контекста: НЕ требует
+ * content.services (человек пришёл с конкретной SKU-страницы) — отвечает только на вопрос
+ * «не вышел ли scope за рамки компактного сайта». Те же hard exclusion категории, что и в
+ * fitsStartProduct(), кроме строгого actions-whitelist (там он часть recommend-in эвристики,
+ * здесь важны только явные сигналы другого продукта). Идентичная копия —
+ * api/src/brief/estimate-v3.ts::startScopeStillFits() (control-flow, не данные).
+ */
+export function startScopeStillFits(a: StartFitInput): boolean {
+  if (a.actions.some((id) => startHardExclusionActions.has(id))) return false;
+  if (a.content.some((id) => startExclusionContent.has(id))) return false;
+  if (a.manage.some((id) => startExclusionManage.has(id))) return false;
+  if (a.dataflow.some((id) => startExclusionDataflow.has(id))) return false;
+  if (a.have.some((id) => startExclusionHave.has(id))) return false;
+  return true;
+}
+
 export function recommendFormat(task: string, actions: string[]): FormatId {
   const set = new Set(actions);
   if (task === 'update') return 'update';

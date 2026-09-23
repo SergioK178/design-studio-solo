@@ -81,6 +81,18 @@ function fitsStartProduct(a: AnswersV3Flat): boolean {
   return true;
 }
 
+const startHardExclusionActions = new Set(['buy', 'book', 'login', 'data', 'choose']);
+
+/** Идентично site/src/data/brief-estimator.ts::startScopeStillFits() — control-flow, не данные. */
+function startScopeStillFits(a: AnswersV3Flat): boolean {
+  if (list(a.actions).some((id) => startHardExclusionActions.has(id))) return false;
+  if (list(a.content).some((id) => startExclusionContent.has(id))) return false;
+  if (list(a.manage).some((id) => startExclusionManage.has(id))) return false;
+  if (list(a.dataflow).some((id) => startExclusionDataflow.has(id))) return false;
+  if (list(a.have).some((id) => startExclusionHave.has(id))) return false;
+  return true;
+}
+
 /** Идентично site/src/data/brief-estimator.ts::productBaseline() — control-flow, не данные. */
 function productBaseline(product: ProductSlug, format: FormatId): Baseline {
   const base = formats[format];
@@ -140,7 +152,8 @@ export function estimateV3Flat(a: AnswersV3Flat): {
   if (a.product) {
     if (!isProductSlug(a.product)) throw new Error(`Unknown product slug: ${a.product}`);
     const product = publicProducts[a.product];
-    if (contextStillMatches(a, a.product)) {
+    const inScope = a.product !== 'start' || startScopeStillFits(a);
+    if (contextStillMatches(a, a.product) && inScope) {
       // SKU остаётся base: canonical price/term не меняются, но actions/manage/dataflow
       // сверх его baseline добавляют дельту (как обычные надбавки). В рамках baseline — 0.
       const applyWeeks = product.deliveryKind === 'weeks-range';
