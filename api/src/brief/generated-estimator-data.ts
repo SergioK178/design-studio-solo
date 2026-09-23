@@ -24,7 +24,7 @@ export interface PublicProduct extends Range {
 
 export const publicProducts: Record<ProductSlug, PublicProduct> = {
   "start": {
-    "name": "Промо-лендинг",
+    "name": "Сайт для бизнеса",
     "priceKind": "fixed",
     "min": 49000,
     "max": 49000,

@@ -62,6 +62,25 @@ export function recommendFormatV3(a: AnswersV3Flat): FormatId {
   return 'custom';
 }
 
+const startAllowedActions = new Set(['view', 'lead']);
+const startExclusionContent = new Set(['catalog', 'personal', 'orders']);
+const startExclusionManage = new Set(['goods', 'users', 'orders']);
+const startExclusionDataflow = new Set(['crm', 'onec', 'doc', 'site']);
+const startExclusionHave = new Set(['base', 'system']);
+
+/** Идентично site/src/data/brief-estimator.ts::fitsStartProduct() — control-flow, не данные. */
+function fitsStartProduct(a: AnswersV3Flat): boolean {
+  if (a.task !== 'launch') return false;
+  const content = list(a.content);
+  if (!content.includes('services')) return false;
+  if (list(a.actions).some((id) => !startAllowedActions.has(id))) return false;
+  if (content.some((id) => startExclusionContent.has(id))) return false;
+  if (list(a.manage).some((id) => startExclusionManage.has(id))) return false;
+  if (list(a.dataflow).some((id) => startExclusionDataflow.has(id))) return false;
+  if (list(a.have).some((id) => startExclusionHave.has(id))) return false;
+  return true;
+}
+
 /** Идентично site/src/data/brief-estimator.ts::productBaseline() — control-flow, не данные. */
 function productBaseline(product: ProductSlug, format: FormatId): Baseline {
   const base = formats[format];
@@ -147,6 +166,10 @@ export function estimateV3Flat(a: AnswersV3Flat): {
   if (inferred) {
     const product = publicProducts[inferred];
     return { kind: 'update', priceLow: product.min, priceHigh: product.max, termLow: product.termLow, termHigh: product.termHigh, priceLabel: product.priceLabel, deliveryLabel: product.deliveryLabel, product: inferred };
+  }
+  if (fitsStartProduct(a)) {
+    const product = publicProducts.start;
+    return { kind: recommendFormatV3(a), priceLow: product.min, priceHigh: product.max, termLow: product.termLow, termHigh: product.termHigh, priceLabel: product.priceLabel, deliveryLabel: product.deliveryLabel, product: 'start' };
   }
   const format = recommendFormatV3(a);
   const def = formats[format];

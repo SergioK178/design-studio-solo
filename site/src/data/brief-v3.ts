@@ -17,6 +17,7 @@ import {
   computeDirectOverflow,
   computeEstimate,
   contextStillMatches as contextStillMatchesTask,
+  fitsStartProduct,
   formatBase,
   formatGroup,
   formatProduct,
@@ -467,9 +468,20 @@ function humanList(items: string[]): string {
   return `${items.slice(0, -1).join(', ')} и ${items[items.length - 1]}`;
 }
 
+/**
+ * Нейтральная оговорка: идея без материалов — это не ошибка и не отдельный платный discovery,
+ * а обычный шаг перед стартом. Оценка и срок при этом не отменяются.
+ */
+function ideaTbdFlag(a: AnswersV3): string[] {
+  return a.have.includes('idea') && a.content.includes('tbd')
+    ? ['содержимое и материалы пока не определены — уточним структуру и состав материалов до старта']
+    : [];
+}
+
 export function manualFlags(a: AnswersV3, format: FormatId): string[] {
   const flags: string[] = [];
   const def = formats[format];
+  flags.push(...ideaTbdFlag(a));
   if (a.task === 'other') flags.push('нестандартная задача — состав работ определим после разбора');
   if (a.systems.trim()) flags.push(`связка с вашими системами (${a.systems.trim()})`);
   else if (a.have.includes('system')) flags.push('связка с рабочей системой');
@@ -489,6 +501,13 @@ export function estimateV3(a: AnswersV3): BriefResultV3 {
       ? products.find((item) => item.slug === 'migration')
       : undefined;
   if (inferredUpdateProduct) return productContextResult(a, inferredUpdateProduct, false);
+
+  // Generic «launch», без прямого product=start — но ответы явно про компактный сайт для
+  // бизнеса: маршрутизируем в canonical SKU, а не в общий формат 'landing'. См. fitsStartProduct().
+  if (fitsStartProduct(a)) {
+    const startProduct = products.find((item) => item.slug === 'start');
+    if (startProduct) return productContextResult(a, startProduct, false);
+  }
 
   const numeric = computeEstimate(a);
   const format = numeric.format;
@@ -599,6 +618,7 @@ function productContextResult(a: AnswersV3, product: Product, direct = true): Br
       ? 'Вы пришли из конкретного формата — сохраняем его публичную цену и срок, пока задача остаётся в его рамках.'
       : 'По выбранной цели это конкретный публичный формат, поэтому показываем его цену и срок.',
     manual: [
+      ...ideaTbdFlag(a),
       ...(product.slug === 'data-exchange'
         ? ['обследование: API, 1С, legacy-системы и качество данных']
         : ['scope и материалы уточним до договора']),

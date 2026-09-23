@@ -285,6 +285,44 @@ export function computeDirectOverflow(
   return { priceMin, priceMax, weeksMin, weeksMax, actions: outActions, manage: outManage, dataflow: outDataflow };
 }
 
+export interface StartFitInput {
+  task: string;
+  actions: string[];
+  content: string[];
+  manage: string[];
+  dataflow: string[];
+  have: string[];
+}
+
+/** Только «посмотреть» и «оставить заявку» — любое другое действие требует другого SKU. */
+const startAllowedActions = new Set(['view', 'lead']);
+/** Каталог, личные данные, заказы — сигналы другого продукта, не компактного сайта. */
+const startExclusionContent = new Set(['catalog', 'personal', 'orders']);
+const startExclusionManage = new Set(['goods', 'users', 'orders']);
+const startExclusionDataflow = new Set(['crm', 'onec', 'doc', 'site']);
+const startExclusionHave = new Set(['base', 'system']);
+
+/**
+ * Консервативный предикат для generic-брифа: задача «запустить предложение» маршрутизируется
+ * в canonical SKU `start` («Сайт для бизнеса») только когда ответы явно про компактный
+ * информационный сайт — рассказать о компании/услугах и привести к одному действию.
+ * Любой сигнал корзины/оплаты, кабинета, каталога, интеграций или сложной работы с данными
+ * возвращает false — тогда работает обычный recommendFormat()/формат 'landing'.
+ * budget/deadline намеренно не участвуют — низкий бюджет не сужает scope, а срочность не
+ * упрощает задачу. Идентичная копия — api/src/brief/estimate-v3.ts::fitsStartProduct()
+ * (control-flow, не данные — API не может импортировать TS из site/, см. комментарий выше).
+ */
+export function fitsStartProduct(a: StartFitInput): boolean {
+  if (a.task !== 'launch') return false;
+  if (!a.content.includes('services')) return false;
+  if (a.actions.some((id) => !startAllowedActions.has(id))) return false;
+  if (a.content.some((id) => startExclusionContent.has(id))) return false;
+  if (a.manage.some((id) => startExclusionManage.has(id))) return false;
+  if (a.dataflow.some((id) => startExclusionDataflow.has(id))) return false;
+  if (a.have.some((id) => startExclusionHave.has(id))) return false;
+  return true;
+}
+
 export function recommendFormat(task: string, actions: string[]): FormatId {
   const set = new Set(actions);
   if (task === 'update') return 'update';
