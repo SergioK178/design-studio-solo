@@ -28,10 +28,9 @@ const columns = [covers, [...covers.slice(shift), ...covers.slice(0, shift)]].ma
   <div class="wrap hero-inner">
     <div class="copy">
       <h1>Сайты и рабочие системы — <span>своей командой.</span></h1>
-      <p class="lead">Подбираем формат под задачу: от компактного сайта до сложного сервиса с интеграциями. Не продаём систему там, где хватает сайта — и не упрощаем там, где задача сложнее.</p>
-      <p class="secondary">Работаем своей командой, без аутсорса и менеджерской прослойки: с решением остаётся на связи тот, кто его делает.</p>
+      <p class="lead">Подбираем формат под задачу: от компактного сайта до сервиса с интеграциями. Если достаточно простого решения, не усложняем.</p>
       <div class="actions">
-        <a class="btn-gold btn-lg" href="#brief" data-magnetic>Пройти бриф →</a>
+        <a class="btn-gold btn-lg" href="/brief/" data-magnetic>Пройти бриф →</a>
         <a class="btn-outline btn-lg" href={site.telegramUrl} target="_blank" rel="noopener" data-magnetic>Обсудить проект</a>
       </div>
       <div class="proof">
@@ -90,13 +89,6 @@ const columns = [covers, [...covers.slice(shift), ...covers.slice(0, shift)]].ma
     line-height: var(--type-lead-lh);
   }
 
-  .secondary {
-    margin: var(--space-3) 0 0;
-    max-width: 460px;
-    color: var(--text-on-ink-muted);
-    font-size: var(--type-body-size);
-    line-height: var(--type-body-lh);
-  }
 
   .actions {
     display: flex;
